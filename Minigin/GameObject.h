@@ -23,6 +23,9 @@ namespace dae
         bool m_positionIsDirty{ false };
 
         void UpdateWorldTransform();
+
+        void RemoveChild(GameObject* child);
+        void AddChild(GameObject* child);
 	public:
 		GameObject() = default;
 		~GameObject();
@@ -43,9 +46,6 @@ namespace dae
         GameObject* GetParent() const { return m_pParent; }
         size_t GetChildCount() const { return m_pChildren.size(); }
         GameObject* GetChildAt(unsigned int index) const { return m_pChildren[index]; }
-
-        void RemoveChild(GameObject* child);
-        void AddChild(GameObject* child);
         bool IsChild(GameObject* child) const;
 
         void MarkForDestroy() { m_isMarkedForDestroy = true; }

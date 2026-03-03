@@ -16,7 +16,7 @@ namespace dae
         void Render() const override;
 
     private:
-        mutable int m_Samples = 100;
+        mutable int m_Samples = 25;
 
         mutable std::vector<float> m_TimingsInt;
         mutable std::vector<float> m_TimingsGO3D;
