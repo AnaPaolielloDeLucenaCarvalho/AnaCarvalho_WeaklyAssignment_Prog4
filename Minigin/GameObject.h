@@ -51,7 +51,7 @@ namespace dae
         void MarkForDestroy() { m_isMarkedForDestroy = true; }
         bool IsMarkedForDestroy() const { return m_isMarkedForDestroy; }
 
-        // --- COMPONENT SYSTEM ---
+        // COMPONENT SYSTEM
 
         // Add a component to a game object
         template <typename T, typename... Args>
