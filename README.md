@@ -10,7 +10,7 @@ Minigin is a very small project using [SDL3](https://www.libsdl.org/) and [glm](
 
 ## Links
 
-**GitHub Pages Build**: [ https://anapaoliellodelucenacarvalho.github.io/AnaCarvalho_WeaklyAss_Prog4/ ]
+**GitHub Pages Build**: [ https://anapaoliellodelucenacarvalho.github.io/AnaCarvalho_WeaklyAssignment_Prog4/ ]
 
 ## Goal
 
