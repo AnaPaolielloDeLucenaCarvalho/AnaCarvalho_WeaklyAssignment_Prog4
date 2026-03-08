@@ -55,6 +55,7 @@ namespace dae
             , m_CurrentButtons(0)
             , m_PreviousButtons(0)
         {
+            m_pGamepad = SDL_OpenGamepad(m_ControllerIndex);
         }
 
         ~GamepadImpl() { if (m_pGamepad) SDL_CloseGamepad(m_pGamepad); }
