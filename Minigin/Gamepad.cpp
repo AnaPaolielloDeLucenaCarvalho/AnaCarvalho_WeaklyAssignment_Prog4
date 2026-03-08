@@ -42,7 +42,6 @@ namespace dae
 }
 
 #else 
-// WEB VERSION
 #include <SDL3/SDL.h>
 
 namespace dae
@@ -51,11 +50,18 @@ namespace dae
     {
     public:
         GamepadImpl(unsigned int index)
+            : m_ControllerIndex(index)
+            , m_pGamepad(nullptr)
+            , m_CurrentButtons(0)
+            , m_PreviousButtons(0)
         {
-            m_pGamepad = SDL_OpenGamepad(index);
+            m_pGamepad = SDL_OpenGamepad(m_ControllerIndex);
         }
 
-        ~GamepadImpl() { if (m_pGamepad) SDL_CloseGamepad(m_pGamepad); }
+        ~GamepadImpl()
+        {
+            if (m_pGamepad) SDL_CloseGamepad(m_pGamepad);
+        }
 
         void Update()
         {
@@ -93,9 +99,10 @@ namespace dae
         }
 
     private:
-        SDL_Gamepad* m_pGamepad{ nullptr };
-        unsigned int m_CurrentButtons{ 0 };
-        unsigned int m_PreviousButtons{ 0 };
+        unsigned int m_ControllerIndex;
+        SDL_Gamepad* m_pGamepad;
+        unsigned int m_CurrentButtons;
+        unsigned int m_PreviousButtons;
     };
 }
 #endif
