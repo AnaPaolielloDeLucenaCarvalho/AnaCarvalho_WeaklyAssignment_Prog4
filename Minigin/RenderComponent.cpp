@@ -21,7 +21,9 @@ namespace dae
     void RenderComponent::Render() const
     {
         const auto& pos = GetOwner()->GetTransform().GetPosition();
-        Renderer::GetInstance().RenderTexture(*m_texture, pos.x, pos.y);
+        const auto flip = m_isFlipped ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
+
+        dae::Renderer::GetInstance().RenderTexture(*m_texture, pos.x, pos.y, flip);
     }
 
     void RenderComponent::SetTexture(const std::string& filename)

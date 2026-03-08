@@ -1,20 +1,21 @@
+#include "Gamepad.h"
+
+#ifdef _WIN32
+
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <Xinput.h>
-
 #pragma comment(lib, "xinput.lib")
-
-#include "Gamepad.h"
 
 namespace dae
 {
     class Gamepad::GamepadImpl
     {
     public:
-        GamepadImpl(unsigned int index) 
+        GamepadImpl(unsigned int index)
             : m_ControllerIndex(index)
-			, m_ButtonsPressedThisFrame(0)
-			, m_ButtonsReleasedThisFrame(0)
+            , m_ButtonsPressedThisFrame(0)
+            , m_ButtonsReleasedThisFrame(0)
         {
             ZeroMemory(&m_CurrentState, sizeof(XINPUT_STATE));
             ZeroMemory(&m_PreviousState, sizeof(XINPUT_STATE));
@@ -42,7 +43,27 @@ namespace dae
         int m_ButtonsPressedThisFrame;
         int m_ButtonsReleasedThisFrame;
     };
+}
 
+#else 
+
+namespace dae
+{
+    class Gamepad::GamepadImpl
+    {
+    public:
+        GamepadImpl(unsigned int) {}
+        void Update() {}
+        bool IsDown(ControllerButton) const { return false; }
+        bool IsUp(ControllerButton) const { return false; }
+        bool IsPressed(ControllerButton) const { return false; }
+    };
+}
+
+#endif
+
+namespace dae
+{
     Gamepad::Gamepad(unsigned int index) : m_pImpl(std::make_unique<GamepadImpl>(index)) {}
     Gamepad::~Gamepad() = default;
     void Gamepad::Update() { m_pImpl->Update(); }

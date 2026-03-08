@@ -22,8 +22,11 @@ namespace dae
         void SetTexture(const std::string& filename);
         void SetTexture(std::shared_ptr<Texture2D> texture) { m_texture = std::move(texture); };
 
+        void SetFlip(bool flip) { m_isFlipped = flip; }
+
     private:
         std::shared_ptr<Texture2D> m_texture;
+        bool m_isFlipped{ false };
     };
 }
 #endif // RENDERCOMPONENT_H

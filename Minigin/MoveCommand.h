@@ -19,10 +19,33 @@ namespace dae
 
         void Execute() override
         {
-			// Later ill add deltatime to this
-            auto pos = m_pGameObject->GetTransform().GetPosition();
-            m_pGameObject->SetLocalPosition(pos.x + (m_Direction.x * m_Speed), pos.y + (m_Direction.y * m_Speed));
+            if (m_pGameObject)
+            {
+                auto pos = m_pGameObject->GetTransform().GetPosition();
+                const float gridSize = 16.0f; // digger used 16 grid
+
+                if (m_Direction.x != 0) // horizontal
+                {
+                    pos.y = std::round(pos.y / gridSize) * gridSize;
+                    pos.x += m_Direction.x * m_Speed;
+                }
+                else if (m_Direction.y != 0) // vertical
+                {
+                    pos.x = std::round(pos.x / gridSize) * gridSize;
+                    pos.y += m_Direction.y * m_Speed;
+                }
+
+                m_pGameObject->SetLocalPosition(pos.x, pos.y);
+
+                // FLIPPING
+                auto renderComp = m_pGameObject->GetComponent<dae::RenderComponent>();
+                if (renderComp && m_Direction.x != 0)
+                {
+                    renderComp->SetFlip(m_Direction.x < 0);
+                }
+            }
         }
+
 
     private:
         GameObject* m_pGameObject;
