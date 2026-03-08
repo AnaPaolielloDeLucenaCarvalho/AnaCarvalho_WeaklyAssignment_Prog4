@@ -46,28 +46,72 @@ namespace dae
 }
 
 #else 
+#include <SDL3/SDL.h>
 
 namespace dae
 {
     class Gamepad::GamepadImpl
     {
     public:
-        GamepadImpl(unsigned int) {}
-        void Update() {}
-        bool IsDown(ControllerButton) const { return false; }
-        bool IsUp(ControllerButton) const { return false; }
-        bool IsPressed(ControllerButton) const { return false; }
+        GamepadImpl(unsigned int index)
+            : m_ControllerIndex(index)
+            , m_pGamepad(nullptr)
+            , m_CurrentButtons(0)
+            , m_PreviousButtons(0)
+        {
+            // SDL3 uses instance IDs, but we can open by index for simplicity here
+            m_pGamepad = SDL_OpenGamepad(index);
+        }
+
+        ~GamepadImpl()
+        {
+            if (m_pGamepad) SDL_CloseGamepad(m_pGamepad);
+        }
+
+        void Update()
+        {
+            if (!m_pGamepad) return;
+
+            m_PreviousButtons = m_CurrentButtons;
+            m_CurrentButtons = 0;
+
+            // Map your enum to SDL buttons and build a bitmask
+            auto MapButton = [&](ControllerButton daeButton, SDL_GamepadButton sdlButton) {
+                if (SDL_GetGamepadButton(m_pGamepad, sdlButton)) {
+                    m_CurrentButtons |= static_cast<unsigned int>(daeButton);
+                }
+                };
+
+            MapButton(ControllerButton::DPadUp, SDL_GAMEPAD_BUTTON_DPAD_UP);
+            MapButton(ControllerButton::DPadDown, SDL_GAMEPAD_BUTTON_DPAD_DOWN);
+            MapButton(ControllerButton::DPadLeft, SDL_GAMEPAD_BUTTON_DPAD_LEFT);
+            MapButton(ControllerButton::DPadRight, SDL_GAMEPAD_BUTTON_DPAD_RIGHT);
+            MapButton(ControllerButton::ButtonA, SDL_GAMEPAD_BUTTON_SOUTH);
+            MapButton(ControllerButton::ButtonB, SDL_GAMEPAD_BUTTON_EAST);
+        }
+
+        bool IsDown(ControllerButton button) const
+        {
+            unsigned int bit = static_cast<unsigned int>(button);
+            return (m_CurrentButtons & bit) && !(m_PreviousButtons & bit);
+        }
+
+        bool IsUp(ControllerButton button) const
+        {
+            unsigned int bit = static_cast<unsigned int>(button);
+            return !(m_CurrentButtons & bit) && (m_PreviousButtons & bit);
+        }
+
+        bool IsPressed(ControllerButton button) const
+        {
+            return m_CurrentButtons & static_cast<unsigned int>(button);
+        }
+
+    private:
+        unsigned int m_ControllerIndex;
+        SDL_Gamepad* m_pGamepad;
+        unsigned int m_CurrentButtons;
+        unsigned int m_PreviousButtons;
     };
 }
-
 #endif
-
-namespace dae
-{
-    Gamepad::Gamepad(unsigned int index) : m_pImpl(std::make_unique<GamepadImpl>(index)) {}
-    Gamepad::~Gamepad() = default;
-    void Gamepad::Update() { m_pImpl->Update(); }
-    bool Gamepad::IsDown(ControllerButton button) const { return m_pImpl->IsDown(button); }
-    bool Gamepad::IsUp(ControllerButton button) const { return m_pImpl->IsUp(button); }
-    bool Gamepad::IsPressed(ControllerButton button) const { return m_pImpl->IsPressed(button); }
-}
