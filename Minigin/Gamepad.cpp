@@ -55,19 +55,19 @@ namespace dae
             , m_CurrentButtons(0)
             , m_PreviousButtons(0)
         {
-            m_pGamepad = SDL_OpenGamepad(m_ControllerIndex);
         }
 
-        ~GamepadImpl()
-        {
-            if (m_pGamepad) SDL_CloseGamepad(m_pGamepad);
-        }
+        ~GamepadImpl() { if (m_pGamepad) SDL_CloseGamepad(m_pGamepad); }
 
         void Update()
         {
             if (!m_pGamepad)
             {
                 m_pGamepad = SDL_OpenGamepad(m_ControllerIndex);
+
+                if (m_pGamepad) {
+                    SDL_Log("!!! GAMEPAD DETECTED AND OPENED AT INDEX %d !!!", m_ControllerIndex);
+                }
             }
 
             if (!m_pGamepad) return;
