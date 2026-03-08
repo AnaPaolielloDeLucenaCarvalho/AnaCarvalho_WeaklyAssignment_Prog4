@@ -55,26 +55,22 @@ namespace dae
             , m_CurrentButtons(0)
             , m_PreviousButtons(0)
         {
-            m_pGamepad = SDL_OpenGamepad(m_ControllerIndex);
         }
 
-        ~GamepadImpl()
-        {
-            if (m_pGamepad) SDL_CloseGamepad(m_pGamepad);
-        }
+        ~GamepadImpl() { if (m_pGamepad) SDL_CloseGamepad(m_pGamepad); }
 
         void Update()
         {
             if (!m_pGamepad)
             {
                 int count = 0;
-                SDL_JoystickID* joysticks = SDL_GetGamepads(&count);
+                SDL_JoystickID* gamepads = SDL_GetGamepads(&count);
                 if (count > 0)
                 {
-                    m_pGamepad = SDL_OpenGamepad(joysticks[0]);
+                    m_pGamepad = SDL_OpenGamepad(gamepads[0]);
+                    if (m_pGamepad) SDL_Log("SUCCESS: Gamepad opened in Web Build!");
                 }
-                SDL_free(joysticks);
-                if (m_pGamepad) SDL_Log("GAMEPAD CONNECTED SUCCESSFULLY");
+                SDL_free(gamepads);
             }
 
             if (!m_pGamepad) return;
