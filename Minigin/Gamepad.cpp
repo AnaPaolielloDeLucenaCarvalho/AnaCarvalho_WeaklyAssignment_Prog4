@@ -50,7 +50,7 @@ namespace dae
     class Gamepad::GamepadImpl
     {
     public:
-        GamepadImpl(unsigned int index) : m_ControllerIndex(index)
+        GamepadImpl(unsigned int index)
         {
             m_pGamepad = SDL_OpenGamepad(index);
         }
@@ -87,7 +87,6 @@ namespace dae
         }
 
     private:
-        unsigned int m_ControllerIndex;
         SDL_Gamepad* m_pGamepad{ nullptr };
         unsigned int m_CurrentButtons{ 0 };
         unsigned int m_PreviousButtons{ 0 };
