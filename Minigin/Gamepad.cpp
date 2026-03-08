@@ -63,11 +63,18 @@ namespace dae
         {
             if (!m_pGamepad)
             {
-                m_pGamepad = SDL_OpenGamepad(m_ControllerIndex);
+                int count = 0;
+                SDL_JoystickID* gamepads = SDL_GetGamepads(&count);
 
-                if (m_pGamepad) {
-                    SDL_Log("!!! GAMEPAD DETECTED AND OPENED AT INDEX %d !!!", m_ControllerIndex);
+                if (count > 0)
+                {
+                    m_pGamepad = SDL_OpenGamepad(gamepads[0]);
+
+                    if (m_pGamepad) {
+                        SDL_Log("SUCCESS: Opened Gamepad with ID: %u", (unsigned int)gamepads[0]);
+                    }
                 }
+                SDL_free(gamepads);
             }
 
             if (!m_pGamepad) return;
