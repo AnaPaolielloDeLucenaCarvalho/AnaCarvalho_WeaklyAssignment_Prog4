@@ -59,7 +59,13 @@ namespace dae
 
         void Update()
         {
+            if (!m_pGamepad)
+            {
+                m_pGamepad = SDL_OpenGamepad(m_ControllerIndex);
+            }
+
             if (!m_pGamepad) return;
+
             m_PreviousButtons = m_CurrentButtons;
             m_CurrentButtons = 0;
 

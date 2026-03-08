@@ -59,10 +59,10 @@ void PrintSDLVersion()
 dae::Minigin::Minigin(const std::filesystem::path& dataPath)
 {
 	PrintSDLVersion();
-	
-	if (!SDL_InitSubSystem(SDL_INIT_VIDEO))
+
+	if (!SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD))
 	{
-		SDL_Log("Renderer error: %s", SDL_GetError());
+		SDL_Log("SDL Init error: %s", SDL_GetError());
 		throw std::runtime_error(std::string("SDL_Init Error: ") + SDL_GetError());
 	}
 
