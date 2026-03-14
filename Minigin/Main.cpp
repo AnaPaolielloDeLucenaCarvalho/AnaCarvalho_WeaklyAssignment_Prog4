@@ -101,7 +101,7 @@ static void load()
 		auto diggerPtr = digger.get();
 		scene.Add(std::move(digger));
 
-		float playerSpeed = 2.0f;
+		float playerSpeed = 125.f;
 
 		input.BindCommand(SDL_SCANCODE_W, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(diggerPtr, glm::vec2{ 0, -1 }, playerSpeed));
 		input.BindCommand(SDL_SCANCODE_S, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(diggerPtr, glm::vec2{ 0, 1 }, playerSpeed));
@@ -117,10 +117,10 @@ static void load()
 
 		float enemySpeed = playerSpeed * 2.0f; // Double speed
 
-		input.BindCommand(dae::Gamepad::ControllerButton::DPadUp, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(enemyPtr, glm::vec2{ 0, -1 }, enemySpeed));
-		input.BindCommand(dae::Gamepad::ControllerButton::DPadDown, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(enemyPtr, glm::vec2{ 0, 1 }, enemySpeed));
-		input.BindCommand(dae::Gamepad::ControllerButton::DPadLeft, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(enemyPtr, glm::vec2{ -1, 0 }, enemySpeed));
-		input.BindCommand(dae::Gamepad::ControllerButton::DPadRight, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(enemyPtr, glm::vec2{ 1, 0 }, enemySpeed));
+		input.BindCommand(0, dae::Gamepad::ControllerButton::DPadUp, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(enemyPtr, glm::vec2{ 0, -1 }, enemySpeed));
+		input.BindCommand(0, dae::Gamepad::ControllerButton::DPadDown, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(enemyPtr, glm::vec2{ 0, 1 }, enemySpeed));
+		input.BindCommand(0, dae::Gamepad::ControllerButton::DPadLeft, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(enemyPtr, glm::vec2{ -1, 0 }, enemySpeed));
+		input.BindCommand(0, dae::Gamepad::ControllerButton::DPadRight, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(enemyPtr, glm::vec2{ 1, 0 }, enemySpeed));
 	}
 }
 

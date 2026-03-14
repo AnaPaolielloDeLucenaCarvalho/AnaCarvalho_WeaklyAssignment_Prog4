@@ -15,25 +15,22 @@ namespace dae
             , m_Direction(direction)
             , m_Speed(speed)
         {
+			// teacher feedback - use more algorithm's when we can (normalize)
+            if (glm::length(m_Direction) > 0)
+            {
+                m_Direction = glm::normalize(m_Direction);
+            }
         }
 
-        void Execute() override
+        void Execute(float deltaTime) override
         {
             if (m_pGameObject)
             {
                 auto pos = m_pGameObject->GetTransform().GetPosition();
-                const float gridSize = 16.0f; // digger used 16 grid
 
-                if (m_Direction.x != 0) // horizontal
-                {
-                    pos.y = std::round(pos.y / gridSize) * gridSize;
-                    pos.x += m_Direction.x * m_Speed;
-                }
-                else if (m_Direction.y != 0) // vertical
-                {
-                    pos.x = std::round(pos.x / gridSize) * gridSize;
-                    pos.y += m_Direction.y * m_Speed;
-                }
+				// teacher feedback - deltaTime
+                pos.x += m_Direction.x * m_Speed * deltaTime;
+                pos.y += m_Direction.y * m_Speed * deltaTime;
 
                 m_pGameObject->SetLocalPosition(pos.x, pos.y);
 

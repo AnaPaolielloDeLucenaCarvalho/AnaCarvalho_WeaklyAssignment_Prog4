@@ -5,19 +5,36 @@
 
 namespace dae
 {
+    InputManager::InputManager()
+    {
+        // Player 1 and Player 2
+        m_pGamepads.push_back(std::make_unique<Gamepad>(0));
+        m_pGamepads.push_back(std::make_unique<Gamepad>(1));
+    }
+
     void InputManager::BindCommand(SDL_Scancode key, KeyState state, std::unique_ptr<Command> command)
     {
         m_KeyboardCommands[std::make_pair(key, state)] = std::move(command);
     }
 
-    void InputManager::BindCommand(Gamepad::ControllerButton button, KeyState state, std::unique_ptr<Command> command)
+    void InputManager::BindCommand(unsigned int controllerIndex, Gamepad::ControllerButton button, KeyState state, std::unique_ptr<Command> command)
     {
-        m_GamepadCommands[std::make_pair(button, state)] = std::move(command);
+        m_GamepadCommands[GamepadBinding{ controllerIndex, button, state }] = std::move(command);
     }
 
-    bool InputManager::ProcessInput()
+    void InputManager::UnbindAll()
     {
-        m_pGamepad->Update();
+        m_KeyboardCommands.clear();
+        m_GamepadCommands.clear();
+    }
+
+    bool InputManager::ProcessInput(float deltaTime)
+    {
+		// now it supports multiple gamepads
+        for (auto& gamepad : m_pGamepads)
+        {
+            gamepad->Update();
+        }
 
         SDL_Event e;
         while (SDL_PollEvent(&e))
@@ -37,34 +54,36 @@ namespace dae
             const auto& [key, keyState] = keyBinding;
             if (keyState == KeyState::Pressed && state[key])
             {
-                command->Execute();
+                command->Execute(deltaTime);
             }
         }
 
         // Gamepad Commands
-        std::for_each(m_GamepadCommands.begin(), m_GamepadCommands.end(), [this](auto& pair)
+        for (auto& [binding, command] : m_GamepadCommands)
         {
-            const auto& [button, state] = pair.first;
-            bool shouldExecute = false;
-
-            switch (state)
+            if (binding.controllerIndex < m_pGamepads.size())
             {
-            case KeyState::Down:    
-                shouldExecute = m_pGamepad->IsDown(button);
-                break;
-            case KeyState::Up:      
-                shouldExecute = m_pGamepad->IsUp(button); 
-                break;
-            case KeyState::Pressed: 
-                shouldExecute = m_pGamepad->IsPressed(button); 
-                break;
-            }
+                auto& gamepad = m_pGamepads[binding.controllerIndex];
+                bool shouldExecute = false;
+                switch (binding.state)
+                {
+                case KeyState::Down:    
+                    shouldExecute = gamepad->IsDown(binding.button); 
+                    break;
+                case KeyState::Up:      
+                    shouldExecute = gamepad->IsUp(binding.button); 
+                    break;
+                case KeyState::Pressed: 
+                    shouldExecute = gamepad->IsPressed(binding.button); 
+                    break;
+                }
 
-            if (shouldExecute)
-            {
-                pair.second->Execute();
+                if (shouldExecute)
+                {
+                    command->Execute(deltaTime);
+                }
             }
-        });
+        }
 
         return true;
     }
