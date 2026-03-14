@@ -2,6 +2,7 @@
 #include "ResourceManager.h"
 #include "Renderer.h"
 #include "GameObject.h"
+#include "Texture2D.h"
 
 namespace dae
 {
@@ -18,12 +19,19 @@ namespace dae
 
     void RenderComponent::Update(float /*deltaTime*/) {}
 
-    void RenderComponent::Render() const
+    void dae::RenderComponent::Render() const
     {
-        const auto& pos = GetOwner()->GetTransform().GetPosition();
-        const auto flip = m_isFlipped ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
+        if (m_texture == nullptr) return;
 
-        dae::Renderer::GetInstance().RenderTexture(*m_texture, pos.x, pos.y, flip);
+        const auto& pos = GetOwner()->GetTransform().GetPosition();
+        auto size = m_texture->GetSize();
+
+        // Use the member variable scale
+        float scaledW = size.x * m_Scale;
+        float scaledH = size.y * m_Scale;
+
+        const auto flip = m_isFlipped ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
+        dae::Renderer::GetInstance().RenderTexture(*m_texture, pos.x, pos.y, scaledW, scaledH, flip);
     }
 
     void RenderComponent::SetTexture(const std::string& filename)
