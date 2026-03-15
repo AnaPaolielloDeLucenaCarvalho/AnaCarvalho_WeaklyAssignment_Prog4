@@ -17,7 +17,6 @@ namespace dae
 
         void Update(float /*deltaTime*/) override {}
 
-
         void OnNotify(Event event, int value) override
         {
             if (event == Event::PlayerDied)
@@ -28,6 +27,9 @@ namespace dae
                 }
             }
         }
+
+        int GetRemainingLives() const { return m_lives; }
+
     private:
         int m_lives;
     };
@@ -49,6 +51,9 @@ namespace dae
                 }
             }
         }
+
+        int GetCurrentScore() const { return m_score; }
+
 	private:
 		int m_score;
     };
