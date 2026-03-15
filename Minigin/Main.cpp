@@ -23,9 +23,19 @@
 #include "UIObservers.h"
 #include "Subject.h"
 #include "Observer.h"
+#include "AchievementManager.h"
+
+#if USE_STEAMWORKS
+#pragma warning (push)
+#pragma warning (disable:4996)
+#include <steam_api.h>
+#pragma warning (pop)
+#endif
 
 #include <filesystem>
 namespace fs = std::filesystem;
+
+std::shared_ptr<dae::AchievementManager> g_AchievementMgr = nullptr;
 
 static void load()
 {
@@ -186,6 +196,11 @@ static void load()
 
 		diggerComp2->SetOtherPlayer(diggerPtr1);
 		diggerComp2->SetDiamonds(diamondPtrs);
+
+		// ACHIEVEMENTS
+		g_AchievementMgr = std::make_shared<dae::AchievementManager>();
+		diggerComp1->AddObserver(g_AchievementMgr.get());
+		diggerComp2->AddObserver(g_AchievementMgr.get());
 	}
 
 	// W5 - GAME INSTRUCTIONS
@@ -202,15 +217,35 @@ static void load()
 	}
 }
 
-int main(int, char*[]) {
+int main(int, char* [])
+{
+#if USE_STEAMWORKS
+	if (!SteamAPI_Init())
+	{
+		std::cerr << "SteamAPI_Init() failed! Achievements will not work." << std::endl;
+	}
+	else
+	{
+		std::cout << "SteamAPI_Init() Success!" << std::endl;
+	}
+#endif
+
 #if __EMSCRIPTEN__
 	fs::path data_location = "";
 #else
 	fs::path data_location = "./Data/";
-	if(!fs::exists(data_location))
+	if (!fs::exists(data_location))
 		data_location = "../Data/";
 #endif
-	dae::Minigin engine(data_location);
-	engine.Run(load);
-    return 0;
+	{
+		dae::Minigin engine(data_location);
+		engine.Run(load);
+	}
+
+#if USE_STEAMWORKS
+	SteamAPI_Shutdown();
+	std::cout << "SteamAPI Shutdown." << std::endl;
+#endif
+
+	return 0;
 }

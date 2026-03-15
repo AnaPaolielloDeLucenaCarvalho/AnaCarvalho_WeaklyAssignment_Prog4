@@ -18,6 +18,10 @@
 
 #include <chrono> // For deltaTime
 
+#if USE_STEAMWORKS
+#include <steam_api.h>
+#endif
+
 SDL_Window* g_window{};
 
 void LogSDLVersion(const std::string& message, int major, int minor, int patch)
@@ -102,6 +106,10 @@ void dae::Minigin::Run(const std::function<void()>& load)
 
 void dae::Minigin::RunOneFrame()
 {
+	#if USE_STEAMWORKS
+		SteamAPI_RunCallbacks();
+	#endif
+
 	// Calculate Delta Time
 	static auto lastTime = std::chrono::high_resolution_clock::now();
 	auto currentTime = std::chrono::high_resolution_clock::now();
