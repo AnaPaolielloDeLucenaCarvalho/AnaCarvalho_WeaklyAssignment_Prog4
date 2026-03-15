@@ -55,7 +55,11 @@ namespace dae
         }
 
     private:
-        bool m_bInitialized = false;
+        #if USE_STEAMWORKS
+            STEAM_CALLBACK(AchievementManager, OnUserStatsReceived, UserStatsReceived_t, m_CallbackUserStatsReceived);
+            bool m_bInitialized = false;
+        #endif
+
         bool m_WinnerUnlocked = false;
 
         void UnlockAchievement(const char* id)
@@ -70,10 +74,6 @@ namespace dae
                 (void)id;
             #endif
         }
-
-        #if USE_STEAMWORKS
-            STEAM_CALLBACK(AchievementManager, OnUserStatsReceived, UserStatsReceived_t, m_CallbackUserStatsReceived);
-        #endif
     };
 
     #if USE_STEAMWORKS
