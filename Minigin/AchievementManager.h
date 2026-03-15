@@ -17,17 +17,14 @@ namespace dae
     {
     public:
         AchievementManager()
-            : m_CallbackUserStatsReceived(this, &AchievementManager::OnUserStatsReceived)
+            #if USE_STEAMWORKS
+                : m_CallbackUserStatsReceived(this, &AchievementManager::OnUserStatsReceived)
+            #endif
         {
             #if USE_STEAMWORKS
                 if (SteamUserStats() && SteamUser())
                 {
                     SteamUserStats()->RequestUserStats(SteamUser()->GetSteamID());
-                    std::cout << "AchievementManager: Steam Handshake Started." << std::endl;
-                }
-                else
-                {
-                    std::cout << "AchievementManager ERROR: Steam interfaces not available yet!" << std::endl;
                 }
             #endif
         }
@@ -67,17 +64,10 @@ namespace dae
                 if (m_bInitialized && SteamUserStats())
                 {
                     SteamUserStats()->SetAchievement(id);
-                    bool success = SteamUserStats()->StoreStats();
-
-                    if (success)
-                    {
-                        std::cout << "Steam: SetAchievement + StoreStats successful for: " << id << std::endl;
-                    }
+                    SteamUserStats()->StoreStats();
                 }
-                else if (!m_bInitialized)
-                {
-                    std::cout << "Steam: Cannot unlock yet, waiting for m_bInitialized..." << std::endl;
-                }
+            #else
+                (void)id;
             #endif
         }
 
@@ -91,19 +81,12 @@ namespace dae
         {
             if (pCallback->m_eResult == k_EResultOK)
             {
-                std::cout << "Steam Stats synced successfully! Achievement system initialized." << std::endl;
                 m_bInitialized = true;
-
                 bool achieved = false;
                 if (SteamUserStats()->GetAchievement("ACH_WIN_ONE_GAME", &achieved))
                 {
                     m_WinnerUnlocked = achieved;
-                    if (achieved) std::cout << "Status: ACH_WIN_ONE_GAME is already UNLOCKED." << std::endl;
                 }
-            }
-            else
-            {
-                std::cout << "Steam Stats sync failed with error: " << pCallback->m_eResult << std::endl;
             }
         }
     #endif
