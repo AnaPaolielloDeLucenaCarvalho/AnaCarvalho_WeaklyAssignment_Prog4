@@ -11,18 +11,19 @@ namespace dae
     {
     public:
         virtual ~Subject() = default;
+
         void AddObserver(Observer* observer) { m_observers.push_back(observer); }
         void RemoveObserver(Observer* observer)
         {
             m_observers.erase(std::remove(m_observers.begin(), m_observers.end(), observer), m_observers.end());
         }
 
-    protected:
-        void Notify(Event event, int value)
+		// feedback - using EventId, and Notify public for composition
+        void Notify(EventId eventId, int value)
         {
-            for (auto observer : m_observers) 
-            { 
-                observer->OnNotify(event, value); 
+            for (auto observer : m_observers)
+            {
+                observer->OnNotify(eventId, value);
             }
         }
 

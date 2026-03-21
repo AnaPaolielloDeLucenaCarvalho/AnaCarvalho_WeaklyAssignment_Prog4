@@ -29,14 +29,22 @@ namespace dae
             #endif
         }
 
-        void OnNotify(Event event, int value) override
+        void OnNotify(EventId eventId, int value) override
         {
-            if (event == Event::DiamondPickedUp)
+            if (eventId == make_sdbm_hash("ScoreChanged"))
             {
-                if (value >= 400 && !m_WinnerUnlocked)
+                // feedback - avoid spamming
+                if (value >= 500 && !m_WinnerUnlocked)
                 {
-                    UnlockAchievement("ACH_WIN_ONE_GAME");
-                    m_WinnerUnlocked = true;
+                    bool achieved = false;
+                    if (SteamUserStats() && SteamUserStats()->GetAchievement("ACH_WIN_ONE_GAME", &achieved))
+                    {
+                        if (!achieved)
+                        {
+                            UnlockAchievement("ACH_WIN_ONE_GAME");
+                        }
+                        m_WinnerUnlocked = true; // Lock it locally so we don't check again
+                    }
                 }
             }
         }

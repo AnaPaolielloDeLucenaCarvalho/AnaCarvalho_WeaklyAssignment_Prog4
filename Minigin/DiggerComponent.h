@@ -9,11 +9,13 @@
 
 namespace dae
 {
-    class DiggerComponent : public Component, public Subject
+    class DiggerComponent : public Component
     {
     public:
         DiggerComponent(GameObject* owner) : Component(owner) {}
         virtual ~DiggerComponent() = default;
+
+        void AddObserver(Observer* obs) { m_Subject.AddObserver(obs); }
 
         void SetOtherPlayer(GameObject* pOther) { m_pOtherPlayer = pOther; }
         void SetDiamonds(const std::vector<GameObject*>& diamonds) { m_pDiamonds = diamonds; }
@@ -45,7 +47,7 @@ namespace dae
                 if (dist < 20.f)
                 {
                     diamond->MarkForDestroy();
-                    GainScore(100);
+                    m_Subject.Notify(make_sdbm_hash("DiamondPickedUp"), 100);
                 }
             }
 
@@ -68,14 +70,8 @@ namespace dae
             if (m_Lives > 0)
             {
                 m_Lives--;
-                Notify(Event::PlayerDied, m_Lives); // Ex1
+                m_Subject.Notify(make_sdbm_hash("PlayerDied"), m_Lives); // Ex1
             }
-        }
-
-        void GainScore(int amount)
-        {
-            m_Score += amount;
-            Notify(Event::DiamondPickedUp, m_Score); // Ex2
         }
 
         void StartInvincibilityFrames()
@@ -85,7 +81,7 @@ namespace dae
         }
 
     private:
-        int m_Score = 0;
+        Subject m_Subject;
         int m_Lives = 3;
 
         GameObject* m_pOtherPlayer{ nullptr };

@@ -125,14 +125,14 @@ static void load()
 		auto scoreUI1 = std::make_unique<dae::GameObject>();
 		scoreUI1->SetLocalPosition(10, 120);
 		scoreUI1->AddComponent<dae::TextComponent>("P1 Score: 0", fontSmall, SDL_Color{ 255, 255, 255, 255 });
-		auto scoreObs1 = scoreUI1->AddComponent<dae::ScoreDisplayComponent>();
+		auto scoreObs1 = scoreUI1->AddComponent<dae::ScoreDisplayComponent>(std::string("P1 "));
 		scene.Add(std::move(scoreUI1));
 
 		// UI - Player 1 Lives
 		auto livesUI1 = std::make_unique<dae::GameObject>();
 		livesUI1->SetLocalPosition(10, 150);
 		livesUI1->AddComponent<dae::TextComponent>("P1 Lives: 3", fontSmall, SDL_Color{ 255, 0, 0, 255 });
-		auto livesObs1 = livesUI1->AddComponent<dae::LivesDisplayComponent>(3);
+		auto livesObs1 = livesUI1->AddComponent<dae::LivesDisplayComponent>(std::string("P1 "), 3);
 		scene.Add(std::move(livesUI1));
 
 		// LINKING - Player 1
@@ -159,14 +159,14 @@ static void load()
 		auto scoreUI2 = std::make_unique<dae::GameObject>();
 		scoreUI2->SetLocalPosition(800, 120);
 		scoreUI2->AddComponent<dae::TextComponent>("P2 Score: 0", fontSmall, SDL_Color{ 255, 255, 255, 255 });
-		auto scoreObs2 = scoreUI2->AddComponent<dae::ScoreDisplayComponent>();
+		auto scoreObs2 = scoreUI2->AddComponent<dae::ScoreDisplayComponent>(std::string("P2 "));
 		scene.Add(std::move(scoreUI2));
 
 		// UI - Player 2 Lives
 		auto livesUI2 = std::make_unique<dae::GameObject>();
 		livesUI2->SetLocalPosition(800, 150);
 		livesUI2->AddComponent<dae::TextComponent>("P2 Lives: 3", fontSmall, SDL_Color{ 255, 0, 0, 255 });
-		auto livesObs2 = livesUI2->AddComponent<dae::LivesDisplayComponent>(3);
+		auto livesObs2 = livesUI2->AddComponent<dae::LivesDisplayComponent>(std::string("P2 "), 3);
 		scene.Add(std::move(livesUI2));
 
 		// LINKING - Player 2
@@ -199,8 +199,8 @@ static void load()
 
 		// ACHIEVEMENTS
 		g_AchievementMgr = std::make_shared<dae::AchievementManager>();
-		diggerComp1->AddObserver(g_AchievementMgr.get());
-		diggerComp2->AddObserver(g_AchievementMgr.get());
+		scoreObs1->AddObserver(g_AchievementMgr.get());
+		scoreObs2->AddObserver(g_AchievementMgr.get());
 	}
 
 	// W5 - GAME INSTRUCTIONS

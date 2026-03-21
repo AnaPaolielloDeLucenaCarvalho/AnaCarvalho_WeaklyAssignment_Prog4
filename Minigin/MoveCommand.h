@@ -15,7 +15,7 @@ namespace dae
             , m_Direction(direction)
             , m_Speed(speed)
         {
-			// teacher feedback - use more algorithm's when we can (normalize)
+			// feedback - use more algorithm's when we can (normalize)
             if (glm::length(m_Direction) > 0)
             {
                 m_Direction = glm::normalize(m_Direction);
@@ -28,11 +28,9 @@ namespace dae
             {
                 auto pos = m_pGameObject->GetTransform().GetPosition();
 
-				// teacher feedback - deltaTime
-                pos.x += m_Direction.x * m_Speed * deltaTime;
-                pos.y += m_Direction.y * m_Speed * deltaTime;
-
-                m_pGameObject->SetLocalPosition(pos.x, pos.y);
+				// feedback - deltaTime, use vector math
+                glm::vec2 movement = m_Direction * (m_Speed * deltaTime);
+                m_pGameObject->SetLocalPosition(pos.x + movement.x, pos.y + movement.y);
 
                 // FLIPPING
                 auto renderComp = m_pGameObject->GetComponent<dae::RenderComponent>();

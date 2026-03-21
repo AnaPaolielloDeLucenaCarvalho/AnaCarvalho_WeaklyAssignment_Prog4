@@ -13,49 +13,61 @@ namespace dae
     {
     public:
 
-        LivesDisplayComponent(GameObject* pOwner, int startLives) : Component(pOwner), m_lives(startLives) {}
+		// feedback - add prefix
+        LivesDisplayComponent(GameObject* pOwner, const std::string& prefix, int startLives) 
+            : Component(pOwner)
+            , m_Prefix(prefix)
+            , m_lives(startLives) 
+        {
+        }
 
         void Update(float /*deltaTime*/) override {}
 
-        void OnNotify(Event event, int value) override
+        void OnNotify(EventId eventId, int value) override
         {
-            if (event == Event::PlayerDied)
+            if (eventId == make_sdbm_hash("PlayerDied"))
             {
                 if (auto text = GetOwner()->GetComponent<TextComponent>())
                 {
-                    text->SetText("Lives: " + std::to_string(value));
+                    text->SetText(m_Prefix + "Lives: " + std::to_string(value));
                 }
             }
         }
 
-        int GetRemainingLives() const { return m_lives; }
-
     private:
+        std::string m_Prefix;
         int m_lives;
     };
 
     class ScoreDisplayComponent : public Component, public Observer
     {
     public:
-        ScoreDisplayComponent(GameObject* pOwner) : Component(pOwner), m_score(0) {}
+        ScoreDisplayComponent(GameObject* pOwner, const std::string& prefix)
+            : Component(pOwner), m_Prefix(prefix), m_score(0) {
+        }
+
+        void AddObserver(Observer* obs) { m_Subject.AddObserver(obs); }
 
         void Update(float /*deltaTime*/) override {}
 
-        void OnNotify(Event event, int value) override
+        void OnNotify(EventId eventId, int value) override
         {
-            if (event == Event::DiamondPickedUp)
+            if (eventId == make_sdbm_hash("DiamondPickedUp"))
             {
+                m_score += value;
+
                 if (auto text = GetOwner()->GetComponent<TextComponent>())
                 {
-                    text->SetText("Score: " + std::to_string(value));
+                    text->SetText(m_Prefix + "Score: " + std::to_string(m_score));
                 }
+                m_Subject.Notify(make_sdbm_hash("ScoreChanged"), m_score);
             }
         }
 
-        int GetCurrentScore() const { return m_score; }
-
-	private:
-		int m_score;
+    private:
+        std::string m_Prefix;
+        int m_score;
+        Subject m_Subject;
     };
 }
 #endif
