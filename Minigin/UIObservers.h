@@ -27,9 +27,11 @@ namespace dae
         {
             if (eventId == make_sdbm_hash("PlayerDied"))
             {
+                m_lives = value;
+
                 if (auto text = GetOwner()->GetComponent<TextComponent>())
                 {
-                    text->SetText(m_Prefix + "Lives: " + std::to_string(value));
+                    text->SetText(m_Prefix + "Lives: " + std::to_string(m_lives));
                 }
             }
         }

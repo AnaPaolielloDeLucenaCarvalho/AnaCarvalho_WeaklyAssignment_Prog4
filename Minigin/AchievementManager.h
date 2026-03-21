@@ -36,15 +36,20 @@ namespace dae
                 // feedback - avoid spamming
                 if (value >= 500 && !m_WinnerUnlocked)
                 {
-                    bool achieved = false;
-                    if (SteamUserStats() && SteamUserStats()->GetAchievement("ACH_WIN_ONE_GAME", &achieved))
-                    {
-                        if (!achieved)
+                    #if USE_STEAMWORKS
+                        bool achieved = false;
+                        if (SteamUserStats() && SteamUserStats()->GetAchievement("ACH_WIN_ONE_GAME", &achieved))
                         {
-                            UnlockAchievement("ACH_WIN_ONE_GAME");
+                            if (!achieved)
+                            {
+                                UnlockAchievement("ACH_WIN_ONE_GAME");
+                            }
+                            m_WinnerUnlocked = true;
                         }
-                        m_WinnerUnlocked = true; // Lock it locally so we don't check again
-                    }
+                    #else
+                        m_WinnerUnlocked = true;
+                        std::cout << "Local Achievement Unlocked! (Steam disabled)" << std::endl;
+                    #endif
                 }
             }
         }
