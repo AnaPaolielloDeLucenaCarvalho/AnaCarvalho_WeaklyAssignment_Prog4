@@ -5,22 +5,53 @@ if(EMSCRIPTEN)
   message("Using Emscripten!")
 endif()
 
+#if(EMSCRIPTEN)
+#  set(TARGET_NAME minigin_web)
+#  set(TARGET_PARAM )
+#else()
+#  set(TARGET_NAME minigin)
+#  set(TARGET_PARAM WIN32)
+#endif()
+
 if(EMSCRIPTEN)
-  set(TARGET_NAME minigin_web)
+  set(TARGET_NAME Digger_web)
   set(TARGET_PARAM )
 else()
-  set(TARGET_NAME minigin)
+  set(TARGET_NAME Digger)
   set(TARGET_PARAM WIN32)
 endif()
 
-# list source files here
-add_executable(${TARGET_NAME} ${TARGET_PARAM}
+# ---------------------------------------------------
+# ENGINE LIBRARY (Minigin)
+# ---------------------------------------------------
+
+# list source files here - NOTE: removed since we are now building it as a library instead of an executable
+#add_executable(${TARGET_NAME} ${TARGET_PARAM}
+#  Minigin/Font.cpp
+#  Minigin/FPSComponent.cpp 
+#  Minigin/GameObject.cpp
+#  Minigin/Gamepad.cpp
+#  Minigin/InputManager.cpp
+#  Minigin/Main.cpp
+#  Minigin/Minigin.cpp
+#  Minigin/RenderComponent.cpp
+#  Minigin/Renderer.cpp
+#  Minigin/ResourceManager.cpp
+#  Minigin/RotatorComponent.cpp
+#  Minigin/Scene.cpp
+#  Minigin/SceneManager.cpp
+#  Minigin/TextComponent.cpp
+#  Minigin/Texture2D.cpp
+#  Minigin/Transform.cpp
+#  Minigin/TrashCacheComponent.cpp
+#)
+
+add_library(Minigin STATIC
   Minigin/Font.cpp
   Minigin/FPSComponent.cpp 
   Minigin/GameObject.cpp
   Minigin/Gamepad.cpp
   Minigin/InputManager.cpp
-  Minigin/Main.cpp
   Minigin/Minigin.cpp
   Minigin/RenderComponent.cpp
   Minigin/Renderer.cpp
@@ -31,11 +62,28 @@ add_executable(${TARGET_NAME} ${TARGET_PARAM}
   Minigin/TextComponent.cpp
   Minigin/Texture2D.cpp
   Minigin/Transform.cpp
-  Minigin/TrashCacheComponent.cpp
 )
 
-# enable c++20 features
+# Enable c++20 features for the engine
+target_compile_features(Minigin PUBLIC cxx_std_20)
+
+# Include Minigin folder so the game can find the engine
+target_include_directories(Minigin PUBLIC ${CMAKE_SOURCE_DIR}/Minigin)
+
+# ---------------------------------------------------
+# GAME EXECUTABLE (Digger)
+# ---------------------------------------------------
+
+add_executable(${TARGET_NAME} ${TARGET_PARAM}
+  Digger/Main.cpp
+  Digger/TrashCacheComponent.cpp
+  # Add any .cpp for Digger here!!!
+)
+
+# Enable c++20 features for the game
 target_compile_features(${TARGET_NAME} PUBLIC cxx_std_20)
+
+# ---------------------------------------------------
 
 include(FetchContent)
 # add glm
@@ -143,19 +191,47 @@ endif()
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/steam")
 find_package(Steamworks QUIET)
 
-target_include_directories("${TARGET_NAME}" PUBLIC
-  ${CMAKE_SOURCE_DIR}/Minigin/
-  ${VLD_INCLUDE_DIR}
+# ---------------------------------------------------
+# LINKING DEPENDENCIES
+# ---------------------------------------------------
+
+#target_include_directories("${TARGET_NAME}" PUBLIC
+#  ${CMAKE_SOURCE_DIR}/Minigin/
+#  ${VLD_INCLUDE_DIR}
+#  ${imgui_SOURCE_DIR}
+#)
+
+#target_link_libraries("${TARGET_NAME}" PUBLIC
+#  SDL3::SDL3
+#  SDL3_ttf::SDL3_ttf
+#  glm::glm
+#  imgui
+#  ${VLD_LIBRARIES}
+#)
+
+# Link all the libraries (SDL, GLM, ImGui) to the Engine
+target_include_directories(Minigin PUBLIC
   ${imgui_SOURCE_DIR}
 )
 
-target_link_libraries("${TARGET_NAME}" PUBLIC
+target_link_libraries(Minigin PUBLIC
   SDL3::SDL3
   SDL3_ttf::SDL3_ttf
   glm::glm
   imgui
+)
+
+# Link Engine to the Game
+target_include_directories(${TARGET_NAME} PUBLIC
+  ${VLD_INCLUDE_DIR}
+)
+
+target_link_libraries(${TARGET_NAME} PRIVATE 
+  Minigin
   ${VLD_LIBRARIES}
 )
+
+# ------------------------------------------------
 
 if(MSVC)
   # compile at warning level 4 + treat warnings as errors
