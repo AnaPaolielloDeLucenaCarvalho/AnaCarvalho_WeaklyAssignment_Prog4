@@ -46,35 +46,118 @@ static void load()
 	auto font = dae::ResourceManager::GetInstance().LoadFont("Lingua.otf", 36);
 	auto fontSmall = dae::ResourceManager::GetInstance().LoadFont("Lingua.otf", 22);
 
-	// RENDERING
+// ---------------------------------------------------
+	
+	// RENDERING BACKGROUND
 	{
-		auto go = std::make_unique<dae::GameObject>();
+		/*auto go = std::make_unique<dae::GameObject>();
 		go->AddComponent<dae::RenderComponent>("background.png");
 		scene.Add(std::move(go));
 
 		go = std::make_unique<dae::GameObject>();
 		go->AddComponent<dae::RenderComponent>("logo.png");
 		go->SetLocalPosition(358, 180);
-		scene.Add(std::move(go));
+		scene.Add(std::move(go));*/
+
 	}
 
+// ---------------------------------------------------
+		
+	// LEVEL GENERATION
+	glm::vec2 p1Spawn{ 60, 200 }; // fallbacks
+	glm::vec2 p2Spawn{ 850, 200 };
+	std::vector<glm::vec2> diamondSpawns;
+
+	// 'X' = Dirt
+	// ' ' = Empty
+	// 'P' = Player 1
+	// 'E' = Player 2
+	// 'D' = Diamond
+	// 'C' = Coin Bag
+	std::vector<std::string> mapLayout =
+	{
+		"XX XXXXXXXXXXXXXXX      XX",
+		"XX XXXXCXXXXXXXXXX XXCXXXX",
+		"XX XXXDDXXXXXDXXXX XXXXXXX",
+		"XX CXXDDXXXXXDXXXX XXXXXXX",
+		"XXEXXXDDCXXXXDCXXX XXDDDXX",
+		"XX XXXDDXXXXXDXXXX XXDDDXX",
+		"XX XXXDDXXXXXDXXXX XXDDDXX",
+		"XX  XXXXXXXXCXCXXX XXXXXXX",
+		"XXX XXXXXXXXXXXXXX XXXXXXX",
+		"XXX     XXXXXXXXXX XXXXXXX",
+		"XXXXXXX XXXXXXXXXX XXXXXXX",
+		"XXDXXXX XXXXXXXXXX XXXXDXX",
+		"XXDDXXX      P     XXXDDXX"
+	};
+
+	float tileWidth = 40.0f;
+	float tileHeight = 8.0f;
+	float startX = 0.f;
+	float startY = 52.0f;
+
+	for (size_t row = 0; row < mapLayout.size(); ++row)
+	{
+		for (size_t col = 0; col < mapLayout[row].size(); ++col)
+		{
+			char tileChar = mapLayout[row][col];
+
+			float blockX = startX + (col * tileWidth);
+			float blockY = startY + (row * tileWidth);
+
+			// Background
+			if (tileChar == 'X' || tileChar == 'D' || tileChar == 'C')
+			{
+				for (int strip = 0; strip < 5; ++strip)
+				{
+					auto tile = std::make_unique<dae::GameObject>();
+					auto render = tile->AddComponent<dae::RenderComponent>("PNG/Map/CBACK1.png");
+					render->SetScale(2.0f);
+
+					tile->SetLocalPosition(blockX, blockY + (strip * tileHeight));
+					scene.Add(std::move(tile));
+				}
+			}
+
+			// Foreground
+			if (tileChar == 'P')
+			{
+				p1Spawn = { blockX, blockY };
+			}
+			else if (tileChar == 'E')
+			{
+				p2Spawn = { blockX, blockY };
+			}
+			else if (tileChar == 'D')
+			{
+				diamondSpawns.push_back({ blockX, blockY });
+			}
+			else if (tileChar == 'C')
+			{
+				// TODO - coin bag object here, for now just a background tile
+			}
+		}
+	}
+
+// ---------------------------------------------------
+	
 	// UI BACKGROUND
-	{
-		auto hudBg = std::make_unique<dae::GameObject>();
-		hudBg->AddComponent<dae::UIPanelComponent>(1024.f, 52.f, SDL_Color{ 0, 0, 0, 255 });
-		hudBg->SetLocalPosition(0, 0);
-		scene.Add(std::move(hudBg));
-	}
+	auto hudBg = std::make_unique<dae::GameObject>();
+	hudBg->AddComponent<dae::UIPanelComponent>(1024.f, 52.f, SDL_Color{ 0, 0, 0, 255 });
+	hudBg->SetLocalPosition(0, 0);
+	scene.Add(std::move(hudBg));
 
+// ---------------------------------------------------
+	
 	// FPS COUNTER
-	{
-		auto fpsObject = std::make_unique<dae::GameObject>();
-		fpsObject->AddComponent<dae::TextComponent>("0 FPS", fontSmall, SDL_Color{ 150, 150, 150, 255 });
-		fpsObject->AddComponent<dae::FPSComponent>();
-		fpsObject->SetLocalPosition(800, 15);
-		scene.Add(std::move(fpsObject));
-	}
+	auto fpsObject = std::make_unique<dae::GameObject>();
+	fpsObject->AddComponent<dae::TextComponent>("0 FPS", fontSmall, SDL_Color{ 150, 150, 150, 255 });
+	fpsObject->AddComponent<dae::FPSComponent>();
+	fpsObject->SetLocalPosition(475, 15);
+	scene.Add(std::move(fpsObject));
 
+// ---------------------------------------------------
+	
 	// W2 ROTATION
 	{
 		/*
@@ -110,112 +193,110 @@ static void load()
 		*/
 	}
 
+// ---------------------------------------------------
+	
 	// W4 INPUT - W5 EVENTS
+	float playerSpeed = 125.f;
+
+	// PLAYER 1 (Digger1)
+	auto digger1 = std::make_unique<dae::GameObject>();
+	digger1->AddComponent<dae::RenderComponent>("PNG/Digger/VRDIG1X.png");
+	digger1->SetLocalPosition(p1Spawn.x, p1Spawn.y);
+
+	auto diggerComp1 = digger1->AddComponent<dae::DiggerComponent>();
+	auto diggerPtr1 = digger1.get();
+	scene.Add(std::move(digger1));
+
+	// UI - Player 1 Score (Sprite)
+	auto scoreUI1 = std::make_unique<dae::GameObject>();
+	scoreUI1->SetLocalPosition(20, 13);
+	auto scoreObs1 = scoreUI1->AddComponent<dae::SpriteScoreDisplayComponent>("PNG/UI/VNUM", ".png", 24.f);
+	scene.Add(std::move(scoreUI1));
+
+	// UI - Player 1 Lives (Sprite)
+	auto livesUI1 = std::make_unique<dae::GameObject>();
+	livesUI1->SetLocalPosition(150, 15); // to the right of the score ui
+	auto livesObs1 = livesUI1->AddComponent<dae::LivesSpriteDisplayComponent>("PNG/Digger/VRDIG1X.png", 3, 35.5f);
+	scene.Add(std::move(livesUI1));
+
+	// LINKING - Player 1
+	diggerComp1->AddObserver(scoreObs1);
+	diggerComp1->AddObserver(livesObs1);
+
+	// CONTROLS - Player 1
+	input.BindCommand(SDL_SCANCODE_W, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(diggerPtr1, glm::vec2{ 0, -1 }, playerSpeed));
+	input.BindCommand(SDL_SCANCODE_S, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(diggerPtr1, glm::vec2{ 0, 1 }, playerSpeed));
+	input.BindCommand(SDL_SCANCODE_A, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(diggerPtr1, glm::vec2{ -1, 0 }, playerSpeed));
+	input.BindCommand(SDL_SCANCODE_D, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(diggerPtr1, glm::vec2{ 1, 0 }, playerSpeed));
+
+	// PLAYER 2 (Digger2)
+	auto digger2 = std::make_unique<dae::GameObject>();
+	digger2->AddComponent<dae::RenderComponent>("PNG/Enemy/VRDIG1X.png");
+	digger2->SetLocalPosition(p2Spawn.x, p2Spawn.y);
+
+	auto diggerComp2 = digger2->AddComponent<dae::DiggerComponent>();
+	auto diggerPtr2 = digger2.get();
+	scene.Add(std::move(digger2));
+
+	// UI - Player 2 Score (Sprite)
+	auto scoreUI2 = std::make_unique<dae::GameObject>();
+	scoreUI2->SetLocalPosition(810, 13);
+	auto scoreObs2 = scoreUI2->AddComponent<dae::SpriteScoreDisplayComponent>("PNG/UI/VNUM", ".png", 24.f);
+	scene.Add(std::move(scoreUI2));
+
+	// UI - Player 2 Lives (Sprite)
+	auto livesUI2 = std::make_unique<dae::GameObject>();
+	livesUI2->SetLocalPosition(940, 15); // to the right of the score2 ui
+	auto livesObs2 = livesUI2->AddComponent<dae::LivesSpriteDisplayComponent>("PNG/Digger/VRDIG1X.png", 3, 35.5f);
+	scene.Add(std::move(livesUI2));
+
+	// LINKING - Player 2
+	diggerComp2->AddObserver(scoreObs2);
+	diggerComp2->AddObserver(livesObs2);
+
+	// CONTROLS - Player 2
+	input.BindCommand(0, dae::Gamepad::ControllerButton::DPadUp, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(diggerPtr2, glm::vec2{ 0, -1 }, playerSpeed * 2.f));
+	input.BindCommand(0, dae::Gamepad::ControllerButton::DPadDown, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(diggerPtr2, glm::vec2{ 0, 1 }, playerSpeed * 2.f));
+	input.BindCommand(0, dae::Gamepad::ControllerButton::DPadLeft, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(diggerPtr2, glm::vec2{ -1, 0 }, playerSpeed * 2.f));
+	input.BindCommand(0, dae::Gamepad::ControllerButton::DPadRight, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(diggerPtr2, glm::vec2{ 1, 0 }, playerSpeed * 2.f));
+
+	// POINTS - diamonds
+	std::vector<dae::GameObject*> diamondPtrs;
+	for (const auto& spawnPos : diamondSpawns)
 	{
-		float playerSpeed = 125.f;
+		auto diamond = std::make_unique<dae::GameObject>();
+		auto render3 = diamond->AddComponent<dae::RenderComponent>("PNG/Money/CEMERALD.png");
+		render3->SetScale(2.f);
 
-		// PLAYER 1 (Digger)
-		auto digger1 = std::make_unique<dae::GameObject>();
-		auto render1 = digger1->AddComponent<dae::RenderComponent>("PNG/Digger/CRDIG1.png");
-		render1->SetScale(2.f);
-		digger1->SetLocalPosition(60, 200);
+		diamond->SetLocalPosition(spawnPos.x, spawnPos.y);
 
-		auto diggerComp1 = digger1->AddComponent<dae::DiggerComponent>();
-		auto diggerPtr1 = digger1.get();
-		scene.Add(std::move(digger1));
-
-		// UI - Player 1 Score (Sprite)
-		auto scoreUI1 = std::make_unique<dae::GameObject>();
-		scoreUI1->SetLocalPosition(20, 13);
-		auto scoreObs1 = scoreUI1->AddComponent<dae::SpriteScoreDisplayComponent>("PNG/UI/VNUM", ".png", 24.f);
-		scene.Add(std::move(scoreUI1));
-
-		// UI - Player 1 Lives (Sprite)
-		auto livesUI1 = std::make_unique<dae::GameObject>();
-		livesUI1->SetLocalPosition(150, 15); // to the right of the score ui
-		auto livesObs1 = livesUI1->AddComponent<dae::LivesSpriteDisplayComponent>("PNG/Digger/VRDIG1X.png", 3, 35.5f);
-		scene.Add(std::move(livesUI1));
-
-		// LINKING - Player 1
-		diggerComp1->AddObserver(scoreObs1);
-		diggerComp1->AddObserver(livesObs1);
-
-		// CONTROLS - Player 1
-		input.BindCommand(SDL_SCANCODE_W, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(diggerPtr1, glm::vec2{ 0, -1 }, playerSpeed));
-		input.BindCommand(SDL_SCANCODE_S, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(diggerPtr1, glm::vec2{ 0, 1 }, playerSpeed));
-		input.BindCommand(SDL_SCANCODE_A, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(diggerPtr1, glm::vec2{ -1, 0 }, playerSpeed));
-		input.BindCommand(SDL_SCANCODE_D, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(diggerPtr1, glm::vec2{ 1, 0 }, playerSpeed));
-
-		// PLAYER 2 (Enemy)
-		auto digger2 = std::make_unique<dae::GameObject>();
-		auto render2 = digger2->AddComponent<dae::RenderComponent>("PNG/Enemy/CRHOB1.png");
-		render2->SetScale(2.f);
-		digger2->SetLocalPosition(850, 200);
-
-		auto diggerComp2 = digger2->AddComponent<dae::DiggerComponent>();
-		auto diggerPtr2 = digger2.get();
-		scene.Add(std::move(digger2));
-
-		// UI - Player 2 Score
-		auto scoreUI2 = std::make_unique<dae::GameObject>();
-		scoreUI2->SetLocalPosition(800, 120);
-		scoreUI2->AddComponent<dae::TextComponent>("P2 Score: 0", fontSmall, SDL_Color{ 255, 255, 255, 255 });
-		auto scoreObs2 = scoreUI2->AddComponent<dae::ScoreDisplayComponent>(std::string("P2 "));
-		scene.Add(std::move(scoreUI2));
-
-		// UI - Player 2 Lives
-		auto livesUI2 = std::make_unique<dae::GameObject>();
-		livesUI2->SetLocalPosition(800, 150);
-		livesUI2->AddComponent<dae::TextComponent>("P2 Lives: 3", fontSmall, SDL_Color{ 255, 0, 0, 255 });
-		auto livesObs2 = livesUI2->AddComponent<dae::LivesDisplayComponent>(std::string("P2 "), 3);
-		scene.Add(std::move(livesUI2));
-
-		// LINKING - Player 2
-		diggerComp2->AddObserver(scoreObs2);
-		diggerComp2->AddObserver(livesObs2);
-
-		// CONTROLS - Player 2
-		input.BindCommand(0, dae::Gamepad::ControllerButton::DPadUp, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(diggerPtr2, glm::vec2{ 0, -1 }, playerSpeed * 2.f));
-		input.BindCommand(0, dae::Gamepad::ControllerButton::DPadDown, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(diggerPtr2, glm::vec2{ 0, 1 }, playerSpeed * 2.f));
-		input.BindCommand(0, dae::Gamepad::ControllerButton::DPadLeft, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(diggerPtr2, glm::vec2{ -1, 0 }, playerSpeed * 2.f));
-		input.BindCommand(0, dae::Gamepad::ControllerButton::DPadRight, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(diggerPtr2, glm::vec2{ 1, 0 }, playerSpeed * 2.f));
-
-		// POINTS - diamonds
-		std::vector<dae::GameObject*> diamondPtrs;
-		for (int i = 0; i < 5; ++i)
-		{
-			auto diamond = std::make_unique<dae::GameObject>();
-			auto render3 = diamond->AddComponent<dae::RenderComponent>("PNG/Money/CEMERALD.png");
-			render3->SetScale(2.f);
-			diamond->SetLocalPosition(200.f + (i * 50.f), 300.f);
-			diamondPtrs.push_back(diamond.get());
-			scene.Add(std::move(diamond));
-		}
-
-		diggerComp1->SetOtherPlayer(diggerPtr2);
-		diggerComp1->SetDiamonds(diamondPtrs);
-
-		diggerComp2->SetOtherPlayer(diggerPtr1);
-		diggerComp2->SetDiamonds(diamondPtrs);
-
-		// ACHIEVEMENTS
-		g_AchievementMgr = std::make_shared<dae::AchievementManager>();
-		scoreObs1->AddObserver(g_AchievementMgr.get());
-		scoreObs2->AddObserver(g_AchievementMgr.get());
+		diamondPtrs.push_back(diamond.get());
+		scene.Add(std::move(diamond));
 	}
 
-	// W5 - GAME INSTRUCTIONS
-	{
-		auto instructions1 = std::make_unique<dae::GameObject>();
-		instructions1->SetLocalPosition(10, 520);
-		instructions1->AddComponent<dae::TextComponent>("P1: WASD | P2: D-Pad", fontSmall, SDL_Color{ 255, 255, 0, 255 });
-		scene.Add(std::move(instructions1));
+	diggerComp1->SetOtherPlayer(diggerPtr2);
+	diggerComp1->SetDiamonds(diamondPtrs);
 
-		auto instructions2 = std::make_unique<dae::GameObject>();
-		instructions2->SetLocalPosition(10, 550);
-		instructions2->AddComponent<dae::TextComponent>("POINTS: Eat Diamonds | LIVES: Touching each other", fontSmall, SDL_Color{ 255, 255, 0, 255 });
-		scene.Add(std::move(instructions2));
-	}
+	diggerComp2->SetOtherPlayer(diggerPtr1);
+	diggerComp2->SetDiamonds(diamondPtrs);
+
+	// ACHIEVEMENTS
+	g_AchievementMgr = std::make_shared<dae::AchievementManager>();
+	scoreObs1->AddObserver(g_AchievementMgr.get());
+	scoreObs2->AddObserver(g_AchievementMgr.get());
+
+// ---------------------------------------------------
+
+	// GAME INSTRUCTIONS
+	auto instructions1 = std::make_unique<dae::GameObject>();
+	instructions1->SetLocalPosition(10, 520);
+	instructions1->AddComponent<dae::TextComponent>("P1: WASD | P2: D-Pad", fontSmall, SDL_Color{ 255, 255, 0, 255 });
+	scene.Add(std::move(instructions1));
+
+	auto instructions2 = std::make_unique<dae::GameObject>();
+	instructions2->SetLocalPosition(10, 550);
+	instructions2->AddComponent<dae::TextComponent>("POINTS: Eat Diamonds | LIVES: Touching each other", fontSmall, SDL_Color{ 255, 255, 0, 255 });
+	scene.Add(std::move(instructions2));
 }
 
 int main(int, char* [])
