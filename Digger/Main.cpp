@@ -56,19 +56,22 @@ static void load()
 		go->AddComponent<dae::RenderComponent>("logo.png");
 		go->SetLocalPosition(358, 180);
 		scene.Add(std::move(go));
+	}
 
-		auto textObj = std::make_unique<dae::GameObject>();
-		textObj->AddComponent<dae::TextComponent>("Programming 4 Assignment", font, SDL_Color{ 255, 255, 0, 255 });
-		textObj->SetLocalPosition(292, 20);
-		scene.Add(std::move(textObj));
+	// UI BACKGROUND
+	{
+		auto hudBg = std::make_unique<dae::GameObject>();
+		hudBg->AddComponent<dae::UIPanelComponent>(1024.f, 52.f, SDL_Color{ 0, 0, 0, 255 });
+		hudBg->SetLocalPosition(0, 0);
+		scene.Add(std::move(hudBg));
 	}
 
 	// FPS COUNTER
 	{
 		auto fpsObject = std::make_unique<dae::GameObject>();
-		fpsObject->AddComponent<dae::TextComponent>("0 FPS", font, SDL_Color{ 255, 255, 0, 255 });
+		fpsObject->AddComponent<dae::TextComponent>("0 FPS", fontSmall, SDL_Color{ 150, 150, 150, 255 });
 		fpsObject->AddComponent<dae::FPSComponent>();
-		fpsObject->SetLocalPosition(10, 20);
+		fpsObject->SetLocalPosition(800, 15);
 		scene.Add(std::move(fpsObject));
 	}
 
@@ -121,18 +124,16 @@ static void load()
 		auto diggerPtr1 = digger1.get();
 		scene.Add(std::move(digger1));
 
-		// UI - Player 1 Score
+		// UI - Player 1 Score (Sprite)
 		auto scoreUI1 = std::make_unique<dae::GameObject>();
-		scoreUI1->SetLocalPosition(10, 120);
-		scoreUI1->AddComponent<dae::TextComponent>("P1 Score: 0", fontSmall, SDL_Color{ 255, 255, 255, 255 });
-		auto scoreObs1 = scoreUI1->AddComponent<dae::ScoreDisplayComponent>(std::string("P1 "));
+		scoreUI1->SetLocalPosition(20, 13);
+		auto scoreObs1 = scoreUI1->AddComponent<dae::SpriteScoreDisplayComponent>("PNG/UI/VNUM", ".png", 24.f);
 		scene.Add(std::move(scoreUI1));
 
-		// UI - Player 1 Lives
+		// UI - Player 1 Lives (Sprite)
 		auto livesUI1 = std::make_unique<dae::GameObject>();
-		livesUI1->SetLocalPosition(10, 150);
-		livesUI1->AddComponent<dae::TextComponent>("P1 Lives: 3", fontSmall, SDL_Color{ 255, 0, 0, 255 });
-		auto livesObs1 = livesUI1->AddComponent<dae::LivesDisplayComponent>(std::string("P1 "), 3);
+		livesUI1->SetLocalPosition(150, 15); // to the right of the score ui
+		auto livesObs1 = livesUI1->AddComponent<dae::LivesSpriteDisplayComponent>("PNG/Digger/VRDIG1X.png", 3, 35.5f);
 		scene.Add(std::move(livesUI1));
 
 		// LINKING - Player 1

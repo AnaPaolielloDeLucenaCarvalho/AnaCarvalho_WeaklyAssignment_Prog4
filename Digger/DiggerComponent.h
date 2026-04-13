@@ -6,6 +6,7 @@
 #include "GameObject.h"
 #include <vector>
 #include <glm/glm.hpp>
+#include <iostream>
 
 namespace dae
 {
@@ -71,6 +72,13 @@ namespace dae
             {
                 m_Lives--;
                 m_Subject.Notify(make_sdbm_hash("PlayerDied"), m_Lives); // Ex1
+            }
+
+            if (m_Lives <= 0)
+            {
+                std::cout << "GAME OVER! Going back to Main Menu..." << std::endl;
+
+                // TODO: Main Menu call it here!
             }
         }
 
