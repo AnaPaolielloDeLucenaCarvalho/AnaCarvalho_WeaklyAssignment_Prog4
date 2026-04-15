@@ -242,10 +242,12 @@ endif()
 
 
   if(EMSCRIPTEN)
-    set(EMSCRIPTEN_COMPILE_FLAGS "-g")
+    #set(EMSCRIPTEN_COMPILE_FLAGS "-g")
 
     # Use the Emscripten toolchain
     set(CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_SOURCE_DIR}/cmake/EmscriptenToolchain.cmake)
+
+    target_compile_options(${TARGET_NAME} PRIVATE "-g" "-fexceptions")
 
     # Apply Compile Flags
     target_compile_options(${TARGET_NAME} PRIVATE ${EMSCRIPTEN_COMPILE_FLAGS})
@@ -255,10 +257,10 @@ endif()
         "-sUSE_FREETYPE=1" 
         "-sUSE_HARFBUZZ=1" 
         "-g" 
-        "-sALLOW_MEMORY_GROWTH"
+        "-sALLOW_MEMORY_GROWTH=1"
         "-sASSERTIONS=1"
         #"--preload-file" "${CMAKE_SOURCE_DIR}/Data@/"
-        "SHELL:--preload-file ${CMAKE_SOURCE_DIR}/Data@/Data"
+        "SHELL:--preload-file ${CMAKE_CURRENT_SOURCE_DIR}/Data@/Data"
   )
 
   add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
