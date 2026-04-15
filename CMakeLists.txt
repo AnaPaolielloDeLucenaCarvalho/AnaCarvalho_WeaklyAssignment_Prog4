@@ -250,13 +250,15 @@ endif()
     # Apply Compile Flags
     target_compile_options(${TARGET_NAME} PRIVATE ${EMSCRIPTEN_COMPILE_FLAGS})
 
-    # Apply Link Flags the modern/safe way! (No weird quote escaping needed)
+    # Apply Link Flags the modern/safe way!
     target_link_options(${TARGET_NAME} PRIVATE 
         "-sUSE_FREETYPE=1" 
         "-sUSE_HARFBUZZ=1" 
         "-g" 
-        "-sALLOW_MEMORY_GROWTH" 
-        "--preload-file" "${CMAKE_SOURCE_DIR}/Data@/"
+        "-sALLOW_MEMORY_GROWTH"
+        "-sASSERTIONS=1"
+        #"--preload-file" "${CMAKE_SOURCE_DIR}/Data@/"
+        "SHELL:--preload-file ${CMAKE_SOURCE_DIR}/Data@/Data"
   )
 
   add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
