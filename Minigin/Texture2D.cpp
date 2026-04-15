@@ -25,6 +25,8 @@ dae::Texture2D::Texture2D(const std::string &fullPath)
     SDL_Surface* surface = SDL_LoadPNG(fullPath.c_str());
     if (!surface)
     {
+        SDL_Log("CRASH: I am trying to find this exact file but it is missing: %s", fullPath.c_str());
+
         throw std::runtime_error(
             std::string("Failed to load PNG: ") + SDL_GetError()
         );
