@@ -328,7 +328,7 @@ int main(int, char* [])
 #endif
 
 #if __EMSCRIPTEN__
-	fs::path data_location = "";
+	fs::path data_location = "Data/";
 #else
 	fs::path data_location = "./Data/";
 	if (!fs::exists(data_location))
