@@ -24,11 +24,13 @@ namespace dae
 
         void SetFlip(bool flip) { m_isFlipped = flip; }
         void SetScale(float scale) { m_Scale = scale; }
+        void SetRotation(double angle) { m_Angle = angle; }
 
     private:
         std::shared_ptr<Texture2D> m_texture;
         bool m_isFlipped{ false };
         float m_Scale{ 1.0f };
+        double m_Angle{ 0.0 };
     };
 }
 #endif // RENDERCOMPONENT_H

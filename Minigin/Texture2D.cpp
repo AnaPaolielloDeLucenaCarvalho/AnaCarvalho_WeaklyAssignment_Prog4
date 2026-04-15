@@ -30,6 +30,11 @@ dae::Texture2D::Texture2D(const std::string &fullPath)
         );
     }
 
+    // White (R:255, G:255, B:255) should be transparent!
+    const SDL_PixelFormatDetails* format = SDL_GetPixelFormatDetails(surface->format);
+    Uint32 transparentColor = SDL_MapRGB(format, nullptr, 255, 255, 255);
+    SDL_SetSurfaceColorKey(surface, true, transparentColor);
+
     m_texture = SDL_CreateTextureFromSurface(
         Renderer::GetInstance().GetSDLRenderer(),
         surface

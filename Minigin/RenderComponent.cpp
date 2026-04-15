@@ -31,7 +31,18 @@ namespace dae
         float scaledH = size.y * m_Scale;
 
         const auto flip = m_isFlipped ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
-        dae::Renderer::GetInstance().RenderTexture(*m_texture, pos.x, pos.y, scaledW, scaledH, flip);
+        //dae::Renderer::GetInstance().RenderTexture(*m_texture, pos.x, pos.y, scaledW, scaledH, flip);
+
+        SDL_FRect dst{ pos.x, pos.y, scaledW, scaledH };
+        SDL_RenderTextureRotated(
+            dae::Renderer::GetInstance().GetSDLRenderer(),
+            m_texture->GetSDLTexture(),
+            nullptr,
+            &dst,
+            m_Angle,
+            nullptr,
+            flip
+        );
     }
 
     void RenderComponent::SetTexture(const std::string& filename)

@@ -88,7 +88,8 @@ static void load()
 		"XXX     XXXXXXXXXX XXXXXXX",
 		"XXXXXXX XXXXXXXXXX XXXXXXX",
 		"XXDXXXX XXXXXXXXXX XXXXDXX",
-		"XXDDXXX      P     XXXDDXX"
+		"XXDDXXX      P     XXXDDXX",
+		"XXXXXXXXXXXXXXXXXXXXXXXXXX",
 	};
 
 	float tileWidth = 40.0f;
@@ -96,6 +97,25 @@ static void load()
 	float startX = 0.f;
 	float startY = 52.0f;
 
+	// DRAW A GLOBAL DIRT BACKGROUND
+	for (int row = 0; row < 14; ++row)
+	{
+		for (int col = 0; col < 26; ++col)
+		{
+			float blockX = startX + (col * tileWidth);
+			float blockY = startY + (row * tileWidth);
+
+			for (int strip = 0; strip < 5; ++strip)
+			{
+				auto tile = std::make_unique<dae::GameObject>();
+				tile->AddComponent<dae::RenderComponent>("PNG/Map/VBACK1.png");
+				tile->SetLocalPosition(blockX, blockY + (strip * tileHeight));
+				scene.Add(std::move(tile));
+			}
+		}
+	}
+
+	// DRAW PATH AND ENTITIES
 	for (size_t row = 0; row < mapLayout.size(); ++row)
 	{
 		for (size_t col = 0; col < mapLayout[row].size(); ++col)
@@ -105,21 +125,17 @@ static void load()
 			float blockX = startX + (col * tileWidth);
 			float blockY = startY + (row * tileWidth);
 
-			// Background
-			if (tileChar == 'X' || tileChar == 'D' || tileChar == 'C')
+			// PATH
+			if (tileChar == ' ' || tileChar == 'P' || tileChar == 'E')
 			{
-				for (int strip = 0; strip < 5; ++strip)
-				{
-					auto tile = std::make_unique<dae::GameObject>();
-					auto render = tile->AddComponent<dae::RenderComponent>("PNG/Map/CBACK1.png");
-					render->SetScale(2.0f);
-
-					tile->SetLocalPosition(blockX, blockY + (strip * tileHeight));
-					scene.Add(std::move(tile));
-				}
+				// Later change to use the correct textures
+				auto pathSquare = std::make_unique<dae::GameObject>();
+				pathSquare->AddComponent<dae::UIPanelComponent>(tileWidth, tileWidth, SDL_Color{ 0, 0, 0, 255 });
+				pathSquare->SetLocalPosition(blockX, blockY);
+				scene.Add(std::move(pathSquare));
 			}
 
-			// Foreground
+			// ENTITIES
 			if (tileChar == 'P')
 			{
 				p1Spawn = { blockX, blockY };
@@ -134,7 +150,6 @@ static void load()
 			}
 			else if (tileChar == 'C')
 			{
-				// TODO - coin bag object here, for now just a background tile
 			}
 		}
 	}
