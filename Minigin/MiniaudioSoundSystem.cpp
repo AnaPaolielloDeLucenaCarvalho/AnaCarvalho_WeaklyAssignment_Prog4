@@ -28,23 +28,36 @@ namespace dae
                 std::cerr << "Failed to initialize miniaudio engine.\n";
             }
 
+            // create a thread if we are NOT in the web
+#ifndef __EMSCRIPTEN__
             m_Thread = std::jthread(&MiniaudioSoundSystemImpl::ProcessQueue, this);
+#endif
         }
 
         ~MiniaudioSoundSystemImpl()
         {
+#ifndef __EMSCRIPTEN__
             m_Quit = true;
             m_Condition.notify_one();
-
-            // clean up
+#endif
+            // clean up miniaudio
             ma_engine_uninit(&m_AudioEngine);
         }
 
         void Play(sound_id id, float volume)
         {
+#ifndef __EMSCRIPTEN__
+            // windows -
             std::lock_guard<std::mutex> lock(m_Mutex);
             m_Queue.push({ id, volume });
             m_Condition.notify_one();
+#else
+            // web - 
+            if (m_SoundPaths.contains(id))
+            {
+                ma_engine_play_sound(&m_AudioEngine, m_SoundPaths[id].c_str(), NULL);
+            }
+#endif
         }
 
         void LoadSound(sound_id id, const std::string& filePath)
@@ -53,6 +66,8 @@ namespace dae
         }
 
     private:
+
+#ifndef __EMSCRIPTEN__
         void ProcessQueue()
         {
             while (true)
@@ -79,6 +94,7 @@ namespace dae
         std::condition_variable m_Condition;
         std::queue<SoundRequest> m_Queue;
         bool m_Quit{ false };
+#endif
 
         ma_engine m_AudioEngine;
         std::unordered_map<sound_id, std::string> m_SoundPaths;
