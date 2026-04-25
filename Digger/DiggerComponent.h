@@ -7,6 +7,7 @@
 #include <vector>
 #include <glm/glm.hpp>
 #include <iostream>
+#include "ServiceLocator.h"
 
 namespace dae
 {
@@ -72,6 +73,9 @@ namespace dae
             {
                 m_Lives--;
                 m_Subject.Notify(make_sdbm_hash("PlayerDied"), m_Lives); // Ex1
+
+                // SOUND SYSTEM - play the death sound
+                dae::ServiceLocator::get_sound_system().play(3, 1.0f);
             }
 
             if (m_Lives <= 0)

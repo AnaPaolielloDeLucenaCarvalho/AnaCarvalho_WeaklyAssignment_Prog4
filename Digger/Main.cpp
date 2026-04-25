@@ -5,8 +5,6 @@
 #include <vld.h>
 #endif
 
-// Comment to commit again so - that i can test out Emscripten 2 time
-
 #include "Minigin.h"
 #include "SceneManager.h"
 #include "Scene.h"
@@ -24,6 +22,18 @@
 #include "Subject.h"
 #include "Observer.h"
 #include "AchievementManager.h"
+#include "ServiceLocator.h"
+#include "MiniaudioSoundSystem.h"
+#include "LoggingSoundSystem.h"
+
+// Digger Sounds
+enum DiggerSounds 
+{
+	MUSIC = 0,
+	BONUS = 1,
+	NEXT_LEVEL = 2,
+	DEATH = 3
+};
 
 #if USE_STEAMWORKS
 #pragma warning (push)
@@ -39,6 +49,20 @@ std::shared_ptr<dae::AchievementManager> g_AchievementMgr = nullptr;
 
 static void load()
 {
+	// SOUND SYSTEM
+	auto miniaudioSystem = std::make_unique<dae::MiniaudioSoundSystem>();
+	auto loggingSoundSystem = std::make_unique<dae::LoggingSoundSystem>(std::move(miniaudioSystem));
+	dae::ServiceLocator::register_sound_system(std::move(loggingSoundSystem));
+
+	auto& soundSystem = dae::ServiceLocator::get_sound_system();
+
+	soundSystem.loadSound(DiggerSounds::MUSIC, "Data/Sounds/main_music.wav");
+	soundSystem.loadSound(DiggerSounds::BONUS, "Data/Sounds/bonus.wav");
+	soundSystem.loadSound(DiggerSounds::NEXT_LEVEL, "Data/Sounds/next_level.wav");
+	soundSystem.loadSound(DiggerSounds::DEATH, "Data/Sounds/death.wav");
+
+// ---------------------------------------------------
+
 	// SCENE SETUP
 	auto& scene = dae::SceneManager::GetInstance().CreateScene();
 	auto& input = dae::InputManager::GetInstance();
@@ -312,6 +336,11 @@ static void load()
 	instructions2->SetLocalPosition(10, 550);
 	instructions2->AddComponent<dae::TextComponent>("POINTS: Eat Diamonds | LIVES: Touching each other", fontSmall, SDL_Color{ 255, 255, 0, 255 });
 	scene.Add(std::move(instructions2));
+
+// ---------------------------------------------------
+
+	// SOUND SYSTEM - play the main music
+	soundSystem.play(DiggerSounds::MUSIC, 0.5f);
 }
 
 int main(int, char* [])

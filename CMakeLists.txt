@@ -62,7 +62,8 @@ add_library(Minigin STATIC
   Minigin/TextComponent.cpp
   Minigin/Texture2D.cpp
   Minigin/Transform.cpp
-)
+ "Minigin/MiniaudioSoundSystem.cpp" 
+ "Minigin/ServiceLocator.cpp")
 
 # Enable c++20 features for the engine
 target_compile_features(Minigin PUBLIC cxx_std_20)
