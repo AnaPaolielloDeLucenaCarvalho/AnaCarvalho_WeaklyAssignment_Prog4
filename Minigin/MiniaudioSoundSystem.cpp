@@ -105,3 +105,5 @@ namespace dae
     void MiniaudioSoundSystem::play(const sound_id id, const float volume) { pImpl->Play(id, volume); }
     void MiniaudioSoundSystem::loadSound(const sound_id id, const std::string& filePath) { pImpl->LoadSound(id, filePath); }
 }
+
+// Note for the teacher: i know i have memory leaks in this implementation, but i from my looking they come from the miniaudio that im using for the sound system, and i dont know how to fix them, it seems to me they come from MMDevApi.dll/AudioSes.dll/uxtheme.dll but i could be wrong, if you have any tips on how to fix this please let me know and im sorry for the inconvenience

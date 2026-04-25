@@ -26,15 +26,6 @@
 #include "MiniaudioSoundSystem.h"
 #include "LoggingSoundSystem.h"
 
-// Digger Sounds
-enum DiggerSounds 
-{
-	MUSIC = 0,
-	BONUS = 1,
-	NEXT_LEVEL = 2,
-	DEATH = 3
-};
-
 #if USE_STEAMWORKS
 #pragma warning (push)
 #pragma warning (disable:4996)
@@ -47,6 +38,15 @@ namespace fs = std::filesystem;
 
 std::shared_ptr<dae::AchievementManager> g_AchievementMgr = nullptr;
 
+// Digger Sounds
+enum DiggerSounds
+{
+	MUSIC = 0,
+	BONUS = 1,
+	NEXT_LEVEL = 2,
+	DEATH = 3
+};
+
 static void load()
 {
 	// SOUND SYSTEM
@@ -56,10 +56,17 @@ static void load()
 
 	auto& soundSystem = dae::ServiceLocator::get_sound_system();
 
-	soundSystem.loadSound(DiggerSounds::MUSIC, "Data/Sounds/main_music.wav");
-	soundSystem.loadSound(DiggerSounds::BONUS, "Data/Sounds/bonus.wav");
-	soundSystem.loadSound(DiggerSounds::NEXT_LEVEL, "Data/Sounds/next_level.wav");
-	soundSystem.loadSound(DiggerSounds::DEATH, "Data/Sounds/death.wav");
+	// folder path for both web and computer
+#ifdef __EMSCRIPTEN__
+	const std::string soundFolder = "Sounds/";
+#else
+	const std::string soundFolder = "Data/Sounds/";
+#endif
+
+	soundSystem.loadSound(DiggerSounds::MUSIC, soundFolder + "main_music.wav");
+	soundSystem.loadSound(DiggerSounds::BONUS, soundFolder + "bonus.wav");
+	soundSystem.loadSound(DiggerSounds::NEXT_LEVEL, soundFolder + "next_level.wav");
+	soundSystem.loadSound(DiggerSounds::DEATH, soundFolder + "death.wav");
 
 // ---------------------------------------------------
 
@@ -372,6 +379,8 @@ int main(int, char* [])
 	SteamAPI_Shutdown();
 	std::cout << "SteamAPI Shutdown." << std::endl;
 #endif
+
+	dae::ServiceLocator::register_sound_system(nullptr);
 
 	return 0;
 }
