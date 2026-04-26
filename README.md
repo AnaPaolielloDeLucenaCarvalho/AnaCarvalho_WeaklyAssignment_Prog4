@@ -2,12 +2,12 @@
 
 This project is trying to recreate the 1983 arcade game **Digger**, from scratch, using a custom C++ game engine. It's being developed as my final exam project for the **Programming 4** course at Digital Arts & Entertainment (Howest).
 
-## 🔗 Links
+## Links
 * **GitHub Pages Build (Web):** [Play Digger on the WEB Here](https://anapaoliellodelucenacarvalho.github.io/AnaCarvalho_WeaklyAssignment_Prog4/)
 
 ---
 
-## 🗺️ Roadmap / Progress Tracker
+## Roadmap / Progress Tracker
 
 ### Engine & Exam Requirements
 - [ ] Parse and load 3 custom level layouts from data files
