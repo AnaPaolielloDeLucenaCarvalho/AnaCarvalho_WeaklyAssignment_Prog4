@@ -12,7 +12,7 @@ This project is trying to recreate the 1983 arcade game **Digger**, from scratch
 ### Engine & Exam Requirements
 - [ ] Parse and load 3 custom level layouts from data files
 - [ ] Implement F1 level skip functionality
-- [ ] Fix memory leaks
+- [x] Fix memory leaks
 - [ ] Persistent High Scores (Local saving)
 
 ### Gameplay Mechanics
@@ -37,8 +37,8 @@ This project is trying to recreate the 1983 arcade game **Digger**, from scratch
   - [ ] Level win sound
   - [ ] Bonus sound/music
 - [x] Audio system foundation built
-- [ ] Audio system be able to stop/pause/play from begging
-- [ ] F2 mute/unmute audio toggle
+- [ ] Audio system be able to pause/play from begging
+- [x] F2 mute/unmute audio toggle
 
 ---
 
