@@ -1,5 +1,6 @@
 #include "MiniaudioSoundSystem.h"
 
+#define MA_NO_WASAPI
 #define MINIAUDIO_IMPLEMENTATION
 #include "miniaudio.h"
 
@@ -23,12 +24,10 @@ namespace dae
     public:
         MiniaudioSoundSystemImpl()
         {
-            if (ma_engine_init(NULL, &m_AudioEngine) != MA_SUCCESS) 
-            {
+            if (ma_engine_init(NULL, &m_AudioEngine) != MA_SUCCESS) {
                 std::cerr << "Failed to initialize miniaudio engine.\n";
             }
 
-            // create a thread if we are NOT in the web
 #ifndef __EMSCRIPTEN__
             m_Thread = std::jthread(&MiniaudioSoundSystemImpl::ProcessQueue, this);
 #endif
@@ -40,21 +39,17 @@ namespace dae
             m_Quit = true;
             m_Condition.notify_one();
 #endif
-            // clean up miniaudio
             ma_engine_uninit(&m_AudioEngine);
         }
 
         void Play(sound_id id, float volume)
         {
 #ifndef __EMSCRIPTEN__
-            // windows -
             std::lock_guard<std::mutex> lock(m_Mutex);
             m_Queue.push({ id, volume });
             m_Condition.notify_one();
 #else
-            // web - 
-            if (m_SoundPaths.contains(id))
-            {
+            if (m_SoundPaths.contains(id)) {
                 ma_engine_play_sound(&m_AudioEngine, m_SoundPaths[id].c_str(), NULL);
             }
 #endif
@@ -65,8 +60,13 @@ namespace dae
             m_SoundPaths[id] = filePath;
         }
 
-    private:
+        void ToggleMute()
+        {
+            m_Muted = !m_Muted;
+            ma_engine_set_volume(&m_AudioEngine, m_Muted ? 0.0f : 1.0f);
+        }
 
+    private:
 #ifndef __EMSCRIPTEN__
         void ProcessQueue()
         {
@@ -81,7 +81,6 @@ namespace dae
                 m_Queue.pop();
                 lock.unlock();
 
-                // play the sound
                 if (m_SoundPaths.contains(request.id))
                 {
                     ma_engine_play_sound(&m_AudioEngine, m_SoundPaths[request.id].c_str(), NULL);
@@ -98,12 +97,12 @@ namespace dae
 
         ma_engine m_AudioEngine;
         std::unordered_map<sound_id, std::string> m_SoundPaths;
+        bool m_Muted{ false };
     };
 
     MiniaudioSoundSystem::MiniaudioSoundSystem() : pImpl(std::make_unique<MiniaudioSoundSystemImpl>()) {}
     MiniaudioSoundSystem::~MiniaudioSoundSystem() = default;
     void MiniaudioSoundSystem::play(const sound_id id, const float volume) { pImpl->Play(id, volume); }
     void MiniaudioSoundSystem::loadSound(const sound_id id, const std::string& filePath) { pImpl->LoadSound(id, filePath); }
+    void MiniaudioSoundSystem::ToggleMute() { pImpl->ToggleMute(); }
 }
-
-// Note for the teacher: i know i have memory leaks in this implementation, but i from my looking they come from the miniaudio that im using for the sound system, and i dont know how to fix them, it seems to me they come from MMDevApi.dll/AudioSes.dll/uxtheme.dll but i could be wrong, if you have any tips on how to fix this please let me know and im sorry for the inconvenience

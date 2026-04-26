@@ -17,6 +17,8 @@ namespace dae
         void play(const sound_id id, const float volume) override;
         void loadSound(const sound_id id, const std::string& filePath) override;
 
+        void ToggleMute() override;
+
         MiniaudioSoundSystem(const MiniaudioSoundSystem& other) = delete;
         MiniaudioSoundSystem(MiniaudioSoundSystem&& other) = delete;
         MiniaudioSoundSystem& operator=(const MiniaudioSoundSystem& other) = delete;

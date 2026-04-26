@@ -24,6 +24,12 @@ namespace dae
             _real_ss->loadSound(id, filePath);
         }
 
+        void ToggleMute() override
+        {
+            std::cout << "[Sound Logger] Toggling Audio Mute State\n";
+            _real_ss->ToggleMute();
+        }
+
     private:
             std::unique_ptr<SoundSystem> _real_ss;
     };

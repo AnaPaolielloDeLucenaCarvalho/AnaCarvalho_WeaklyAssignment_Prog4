@@ -11,6 +11,8 @@ namespace dae
     public:
         void play(const sound_id, const float) override {}
         void loadSound(const sound_id, const std::string&) override {}
+
+        void ToggleMute() override {}
     };
 
     class ServiceLocator final 

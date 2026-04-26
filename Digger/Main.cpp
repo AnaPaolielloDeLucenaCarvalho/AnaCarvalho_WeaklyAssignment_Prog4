@@ -25,6 +25,7 @@
 #include "ServiceLocator.h"
 #include "MiniaudioSoundSystem.h"
 #include "LoggingSoundSystem.h"
+#include "MuteCommand.h"
 
 #if USE_STEAMWORKS
 #pragma warning (push)
@@ -344,10 +345,19 @@ static void load()
 	instructions2->AddComponent<dae::TextComponent>("POINTS: Eat Diamonds | LIVES: Touching each other", fontSmall, SDL_Color{ 255, 255, 0, 255 });
 	scene.Add(std::move(instructions2));
 
+	auto instructions3 = std::make_unique<dae::GameObject>();
+	instructions3->SetLocalPosition(10, 490);
+	instructions3->AddComponent<dae::TextComponent>("F2 to mute/unmute sound", fontSmall, SDL_Color{ 255, 255, 0, 255 });
+	scene.Add(std::move(instructions3));
+
 // ---------------------------------------------------
 
 	// SOUND SYSTEM - play the main music
 	soundSystem.play(DiggerSounds::MUSIC, 0.5f);
+
+	// MUTE COMMAND (F2)
+	auto muteCommand = std::make_unique<dae::MuteCommand>();
+	dae::InputManager::GetInstance().BindCommand(SDL_SCANCODE_F2, dae::KeyState::Pressed, std::move(muteCommand));
 }
 
 int main(int, char* [])
@@ -371,7 +381,16 @@ int main(int, char* [])
 		data_location = "../Data/";
 #endif
 	{
+#if _DEBUG && __has_include(<vld.h>)
+		VLDDisable();
+#endif
+
 		dae::Minigin engine(data_location);
+
+#if _DEBUG && __has_include(<vld.h>)
+		VLDEnable();
+#endif
+
 		engine.Run(load);
 	}
 
