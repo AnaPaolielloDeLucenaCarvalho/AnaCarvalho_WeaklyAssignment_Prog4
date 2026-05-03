@@ -1,7 +1,6 @@
 #ifndef MINIAUDIO_SOUND_SYSTEM_H
 #define MINIAUDIO_SOUND_SYSTEM_H
 
-#pragma once
 #include "SoundSystem.h"
 #include <memory>
 #include <string>

@@ -6,6 +6,7 @@
 #include "TextComponent.h"
 #include "GameObject.h"
 #include <string>
+#include "Subject.h"
 
 #include "Texture2D.h"
 #include "ResourceManager.h"

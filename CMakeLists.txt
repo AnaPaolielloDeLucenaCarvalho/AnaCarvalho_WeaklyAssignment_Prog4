@@ -62,8 +62,8 @@ add_library(Minigin STATIC
   Minigin/TextComponent.cpp
   Minigin/Texture2D.cpp
   Minigin/Transform.cpp
- "Minigin/MiniaudioSoundSystem.cpp" 
- "Minigin/ServiceLocator.cpp")
+  Minigin/MiniaudioSoundSystem.cpp
+  Minigin/ServiceLocator.cpp)
 
 # Enable c++20 features for the engine
 target_compile_features(Minigin PUBLIC cxx_std_20)
@@ -78,6 +78,11 @@ target_include_directories(Minigin PUBLIC ${CMAKE_SOURCE_DIR}/Minigin)
 add_executable(${TARGET_NAME} ${TARGET_PARAM}
   Digger/Main.cpp
   Digger/TrashCacheComponent.cpp
+  Digger/GoldBagComponent.cpp
+  Digger/GoldBagState.cpp
+  Digger/DiggerState.cpp
+  Digger/DiggerComponent.cpp
+  Digger/LevelManager.cpp
   # Add any .cpp for Digger here!!!
 )
 

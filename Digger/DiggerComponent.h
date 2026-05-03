@@ -1,96 +1,49 @@
 #ifndef DIGGER_COMPONENT_H
 #define DIGGER_COMPONENT_H
-
 #include "Component.h"
 #include "Subject.h"
 #include "GameObject.h"
 #include <vector>
-#include <glm/glm.hpp>
-#include <iostream>
-#include "ServiceLocator.h"
+#include <glm/vec2.hpp>
 
 namespace dae
 {
+    class DiggerState;
+
     class DiggerComponent : public Component
     {
     public:
-        DiggerComponent(GameObject* owner) : Component(owner) {}
-        virtual ~DiggerComponent() = default;
+        DiggerComponent(GameObject* owner);
+        ~DiggerComponent() override;
+
+        void Update(float deltaTime) override;
+        void Die();
 
         void AddObserver(Observer* obs) { m_Subject.AddObserver(obs); }
-
         void SetOtherPlayer(GameObject* pOther) { m_pOtherPlayer = pOther; }
         void SetDiamonds(const std::vector<GameObject*>& diamonds) { m_pDiamonds = diamonds; }
+        void SetGoldBags(const std::vector<GameObject*>& bags) { m_pGoldBags = bags; }
 
-        void Update(float deltaTime) override
-        {
-            auto myPos = GetOwner()->GetTransform().GetPosition();
+        GameObject* GetOtherPlayer() const { return m_pOtherPlayer; }
+        const std::vector<GameObject*>& GetDiamonds() const { return m_pDiamonds; }
+        const std::vector<GameObject*>& GetGoldBags() const { return m_pGoldBags; }
+        Subject& GetSubject() { return m_Subject; }
 
-            if (m_Invincible)
-            {
-                m_InvincibleTimer -= deltaTime;
-                if (m_InvincibleTimer <= 0)
-                {
-                    m_Invincible = false;
-                }
-            }
+        int GetLives() const { return m_Lives; }
 
-            // COLLISION WITH DIAMONDS (Scoring)
-            for (auto& diamond : m_pDiamonds)
-            {
-                if (!diamond || diamond->IsMarkedForDestroy())
-                {
-                    continue;
-                }
+        void ChangeState(DiggerState* newState);
 
-                auto diamondPos = diamond->GetTransform().GetPosition();
-                float dist = glm::distance(glm::vec2(myPos.x, myPos.y), glm::vec2(diamondPos.x, diamondPos.y));
+        void SetDesiredDirection(const glm::vec2& dir) { m_DesiredDirection = dir; }
+        glm::vec2 GetDesiredDirection() const { return m_DesiredDirection; }
 
-                if (dist < 20.f)
-                {
-                    diamond->MarkForDestroy();
-                    m_Subject.Notify(make_sdbm_hash("DiamondPickedUp"), 100);
-                }
-            }
+        void SetCurrentDirection(const glm::vec2& dir) { m_CurrentDirection = dir; }
+        glm::vec2 GetCurrentDirection() const { return m_CurrentDirection; }
 
-            // COLLISION WITH OTHER PLAYER (Losing Lives)
-            if (m_pOtherPlayer && !m_Invincible)
-            {
-                auto otherPos = m_pOtherPlayer->GetTransform().GetPosition();
-                float dist = glm::distance(glm::vec2(myPos.x, myPos.y), glm::vec2(otherPos.x, otherPos.y));
+        void SetSpawnPos(const glm::vec2& pos) { m_SpawnPos = pos; }
+        glm::vec2 GetSpawnPos() const { return m_SpawnPos; }
 
-                if (dist < 25.f)
-                {
-                    Die();
-                    StartInvincibilityFrames();
-                }
-            }
-        }
-
-        void Die()
-        {
-            if (m_Lives > 0)
-            {
-                m_Lives--;
-                m_Subject.Notify(make_sdbm_hash("PlayerDied"), m_Lives); // Ex1
-
-                // SOUND SYSTEM - play the death sound
-                dae::ServiceLocator::get_sound_system().play(3, 1.0f);
-            }
-
-            if (m_Lives <= 0)
-            {
-                std::cout << "GAME OVER! Going back to Main Menu..." << std::endl;
-
-                // TODO: Main Menu call it here!
-            }
-        }
-
-        void StartInvincibilityFrames()
-        {
-            m_Invincible = true;
-            m_InvincibleTimer = 2.0f;
-        }
+        bool IsDead() const { return m_IsDead; }
+        void SetDead(bool dead) { m_IsDead = dead; }
 
     private:
         Subject m_Subject;
@@ -98,9 +51,15 @@ namespace dae
 
         GameObject* m_pOtherPlayer{ nullptr };
         std::vector<GameObject*> m_pDiamonds{};
+        std::vector<GameObject*> m_pGoldBags{};
 
-        bool m_Invincible{ false };
-        float m_InvincibleTimer{ 0.0f };
+        DiggerState* m_pCurrentState{ nullptr };
+
+        glm::vec2 m_DesiredDirection{ 0, 0 };
+        glm::vec2 m_CurrentDirection{ 0, 0 };
+
+        glm::vec2 m_SpawnPos{ 0, 0 };
+        bool m_IsDead{ false };
     };
 }
 #endif

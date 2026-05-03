@@ -1,7 +1,6 @@
 #ifndef MUTE_COMMAND_H
 #define MUTE_COMMAND_H
 
-#pragma once
 #include "Command.h"
 #include "ServiceLocator.h"
 #include <SDL3/SDL_timer.h>
@@ -26,5 +25,4 @@ namespace dae
         }
     };
 }
-
 #endif
