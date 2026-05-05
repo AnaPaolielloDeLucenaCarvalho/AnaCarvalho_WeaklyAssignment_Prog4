@@ -26,6 +26,8 @@ namespace dae
 
         void RemoveChild(GameObject* child);
         void AddChild(GameObject* child);
+
+        int m_ZIndex{ 0 };
 	public:
 		GameObject() = default;
 		~GameObject() = default;
@@ -50,6 +52,9 @@ namespace dae
 
         void MarkForDestroy() { m_isMarkedForDestroy = true; }
         bool IsMarkedForDestroy() const { return m_isMarkedForDestroy; }
+
+        void SetZIndex(int z) { m_ZIndex = z; }
+        int GetZIndex() const { return m_ZIndex; }
 
         // COMPONENT SYSTEM
 

@@ -6,6 +6,9 @@
 #include "GoldBagComponent.h"
 #include <glm/glm.hpp>
 #include <glm/geometric.hpp>
+#include "FadeComponent.h"
+#include "SceneManager.h"
+#include "Scene.h"
 
 namespace dae
 {
@@ -99,6 +102,26 @@ namespace dae
                 }
             }
         }
+        
+        // WIN (Collected all the Emeralds)
+        if (!digger->GetDiamonds().empty())
+        {
+            bool allDiamondsCollected = true;
+            for (auto& diamond : digger->GetDiamonds())
+            {
+                if (diamond && !diamond->IsMarkedForDestroy())
+                {
+                    allDiamondsCollected = false;
+                    break;
+                }
+            }
+
+            if (allDiamondsCollected)
+            {
+                return new DiggerLevelCompleteState();
+            }
+        }
+
         return nullptr;
     }
 
@@ -187,6 +210,33 @@ namespace dae
             }
         }
 
+        return nullptr;
+    }
+
+	// level complete state
+    void DiggerLevelCompleteState::OnEnter(DiggerComponent* digger)
+    {
+        digger->SetDesiredDirection(glm::vec2{ 0,0 });
+        digger->SetCurrentDirection(glm::vec2{ 0,0 });
+
+        ServiceLocator::get_sound_system().play(2, 0.5f);
+
+		// fade 4s to black
+        auto fadeObj = std::make_unique<GameObject>();
+        fadeObj->AddComponent<FadeComponent>(4.0f);
+        fadeObj->SetZIndex(20);
+        SceneManager::GetInstance().GetActiveScene()->Add(std::move(fadeObj));
+    }
+
+    DiggerState* DiggerLevelCompleteState::Update(DiggerComponent* digger, float deltaTime)
+    {
+        m_TransitionTimer -= deltaTime;
+
+        if(m_TransitionTimer <= 0.0f)
+        {
+            digger->GetSubject().Notify(make_sdbm_hash("LoadNextLevel"), 0);
+            return new DiggerNormalState();
+        }
         return nullptr;
     }
 }

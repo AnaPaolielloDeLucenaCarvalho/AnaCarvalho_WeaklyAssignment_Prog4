@@ -2,6 +2,8 @@
 #include "GameObject.h"
 #include "UIObservers.h"
 #include <cmath>
+#include <fstream>
+#include <iostream>
 
 namespace dae
 {
@@ -55,5 +57,75 @@ namespace dae
                 }
             }
         }
+    }
+
+    void LevelManager::LoadAllLevelsFromFile(const std::string& filePath)
+    {
+        std::ifstream file(filePath);
+        if (!file.is_open())
+        {
+            std::cerr << "LevelManager ERROR: Could not open level file: " << filePath << "\n";
+            return;
+        }
+
+        m_AllLevelLayouts.clear();
+        std::vector<std::string> currentLayout;
+        std::string line;
+
+        while (std::getline(file, line))
+        {
+            if (!line.empty() && line.back() == '\r') {
+                line.pop_back();
+            }
+
+            // 'X' = Dirt
+            // ' ' = Empty
+            // 'P' = Player 1
+            // 'E' = Player 2 - this will be a problem later on when we add different modes
+            // 'D' = Diamond
+            // 'C' = Coin Bag
+
+			if (line == "[LEVEL]") // In the .txt file i separated the 3 levels using [LEVEL]
+            {
+                if (!currentLayout.empty())
+                {
+                    m_AllLevelLayouts.push_back(currentLayout);
+                    currentLayout.clear();
+                }
+            }
+            else if (!line.empty())
+            {
+                currentLayout.push_back(line);
+            }
+        }
+
+        if (!currentLayout.empty())
+        {
+            m_AllLevelLayouts.push_back(currentLayout);
+        }
+
+        std::cout << "LevelManager: Successfully loaded " << m_AllLevelLayouts.size() << " levels!\n";
+    }
+
+    std::vector<std::string> LevelManager::GetLevelLayout(int levelIndex) const
+    {
+        if (levelIndex >= 0 && levelIndex < static_cast<int>(m_AllLevelLayouts.size()))
+        {
+            return m_AllLevelLayouts[levelIndex];
+        }
+        return {};
+    }
+
+    void LevelManager::ClearLevel()
+    {
+        for (auto& row : m_HoleObjects)
+        {
+            for (auto* pObj : row)
+            {
+                if (pObj) pObj->MarkForDestroy();
+            }
+        }
+        m_HoleObjects.clear();
+        m_DirtGrid.clear();
     }
 }

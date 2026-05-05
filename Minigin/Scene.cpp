@@ -1,23 +1,21 @@
-#include <algorithm>
 #include "Scene.h"
+#include "GameObject.h"
+#include <algorithm>
 
 using namespace dae;
 
+Scene::~Scene() = default;
+
 void Scene::Add(std::unique_ptr<GameObject> object)
 {
-	assert(object != nullptr && "Cannot add a null GameObject to the scene.");
-	m_objects.emplace_back(std::move(object));
+	m_pendingObjects.emplace_back(std::move(object));
 }
 
-void Scene::Remove(const GameObject& object)
+void Scene::Remove(GameObject* object)
 {
-	for (auto& obj : m_objects)
+	if (object)
 	{
-		if (obj.get() == &object)
-		{
-			obj->MarkForDestroy();
-			break;
-		}
+		object->MarkForDestroy();
 	}
 }
 
@@ -26,21 +24,63 @@ void Scene::RemoveAll()
 	m_objects.clear();
 }
 
+void Scene::RequestLevelCleanup()
+{
+	m_LevelNeedsCleanup = true;
+}
+
 void Scene::Update(float deltaTime)
 {
-	for(auto& object : m_objects)
+	for (auto& object : m_objects)
 	{
-		object->Update(deltaTime);
+		if (object && !object->IsMarkedForDestroy())
+		{
+			object->Update(deltaTime);
+		}
 	}
 
-	std::erase_if(m_objects, [](const std::unique_ptr<GameObject>& obj) { return obj->IsMarkedForDestroy(); });
+	// waiting room
+	for (auto& pending : m_pendingObjects)
+	{
+		m_objects.emplace_back(std::move(pending));
+	}
+	m_pendingObjects.clear();
+
+	// nothing was working and it was either trhowing an exception when switching scenes or when the player ate a diamond - so this is the solution - clean up the scene in the end of update
+	if (m_LevelNeedsCleanup)
+	{
+		CleanUpScene();
+		m_LevelNeedsCleanup = false;
+	}
+}
+
+void Scene::CleanUpScene()
+{
+	m_objects.erase(std::remove_if(m_objects.begin(), m_objects.end(),
+		[](const std::unique_ptr<GameObject>& obj)
+		{
+			return obj->IsMarkedForDestroy();
+		}), m_objects.end());
 }
 
 void Scene::Render() const
 {
+	std::vector<GameObject*> sortedObjects;
 	for (const auto& object : m_objects)
+	{
+		if (object && !object->IsMarkedForDestroy())
+		{
+			sortedObjects.push_back(object.get());
+		}
+	}
+
+	std::stable_sort(sortedObjects.begin(), sortedObjects.end(), [](GameObject* a, GameObject* b)
+		{
+			return a->GetZIndex() < b->GetZIndex();
+		});
+
+	for (auto* object : sortedObjects)
 	{
 		object->Render();
 	}
 }
-

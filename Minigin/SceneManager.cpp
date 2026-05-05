@@ -1,24 +1,38 @@
 #include "SceneManager.h"
 #include "Scene.h"
 
-void dae::SceneManager::Update(float deltaTime)
+namespace dae
 {
-	for(auto& scene : m_scenes)
+	void SceneManager::Update(float deltaTime)
 	{
-		scene->Update(deltaTime);
+		if (m_pActiveScene) 
+		{
+			m_pActiveScene->Update(deltaTime);
+		}
 	}
-}
 
-void dae::SceneManager::Render()
-{
-	for (const auto& scene : m_scenes)
+	void SceneManager::Render()
 	{
-		scene->Render();
+		if (m_pActiveScene) 
+		{
+			m_pActiveScene->Render();
+		}
 	}
-}
 
-dae::Scene& dae::SceneManager::CreateScene()
-{
-	m_scenes.emplace_back(new Scene());
-	return *m_scenes.back();
+	Scene& SceneManager::CreateScene()
+	{
+		m_scenes.emplace_back(new Scene());
+
+		if (!m_pActiveScene) 
+		{
+			m_pActiveScene = m_scenes.back().get();
+		}
+
+		return *m_scenes.back();
+	}
+
+	void SceneManager::SetActiveScene(Scene* pScene)
+	{
+		m_pActiveScene = pScene;
+	}
 }

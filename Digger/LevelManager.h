@@ -13,6 +13,11 @@ namespace dae
     {
     public:
         void InitLevel(int rows, int cols);
+
+        void LoadAllLevelsFromFile(const std::string& filePath);
+        std::vector<std::string> GetLevelLayout(int levelIndex) const;
+        int GetTotalLevels() const { return static_cast<int>(m_AllLevelLayouts.size()); }
+
         void AddDirtTile(int col, int row);
         void RegisterHoleObject(int col, int row, GameObject* pObj);
 
@@ -21,6 +26,8 @@ namespace dae
 
         float GetGridSize() const { return m_GridSize; }
         float GetOffsetY() const { return m_OffsetY; }
+
+        void ClearLevel();
 
     private:
         friend class Singleton<LevelManager>;
@@ -31,6 +38,9 @@ namespace dae
 
         std::vector<std::vector<bool>> m_DirtGrid;
         std::vector<std::vector<GameObject*>> m_HoleObjects;
+
+        std::vector<std::vector<std::string>> m_AllLevelLayouts;
     };
 }
+
 #endif

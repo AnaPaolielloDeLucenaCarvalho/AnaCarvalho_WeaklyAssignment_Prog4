@@ -48,5 +48,14 @@ namespace dae
         void OnEnter(DiggerComponent* /*digger*/) override {}
         DiggerState* Update(DiggerComponent* /*digger*/, float /*deltaTime*/) override { return nullptr; }
     };
+
+    class DiggerLevelCompleteState : public DiggerState
+    {
+    public:
+        void OnEnter(DiggerComponent* digger) override;
+        DiggerState* Update(DiggerComponent* digger, float deltaTime) override;
+    private:
+        float m_TransitionTimer{ 4.0f };
+    };
 }
 #endif
