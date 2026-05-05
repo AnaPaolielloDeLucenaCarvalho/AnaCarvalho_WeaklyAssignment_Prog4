@@ -10,22 +10,22 @@ This project is trying to recreate the 1983 arcade game **Digger**, from scratch
 ## Roadmap / Progress Tracker
 
 ### Engine & Exam Requirements
-- [ ] Parse and load 3 custom level layouts from data files
+- [x] Parse and load 3 custom level layouts from data files
 - [ ] Implement F1 level skip functionality
 - [x] Fix memory leaks
 - [ ] Persistent High Scores (Local saving)
 
 ### Gameplay Mechanics
-- [ ] Core Digger mechanics (digging through dirt)
+- [x] Core Digger mechanics (digging through dirt)
 - [ ] Enemy AI (Nobbins and Hobbins)
-- [ ] Coin bags (Gravity, falling, and breaking)
+- [x] Coin bags (Gravity, falling, and breaking)
 - [ ] Cherry / Bonus item spawning
 - [ ] Fully implement Two-Player Modes (Co-Op & Versus)
 - [ ] Map rendering fix (Black part missing correct texture)
 
 ### Game Flow & UI
 - [ ] Main Menu screen
-- [ ] Win / Next Level transition logic
+- [x] Win / Next Level transition logic
 - [ ] Game Over screen
 - [ ] High Score leaderboard UI
 
@@ -34,7 +34,7 @@ This project is trying to recreate the 1983 arcade game **Digger**, from scratch
   - [x] Main background music
   - [x] Death sound
   - [ ] Point collection sound
-  - [ ] Level win sound
+  - [x] Level win sound
   - [ ] Bonus sound/music
 - [x] Audio system foundation built
 - [ ] Audio system be able to pause/play from begging
