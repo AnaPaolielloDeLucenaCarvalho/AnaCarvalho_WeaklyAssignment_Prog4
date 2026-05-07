@@ -3,17 +3,17 @@
 
 void dae::GameObject::Update(float deltaTime)
 {
-	for (auto& component : m_Components)
+	for (auto& component : m_components)
 	{
 		component->Update(deltaTime);
 	}
 
-	std::erase_if(m_Components, [](const std::unique_ptr<Component>& component){ return component->IsMarkedForDestroy(); });
+	std::erase_if(m_components, [](const std::unique_ptr<Component>& component){ return component->IsMarkedForDestroy(); });
 }
 
 void dae::GameObject::Render() const
 {
-	for (const auto& component : m_Components)
+	for (const auto& component : m_components)
 	{
 		component->Render();
 	}

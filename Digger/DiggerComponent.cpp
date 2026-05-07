@@ -56,11 +56,12 @@ namespace dae
         {
             m_Lives--;
             m_Subject.Notify(make_sdbm_hash("PlayerDied"), m_Lives);
-            ServiceLocator::get_sound_system().play(3, 1.0f);
+            ServiceLocator::GetSoundSystem().Play(3, 1.0f);
         }
 
         if (m_Lives <= 0)
         {
+			// TODO - actually implement game over screen
             std::cout << "GAME OVER! Going back to Main Menu...\n";
         }
     }

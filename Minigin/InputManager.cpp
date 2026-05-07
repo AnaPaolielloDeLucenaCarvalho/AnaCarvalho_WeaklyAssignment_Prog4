@@ -14,7 +14,7 @@ namespace dae
 
     void InputManager::BindCommand(SDL_Scancode key, KeyState state, std::unique_ptr<Command> command)
     {
-        m_KeyboardCommands[std::make_pair(key, state)] = std::move(command);
+        m_keyboardCommands[std::make_pair(key, state)] = std::move(command);
     }
 
     void InputManager::BindCommand(unsigned int controllerIndex, Gamepad::ControllerButton button, KeyState state, std::unique_ptr<Command> command)
@@ -24,7 +24,7 @@ namespace dae
 
     void InputManager::UnbindAll()
     {
-        m_KeyboardCommands.clear();
+        m_keyboardCommands.clear();
         m_GamepadCommands.clear();
     }
 
@@ -49,7 +49,7 @@ namespace dae
 
         // Keyboard Commands
         const bool* state = SDL_GetKeyboardState(nullptr);
-        for (auto& [keyBinding, command] : m_KeyboardCommands)
+        for (auto& [keyBinding, command] : m_keyboardCommands)
         {
             const auto& [key, keyState] = keyBinding;
             if (keyState == KeyState::Pressed && state[key])

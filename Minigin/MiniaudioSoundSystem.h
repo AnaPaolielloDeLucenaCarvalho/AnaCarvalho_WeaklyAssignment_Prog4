@@ -13,8 +13,8 @@ namespace dae
         MiniaudioSoundSystem();
         ~MiniaudioSoundSystem() override;
 
-        void play(const sound_id id, const float volume) override;
-        void loadSound(const sound_id id, const std::string& filePath) override;
+        void Play(const sound_id id, const float volume) override;
+        void LoadSound(const sound_id id, const std::string& filePath) override;
 
         void ToggleMute() override;
 

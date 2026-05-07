@@ -36,6 +36,6 @@ namespace dae
 		std::vector<std::unique_ptr<GameObject>> m_objects{};
 		std::vector<std::unique_ptr<GameObject>> m_pendingObjects{};
 
-		bool m_LevelNeedsCleanup{ false };
+		bool m_levelNeedsCleanup{ false };
 	};
 }

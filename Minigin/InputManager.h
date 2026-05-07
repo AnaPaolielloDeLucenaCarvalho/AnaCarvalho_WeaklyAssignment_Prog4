@@ -32,7 +32,7 @@ namespace dae
         void UnbindAll();
 
     private:
-        std::map<std::pair<SDL_Scancode, KeyState>, std::unique_ptr<Command>> m_KeyboardCommands;
+        std::map<std::pair<SDL_Scancode, KeyState>, std::unique_ptr<Command>> m_keyboardCommands;
 		std::vector<std::unique_ptr<Gamepad>> m_pGamepads; // so it supports multiple gamepads
 
         struct GamepadBinding

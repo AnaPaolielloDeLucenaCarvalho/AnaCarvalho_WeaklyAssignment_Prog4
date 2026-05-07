@@ -27,8 +27,8 @@ namespace dae
         auto size = m_texture->GetSize();
 
         // Use the member variable scale
-        float scaledW = size.x * m_Scale;
-        float scaledH = size.y * m_Scale;
+        float scaledW = size.x * m_scale;
+        float scaledH = size.y * m_scale;
 
         const auto flip = m_isFlipped ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
         //dae::Renderer::GetInstance().RenderTexture(*m_texture, pos.x, pos.y, scaledW, scaledH, flip);
@@ -39,7 +39,7 @@ namespace dae
             m_texture->GetSDLTexture(),
             nullptr,
             &dst,
-            m_Angle,
+            m_angle,
             nullptr,
             flip
         );

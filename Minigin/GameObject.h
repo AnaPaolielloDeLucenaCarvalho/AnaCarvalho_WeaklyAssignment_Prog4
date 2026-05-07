@@ -14,7 +14,7 @@ namespace dae
         Transform m_worldTransform{};
         Transform m_localTransform{};
 
-		std::vector<std::unique_ptr<Component>> m_Components;
+		std::vector<std::unique_ptr<Component>> m_components;
 		bool m_isMarkedForDestroy{ false };
 
         // W02
@@ -27,7 +27,7 @@ namespace dae
         void RemoveChild(GameObject* child);
         void AddChild(GameObject* child);
 
-        int m_ZIndex{ 0 };
+        int m_zIndex{ 0 };
 	public:
 		GameObject() = default;
 		~GameObject() = default;
@@ -53,8 +53,8 @@ namespace dae
         void MarkForDestroy() { m_isMarkedForDestroy = true; }
         bool IsMarkedForDestroy() const { return m_isMarkedForDestroy; }
 
-        void SetZIndex(int z) { m_ZIndex = z; }
-        int GetZIndex() const { return m_ZIndex; }
+        void SetZIndex(int z) { m_zIndex = z; }
+        int GetZIndex() const { return m_zIndex; }
 
         // COMPONENT SYSTEM
 
@@ -65,7 +65,7 @@ namespace dae
             static_assert(std::is_base_of<Component, T>::value, "T must derive from Component");
             auto component = std::make_unique<T>(this, std::forward<Args>(args)...);
             T* rawPtr = component.get();
-            m_Components.push_back(std::move(component));
+            m_components.push_back(std::move(component));
             return rawPtr;
         }
 
@@ -73,7 +73,7 @@ namespace dae
         template <typename T>
         T* GetComponent() const
         {
-            for (const auto& component : m_Components)
+            for (const auto& component : m_components)
             {
                 if (T* castedComponent = dynamic_cast<T*>(component.get()))
                 {
@@ -91,7 +91,7 @@ namespace dae
         template <typename T>
         void RemoveComponent()
         {
-            for (const auto& component : m_Components)
+            for (const auto& component : m_components)
             {
                 if (dynamic_cast<T*>(component.get()) != nullptr)
                 {

@@ -24,9 +24,10 @@ namespace dae
         void SetDiamonds(const std::vector<GameObject*>& diamonds) { m_pDiamonds = diamonds; }
         void SetGoldBags(const std::vector<GameObject*>& bags) { m_pGoldBags = bags; }
 
-        GameObject* GetOtherPlayer() const { return m_pOtherPlayer; }
         const std::vector<GameObject*>& GetDiamonds() const { return m_pDiamonds; }
         const std::vector<GameObject*>& GetGoldBags() const { return m_pGoldBags; }
+
+        GameObject* GetOtherPlayer() const { return m_pOtherPlayer; }
         Subject& GetSubject() { return m_Subject; }
 
         int GetLives() const { return m_Lives; }

@@ -19,7 +19,7 @@ namespace dae
 
             if (currentTime - m_LastToggleTime > 300)
             {
-                ServiceLocator::get_sound_system().ToggleMute();
+                ServiceLocator::GetSoundSystem().ToggleMute();
                 m_LastToggleTime = currentTime;
             }
         }

@@ -102,7 +102,7 @@ namespace dae
 
     MiniaudioSoundSystem::MiniaudioSoundSystem() : pImpl(std::make_unique<MiniaudioSoundSystemImpl>()) {}
     MiniaudioSoundSystem::~MiniaudioSoundSystem() = default;
-    void MiniaudioSoundSystem::play(const sound_id id, const float volume) { pImpl->Play(id, volume); }
-    void MiniaudioSoundSystem::loadSound(const sound_id id, const std::string& filePath) { pImpl->LoadSound(id, filePath); }
+    void MiniaudioSoundSystem::Play(const sound_id id, const float volume) { pImpl->Play(id, volume); }
+    void MiniaudioSoundSystem::LoadSound(const sound_id id, const std::string& filePath) { pImpl->LoadSound(id, filePath); }
     void MiniaudioSoundSystem::ToggleMute() { pImpl->ToggleMute(); }
 }

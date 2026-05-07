@@ -10,8 +10,8 @@ namespace dae
     class SoundSystem {
     public:
         virtual ~SoundSystem() = default;
-        virtual void play(const sound_id id, const float volume) = 0;
-        virtual void loadSound(const sound_id id, const std::string& filePath) = 0;
+        virtual void Play(const sound_id id, const float volume) = 0;
+        virtual void LoadSound(const sound_id id, const std::string& filePath) = 0;
 
         virtual void ToggleMute() = 0;
     };

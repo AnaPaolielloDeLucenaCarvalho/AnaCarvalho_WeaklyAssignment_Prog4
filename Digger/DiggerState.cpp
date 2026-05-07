@@ -128,7 +128,7 @@ namespace dae
 	// bonus state
     void DiggerBonusState::OnEnter(DiggerComponent* digger)
     {
-        ServiceLocator::get_sound_system().play(1, 1.0f);
+        ServiceLocator::GetSoundSystem().Play(1, 1.0f);
 
         if (auto render = digger->GetOwner()->GetComponent<RenderComponent>())
         {
@@ -139,7 +139,7 @@ namespace dae
 
     void DiggerBonusState::OnExit(DiggerComponent* /*digger*/)
     {
-        ServiceLocator::get_sound_system().play(0, 0.5f);
+        ServiceLocator::GetSoundSystem().Play(0, 0.5f);
     }
 
     DiggerState* DiggerBonusState::Update(DiggerComponent* digger, float deltaTime)
@@ -219,7 +219,7 @@ namespace dae
         digger->SetDesiredDirection(glm::vec2{ 0,0 });
         digger->SetCurrentDirection(glm::vec2{ 0,0 });
 
-        ServiceLocator::get_sound_system().play(2, 0.5f);
+        ServiceLocator::GetSoundSystem().Play(2, 0.5f);
 
 		// fade 4s to black
         auto fadeObj = std::make_unique<GameObject>();

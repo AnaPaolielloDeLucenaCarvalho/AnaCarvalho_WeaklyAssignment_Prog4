@@ -23,14 +23,14 @@ namespace dae
         void SetTexture(std::shared_ptr<Texture2D> texture) { m_texture = std::move(texture); };
 
         void SetFlip(bool flip) { m_isFlipped = flip; }
-        void SetScale(float scale) { m_Scale = scale; }
-        void SetRotation(double angle) { m_Angle = angle; }
+        void SetScale(float scale) { m_scale = scale; }
+        void SetRotation(double angle) { m_angle = angle; }
 
     private:
         std::shared_ptr<Texture2D> m_texture;
         bool m_isFlipped{ false };
-        float m_Scale{ 1.0f };
-        double m_Angle{ 0.0 };
+        float m_scale{ 1.0f };
+        double m_angle{ 0.0 };
     };
 }
 #endif // RENDERCOMPONENT_H

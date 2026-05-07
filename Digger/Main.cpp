@@ -197,9 +197,9 @@ static void load()
 
 	auto miniaudioSystem = std::make_unique<dae::MiniaudioSoundSystem>();
 	auto loggingSoundSystem = std::make_unique<dae::LoggingSoundSystem>(std::move(miniaudioSystem));
-	dae::ServiceLocator::register_sound_system(std::move(loggingSoundSystem));
+	dae::ServiceLocator::RegisterSoundSystem(std::move(loggingSoundSystem));
 
-	auto& soundSystem = dae::ServiceLocator::get_sound_system();
+	auto& soundSystem = dae::ServiceLocator::GetSoundSystem();
 
 #ifdef __EMSCRIPTEN__
 	const std::string soundFolder = "Sounds/";
@@ -207,10 +207,10 @@ static void load()
 	const std::string soundFolder = "Data/Sounds/";
 #endif
 
-	soundSystem.loadSound(DiggerSounds::MUSIC, soundFolder + "main_music.wav");
-	soundSystem.loadSound(DiggerSounds::BONUS, soundFolder + "bonus.wav");
-	soundSystem.loadSound(DiggerSounds::NEXT_LEVEL, soundFolder + "next_level.wav");
-	soundSystem.loadSound(DiggerSounds::DEATH, soundFolder + "death.wav");
+	soundSystem.LoadSound(DiggerSounds::MUSIC, soundFolder + "main_music.wav");
+	soundSystem.LoadSound(DiggerSounds::BONUS, soundFolder + "bonus.wav");
+	soundSystem.LoadSound(DiggerSounds::NEXT_LEVEL, soundFolder + "next_level.wav");
+	soundSystem.LoadSound(DiggerSounds::DEATH, soundFolder + "death.wav");
 
 // ----------------- SCENE SETUP -----------------
 
@@ -225,6 +225,7 @@ static void load()
 
 // ----------------- MENU SETUP -----------------
 
+	// TODO - make this pretty and correct to digger (all the game modes here)
 	auto titleObj = std::make_unique<dae::GameObject>();
 	auto titleRender = titleObj->AddComponent<dae::RenderComponent>("PNG/Other/CTITLE.png");
 	titleRender->SetScale(2.0f);
@@ -338,7 +339,7 @@ static void load()
 	instructions3->SetZIndex(10);
 	gameScene.Add(std::move(instructions3));
 
-	soundSystem.play(DiggerSounds::MUSIC, 0.5f);
+	soundSystem.Play(DiggerSounds::MUSIC, 0.5f);
 
 #ifdef __EMSCRIPTEN__
 	std::string levelPath = "Levels.txt";
@@ -400,7 +401,7 @@ int main(int, char* [])
 	std::cout << "SteamAPI Shutdown." << std::endl;
 #endif
 
-	dae::ServiceLocator::register_sound_system(nullptr);
+	dae::ServiceLocator::RegisterSoundSystem(nullptr);
 
 	return 0;
 }

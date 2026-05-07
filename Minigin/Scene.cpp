@@ -26,7 +26,7 @@ void Scene::RemoveAll()
 
 void Scene::RequestLevelCleanup()
 {
-	m_LevelNeedsCleanup = true;
+	m_levelNeedsCleanup = true;
 }
 
 void Scene::Update(float deltaTime)
@@ -47,10 +47,10 @@ void Scene::Update(float deltaTime)
 	m_pendingObjects.clear();
 
 	// nothing was working and it was either trhowing an exception when switching scenes or when the player ate a diamond - so this is the solution - clean up the scene in the end of update
-	if (m_LevelNeedsCleanup)
+	if (m_levelNeedsCleanup)
 	{
 		CleanUpScene();
-		m_LevelNeedsCleanup = false;
+		m_levelNeedsCleanup = false;
 	}
 }
 
