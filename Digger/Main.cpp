@@ -228,8 +228,8 @@ static void load()
 	// TODO - make this pretty and correct to digger (all the game modes here)
 	auto titleObj = std::make_unique<dae::GameObject>();
 	auto titleRender = titleObj->AddComponent<dae::RenderComponent>("PNG/Other/CTITLE.png");
-	titleRender->SetScale(2.0f);
-	titleObj->SetLocalPosition(250, 150);
+	titleRender->SetScale(2.75f);
+	titleObj->SetLocalPosition( 70.f, 30.f);
 	menuScene.Add(std::move(titleObj));
 
 	auto startText = std::make_unique<dae::GameObject>();
@@ -400,8 +400,5 @@ int main(int, char* [])
 	SteamAPI_Shutdown();
 	std::cout << "SteamAPI Shutdown." << std::endl;
 #endif
-
-	dae::ServiceLocator::RegisterSoundSystem(nullptr);
-
 	return 0;
 }

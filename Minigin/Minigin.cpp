@@ -16,6 +16,8 @@
 #include "Renderer.h"
 #include "ResourceManager.h"
 
+#include "ServiceLocator.h" // for memory leak about sound system
+
 #include <chrono> // For deltaTime
 
 #if USE_STEAMWORKS
@@ -87,6 +89,8 @@ dae::Minigin::Minigin(const std::filesystem::path& dataPath)
 
 dae::Minigin::~Minigin()
 {
+	dae::ServiceLocator::RegisterSoundSystem(nullptr);
+
 	Renderer::GetInstance().Destroy();
 	SDL_DestroyWindow(g_window);
 	g_window = nullptr;
