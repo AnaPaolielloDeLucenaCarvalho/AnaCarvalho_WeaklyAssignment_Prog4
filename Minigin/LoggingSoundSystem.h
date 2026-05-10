@@ -3,36 +3,22 @@
 
 #include "SoundSystem.h"
 #include <memory>
-#include <iostream>
+#include <string>
 
 namespace dae
 {
     class LoggingSoundSystem final : public SoundSystem
     {
     public:
-        LoggingSoundSystem(std::unique_ptr<SoundSystem>&& ss) : _realSS(std::move(ss)) {}
+        LoggingSoundSystem(std::unique_ptr<SoundSystem>&& ss);
+        ~LoggingSoundSystem() override = default;
 
-        void Play(const sound_id id, const float volume) override
-        {
-            std::cout << "[Sound Logger] Playing sound ID: " << id << " at volume: " << volume << "\n";
-            _realSS->Play(id, volume);
-        }
-
-        void LoadSound(const sound_id id, const std::string& filePath) override
-        {
-            std::cout << "[Sound Logger] Loading sound ID: " << id << " from " << filePath << "\n";
-            _realSS->LoadSound(id, filePath);
-        }
-
-        void ToggleMute() override
-        {
-            std::cout << "[Sound Logger] Toggling Audio Mute State\n";
-            _realSS->ToggleMute();
-        }
+        void Play(const sound_id id, const float volume) override;
+        void LoadSound(const sound_id id, const std::string& filePath) override;
+        void ToggleMute() override;
 
     private:
-            std::unique_ptr<SoundSystem> _realSS;
+        std::unique_ptr<SoundSystem> _realSS;
     };
 }
-
-#endif 
+#endif

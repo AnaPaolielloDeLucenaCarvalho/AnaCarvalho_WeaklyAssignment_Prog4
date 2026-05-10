@@ -63,7 +63,8 @@ add_library(Minigin STATIC
   Minigin/Texture2D.cpp
   Minigin/Transform.cpp
   Minigin/MiniaudioSoundSystem.cpp
-  Minigin/ServiceLocator.cpp)
+  Minigin/ServiceLocator.cpp 
+  Minigin/LoggingSoundSystem.cpp)
 
 # Enable c++20 features for the engine
 target_compile_features(Minigin PUBLIC cxx_std_20)
@@ -83,8 +84,7 @@ add_executable(${TARGET_NAME} ${TARGET_PARAM}
   Digger/DiggerState.cpp
   Digger/DiggerComponent.cpp
   Digger/LevelManager.cpp
-  # Add any .cpp for Digger here!!!
-)
+  # Add any .cpp for Digger here!!!)
 
 # Enable c++20 features for the game
 target_compile_features(${TARGET_NAME} PUBLIC cxx_std_20)
@@ -182,7 +182,7 @@ add_library(imgui STATIC
   ${imgui_SOURCE_DIR}/imgui_widgets.cpp
   ${imgui_SOURCE_DIR}/imgui_demo.cpp
   ${imgui_SOURCE_DIR}/backends/imgui_impl_sdl3.cpp
-  ${imgui_SOURCE_DIR}/backends/imgui_impl_sdlrenderer3.cpp "Minigin/Gamepad.cpp")
+  ${imgui_SOURCE_DIR}/backends/imgui_impl_sdlrenderer3.cpp "Minigin/Gamepad.cpp" "Minigin/LoggingSoundSystem.cpp")
 
 target_include_directories(imgui PUBLIC ${imgui_SOURCE_DIR} ${sdl3_SOURCE_DIR}/include)
 target_link_libraries(imgui PUBLIC SDL3::SDL3)
