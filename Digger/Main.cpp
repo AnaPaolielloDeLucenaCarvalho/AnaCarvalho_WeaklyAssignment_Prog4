@@ -30,6 +30,7 @@
 #include "LevelManager.h"
 #include "DiggerState.h"
 #include "MenuManager.h"
+#include "SkipLevelCommand.h"
 
 #if USE_STEAMWORKS
 #pragma warning (push)
@@ -65,12 +66,16 @@ public:
 	{
 		if (eventId == dae::make_sdbm_hash("LoadNextLevel"))
 		{
-			m_CurrentLevel++;
-			if (m_CurrentLevel >= dae::LevelManager::GetInstance().GetTotalLevels()) 
+			Uint64 currentTime = SDL_GetTicks();
+			if (currentTime - m_LastLoadTime < 1000) return; // 1 second cooldown!
+			m_LastLoadTime = currentTime;
+
+			m_CurrentLevelIndex++;
+			if (m_CurrentLevelIndex >= dae::LevelManager::GetInstance().GetTotalLevels())
 			{
-				m_CurrentLevel = 0;
+				m_CurrentLevelIndex = 0;
 			}
-			LoadLevel(m_CurrentLevel);
+			LoadLevel(m_CurrentLevelIndex);
 		}
 	}
 
@@ -112,10 +117,17 @@ public:
 				if (layout[row][col] != ' ')
 				{
 					dae::LevelManager::GetInstance().AddDirtTile(col, row);
+
+					// so bg changed with level
+					int textureNumber = (levelIndex % 3) + 1;
+					std::string texturePath = "PNG/Map/VBACK" + std::to_string(textureNumber) + ".png";
+
 					for (int strip = 0; strip < 5; ++strip)
 					{
 						auto tile = std::make_unique<dae::GameObject>();
-						tile->AddComponent<dae::RenderComponent>("PNG/Map/VBACK1.png");
+
+						tile->AddComponent<dae::RenderComponent>(texturePath);
+
 						tile->SetLocalPosition(bx, by + (strip * 8.0f));
 						tile->SetZIndex(1);
 						m_VisualDirt.push_back(tile.get());
@@ -187,9 +199,10 @@ private:
 	dae::Scene* m_pScene;
 	dae::DiggerComponent* m_p1;
 	dae::DiggerComponent* m_p2;
-	int m_CurrentLevel{ 0 };
 	std::vector<dae::GameObject*> m_VisualDirt;
-};
+	int m_CurrentLevelIndex{ 0 };
+	Uint64 m_LastLoadTime{ 0 };
+	};
 
 static void load()
 {
@@ -323,6 +336,9 @@ static void load()
 
 	auto muteCommand = std::make_unique<dae::MuteCommand>();
 	input.BindCommand(SDL_SCANCODE_F2, dae::KeyState::Pressed, std::move(muteCommand));
+
+	auto skipLevelCommand1 = std::make_unique<dae::SkipLevelCommand>(diggerComp1);
+	input.BindCommand(SDL_SCANCODE_F1, dae::KeyState::Pressed, std::move(skipLevelCommand1));
 
 	g_AchievementMgr = std::make_shared<dae::AchievementManager>();
 	scoreObs1->AddObserver(g_AchievementMgr.get());
