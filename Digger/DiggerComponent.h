@@ -6,6 +6,8 @@
 #include <vector>
 #include <glm/vec2.hpp>
 
+#include <memory>
+
 namespace dae
 {
     class DiggerState;
@@ -54,11 +56,10 @@ namespace dae
         std::vector<GameObject*> m_pDiamonds{};
         std::vector<GameObject*> m_pGoldBags{};
 
-        DiggerState* m_pCurrentState{ nullptr };
+        std::unique_ptr<DiggerState> m_pCurrentState{ nullptr };
 
         glm::vec2 m_DesiredDirection{ 0, 0 };
         glm::vec2 m_CurrentDirection{ 0, 0 };
-
         glm::vec2 m_SpawnPos{ 0, 0 };
         bool m_IsDead{ false };
     };

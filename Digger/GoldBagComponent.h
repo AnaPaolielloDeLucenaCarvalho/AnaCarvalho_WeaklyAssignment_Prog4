@@ -3,6 +3,7 @@
 
 #include "Component.h"
 #include "GameObject.h"
+#include <memory>
 
 namespace dae
 {
@@ -28,12 +29,12 @@ namespace dae
     private:
         void ChangeState(GoldBagState* newState);
 
-        GoldBagState* m_pCurrentState{ nullptr };
+        std::unique_ptr<GoldBagState> m_pCurrentState{ nullptr };
 
         GameObject* m_pPlayer1{ nullptr };
         GameObject* m_pPlayer2{ nullptr };
 
-		bool m_IsBroken{ false };
+        bool m_IsBroken{ false };
     };
 }
 #endif

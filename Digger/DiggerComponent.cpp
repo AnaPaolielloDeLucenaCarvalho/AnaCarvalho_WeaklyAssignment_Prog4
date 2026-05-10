@@ -7,7 +7,7 @@ namespace dae
 {
     DiggerComponent::DiggerComponent(GameObject* owner) : Component(owner)
     {
-        m_pCurrentState = new DiggerNormalState();
+        m_pCurrentState = std::make_unique<DiggerNormalState>();
         m_pCurrentState->OnEnter(this);
     }
 
@@ -16,7 +16,6 @@ namespace dae
         if (m_pCurrentState)
         {
             m_pCurrentState->OnExit(this);
-            delete m_pCurrentState;
         }
     }
 
@@ -39,10 +38,9 @@ namespace dae
         if (m_pCurrentState)
         {
             m_pCurrentState->OnExit(this);
-            delete m_pCurrentState;
         }
 
-        m_pCurrentState = newState;
+        m_pCurrentState.reset(newState);
 
         if (m_pCurrentState)
         {

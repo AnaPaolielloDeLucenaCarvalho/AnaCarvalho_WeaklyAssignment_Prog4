@@ -9,7 +9,7 @@ namespace dae
 {
     GoldBagComponent::GoldBagComponent(dae::GameObject* owner) : dae::Component(owner)
     {
-        m_pCurrentState = new GoldBagIdleState();
+        m_pCurrentState = std::make_unique<GoldBagIdleState>();
         m_pCurrentState->OnEnter(this);
     }
 
@@ -18,7 +18,6 @@ namespace dae
         if (m_pCurrentState)
         {
             m_pCurrentState->OnExit(this);
-            delete m_pCurrentState;
         }
     }
 
@@ -39,10 +38,9 @@ namespace dae
         if (m_pCurrentState)
         {
             m_pCurrentState->OnExit(this);
-            delete m_pCurrentState;
         }
 
-        m_pCurrentState = newState;
+        m_pCurrentState.reset(newState);
 
         if (m_pCurrentState)
         {
