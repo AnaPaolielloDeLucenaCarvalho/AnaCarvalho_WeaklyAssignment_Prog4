@@ -88,6 +88,7 @@ namespace dae
             if (!bag || bag->IsMarkedForDestroy()) continue;
             auto bagPos = bag->GetTransform().GetPosition();
 
+            // Are we colliding with a bag?
             if (glm::distance(glm::vec2{ newX, newY }, glm::vec2{ bagPos.x, bagPos.y }) < 25.f)
             {
                 auto bagComp = bag->GetComponent<GoldBagComponent>();
@@ -98,7 +99,42 @@ namespace dae
                 }
                 else if (glm::length(currentDir) > 0)
                 {
-                    bag->SetLocalPosition(bagPos.x + (currentDir.x * speed), bagPos.y + (currentDir.y * speed));
+                    glm::vec2 toBag = glm::vec2(bagPos.x - myPos.x, bagPos.y - myPos.y);
+                    float dotProduct = (currentDir.x * toBag.x) + (currentDir.y * toBag.y);
+
+                    if (dotProduct > 0.0f)
+                    {
+                        bool canPush = true;
+                        glm::vec2 futureBagPos = glm::vec2(bagPos.x + (currentDir.x * speed), bagPos.y + (currentDir.y * speed));
+
+                        for (auto& otherBag : digger->GetGoldBags())
+                        {
+                            if (otherBag == bag || !otherBag || otherBag->IsMarkedForDestroy()) continue;
+
+                            auto otherBagPos = otherBag->GetTransform().GetPosition();
+
+                            bool overlapX = std::abs(futureBagPos.x - otherBagPos.x) < 30.0f;
+                            bool overlapY = std::abs(futureBagPos.y - otherBagPos.y) < 30.0f;
+
+                            if (overlapX && overlapY)
+                            {
+                                canPush = false;
+                                break;
+                            }
+                        }
+
+                        if (canPush)
+                        {
+                            // clear, move the bag
+                            bag->SetLocalPosition(futureBagPos.x, futureBagPos.y);
+                        }
+                        else
+                        {
+                            // BLOCKED! revert the Digger's movement
+                            digger->GetOwner()->SetLocalPosition(myPos.x, myPos.y);
+                            digger->SetCurrentDirection({ 0, 0 });
+                        }
+                    }
                 }
             }
         }

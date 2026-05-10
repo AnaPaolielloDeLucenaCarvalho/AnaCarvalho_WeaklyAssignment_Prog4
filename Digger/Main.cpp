@@ -251,6 +251,13 @@ static void load()
 	hudBg->SetZIndex(10);
 	gameScene.Add(std::move(hudBg));
 
+	// black bg for the level
+	auto levelBg = std::make_unique<dae::GameObject>();
+	levelBg->AddComponent<dae::UIPanelComponent>(1040.f, 612.f, SDL_Color{ 0, 0, 0, 255 });
+	levelBg->SetLocalPosition(0, 0);
+	levelBg->SetZIndex(-1);
+	gameScene.Add(std::move(levelBg));
+
 	auto fpsObject = std::make_unique<dae::GameObject>();
 	fpsObject->AddComponent<dae::TextComponent>("0 FPS", fontSmall, SDL_Color{ 150, 150, 150, 255 });
 	fpsObject->AddComponent<dae::FPSComponent>();

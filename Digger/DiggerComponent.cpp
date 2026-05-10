@@ -50,6 +50,12 @@ namespace dae
 
     void DiggerComponent::Die()
     {
+        // If level won make digger invincible
+        if (dynamic_cast<DiggerLevelCompleteState*>(m_pCurrentState.get()) != nullptr)
+        {
+            return;
+        }
+
         if (m_Lives > 0)
         {
             m_Lives--;

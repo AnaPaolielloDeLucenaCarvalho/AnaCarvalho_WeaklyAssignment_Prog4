@@ -101,7 +101,7 @@ namespace dae
 
     GoldBagState* GoldBagBrokenState::Update(GoldBagComponent* bag, float deltaTime)
     {
-        if (!bag->IsDirtDirectlyUnderneath())
+        if (!bag->IsDirtDirectlyUnderneath() && !bag->HitBottom())
         {
             bag->GetOwner()->MarkForDestroy();
             return nullptr;
