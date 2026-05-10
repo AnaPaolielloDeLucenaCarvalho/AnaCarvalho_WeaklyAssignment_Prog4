@@ -88,8 +88,10 @@ namespace dae
             if (!bag || bag->IsMarkedForDestroy()) continue;
             auto bagPos = bag->GetTransform().GetPosition();
 
-            // Are we colliding with a bag?
-            if (glm::distance(glm::vec2{ newX, newY }, glm::vec2{ bagPos.x, bagPos.y }) < 25.f)
+            bool touchingX = std::abs(newX - bagPos.x) < 32.0f;
+            bool touchingY = std::abs(newY - bagPos.y) < 32.0f;
+
+            if (touchingX && touchingY)
             {
                 auto bagComp = bag->GetComponent<GoldBagComponent>();
                 if (bagComp && bagComp->IsBroken())
@@ -97,42 +99,39 @@ namespace dae
                     bag->MarkForDestroy();
                     digger->GetSubject().Notify(make_sdbm_hash("DiamondPickedUp"), 500);
                 }
-                else if (glm::length(currentDir) > 0)
+                else
                 {
-                    glm::vec2 toBag = glm::vec2(bagPos.x - myPos.x, bagPos.y - myPos.y);
-                    float dotProduct = (currentDir.x * toBag.x) + (currentDir.y * toBag.y);
+                    float oldDist = glm::distance(glm::vec2(myPos.x, myPos.y), glm::vec2(bagPos.x, bagPos.y));
+                    float newDist = glm::distance(glm::vec2(newX, newY), glm::vec2(bagPos.x, bagPos.y));
 
-                    if (dotProduct > 0.0f)
+                    if (newDist < oldDist)
                     {
-                        bool canPush = true;
-                        glm::vec2 futureBagPos = glm::vec2(bagPos.x + (currentDir.x * speed), bagPos.y + (currentDir.y * speed));
+                        float deltaX = newX - myPos.x;
+                        float deltaY = newY - myPos.y;
 
-                        for (auto& otherBag : digger->GetGoldBags())
+                        bag->SetLocalPosition(bagPos.x + deltaX, bagPos.y + deltaY);
+
+                        for (int chain = 0; chain < 3; ++chain)
                         {
-                            if (otherBag == bag || !otherBag || otherBag->IsMarkedForDestroy()) continue;
-
-                            auto otherBagPos = otherBag->GetTransform().GetPosition();
-
-                            bool overlapX = std::abs(futureBagPos.x - otherBagPos.x) < 30.0f;
-                            bool overlapY = std::abs(futureBagPos.y - otherBagPos.y) < 30.0f;
-
-                            if (overlapX && overlapY)
+                            for (auto& b1 : digger->GetGoldBags())
                             {
-                                canPush = false;
-                                break;
-                            }
-                        }
+                                if (!b1 || b1->IsMarkedForDestroy()) continue;
+                                auto p1 = b1->GetTransform().GetPosition();
 
-                        if (canPush)
-                        {
-                            // clear, move the bag
-                            bag->SetLocalPosition(futureBagPos.x, futureBagPos.y);
-                        }
-                        else
-                        {
-                            // BLOCKED! revert the Digger's movement
-                            digger->GetOwner()->SetLocalPosition(myPos.x, myPos.y);
-                            digger->SetCurrentDirection({ 0, 0 });
+                                for (auto& b2 : digger->GetGoldBags())
+                                {
+                                    if (b1 == b2 || !b2 || b2->IsMarkedForDestroy()) continue;
+                                    auto p2 = b2->GetTransform().GetPosition();
+
+                                    if (std::abs(p1.x - p2.x) < 38.0f && std::abs(p1.y - p2.y) < 38.0f)
+                                    {
+                                        if (currentDir.x > 0 && p1.x < p2.x) b2->SetLocalPosition(p1.x + 38.0f, p2.y);
+                                        else if (currentDir.x < 0 && p1.x > p2.x) b2->SetLocalPosition(p1.x - 38.0f, p2.y);
+                                        else if (currentDir.y > 0 && p1.y < p2.y) b2->SetLocalPosition(p2.x, p1.y + 38.0f);
+                                        else if (currentDir.y < 0 && p1.y > p2.y) b2->SetLocalPosition(p2.x, p1.y - 38.0f);
+                                    }
+                                }
+                            }
                         }
                     }
                 }
