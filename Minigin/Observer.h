@@ -43,6 +43,14 @@ namespace dae
     public:
         virtual ~Observer() = default;
         virtual void OnNotify(EventId eventId, int value = 0) = 0;
+
+        Observer(const Observer& other) = delete;
+        Observer(Observer&& other) = delete;
+        Observer& operator=(const Observer& other) = delete;
+        Observer& operator=(Observer&& other) = delete;
+
+    protected:
+        Observer() = default;
     };
 }
 #endif

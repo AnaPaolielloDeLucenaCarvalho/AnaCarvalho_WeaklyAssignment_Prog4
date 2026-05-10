@@ -13,6 +13,14 @@ namespace dae
         virtual void OnEnter(GoldBagComponent* /*bag*/) {}
         virtual void OnExit(GoldBagComponent* /*bag*/) {}
         virtual GoldBagState* Update(GoldBagComponent* bag, float deltaTime) = 0;
+
+        GoldBagState(const GoldBagState& other) = delete;
+        GoldBagState(GoldBagState&& other) = delete;
+        GoldBagState& operator=(const GoldBagState& other) = delete;
+        GoldBagState& operator=(GoldBagState&& other) = delete;
+
+    protected:
+        GoldBagState() = default;
     };
 
     class GoldBagIdleState : public GoldBagState

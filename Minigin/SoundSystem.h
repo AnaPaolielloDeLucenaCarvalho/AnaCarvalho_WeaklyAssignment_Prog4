@@ -14,6 +14,14 @@ namespace dae
         virtual void LoadSound(const sound_id id, const std::string& filePath) = 0;
 
         virtual void ToggleMute() = 0;
+
+        SoundSystem(const SoundSystem& other) = delete;
+        SoundSystem(SoundSystem&& other) = delete;
+        SoundSystem& operator=(const SoundSystem& other) = delete;
+        SoundSystem& operator=(SoundSystem&& other) = delete;
+
+    protected:
+        SoundSystem() = default;
     };
 }
 

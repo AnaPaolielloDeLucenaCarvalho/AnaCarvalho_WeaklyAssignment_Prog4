@@ -12,6 +12,14 @@ namespace dae
         virtual void OnEnter(DiggerComponent* /*digger*/) {}
         virtual void OnExit(DiggerComponent* /*digger*/) {}
         virtual DiggerState* Update(DiggerComponent* digger, float deltaTime) = 0;
+
+        DiggerState(const DiggerState& other) = delete;
+        DiggerState(DiggerState&& other) = delete;
+        DiggerState& operator=(const DiggerState& other) = delete;
+        DiggerState& operator=(DiggerState&& other) = delete;
+
+    protected:
+        DiggerState() = default;
     };
 
     class DiggerNormalState : public DiggerState
