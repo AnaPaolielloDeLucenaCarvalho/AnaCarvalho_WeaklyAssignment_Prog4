@@ -11,13 +11,13 @@ This project is trying to recreate the 1983 arcade game **Digger**, from scratch
 
 ### Engine & Exam Requirements
 - [x] Parse and load 3 custom level layouts from data files
-- [ ] Implement F1 level skip functionality
+- [x] Implement F1 level skip functionality
 - [x] Fix memory leaks
 - [ ] Persistent High Scores (Local saving)
 
 ### Gameplay Mechanics
 - [x] Core Digger mechanics (digging through dirt)
-- [ ] Enemy AI (Nobbins and Hobbins)
+- [x] Enemy AI (Nobbins and Hobbins)
 - [x] Coin bags (Gravity, falling, and breaking)
 - [ ] Cherry / Bonus item spawning
 - [ ] Fully implement Two-Player Modes (Co-Op & Versus)
