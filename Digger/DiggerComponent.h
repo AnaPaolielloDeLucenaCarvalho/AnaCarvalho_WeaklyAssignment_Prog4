@@ -51,6 +51,8 @@ namespace dae
         void Shoot();
         void SetLastFacedDirection(const glm::vec2& dir) { m_LastFacedDirection = dir; }
         glm::vec2 GetLastFacedDirection() const { return m_LastFacedDirection; }
+        float GetFireballCooldown() const { return m_FireballCooldown; }
+        float GetShootAnimTimer() const { return m_ShootAnimTimer; }
 
     private:
         Subject m_Subject;
@@ -69,6 +71,7 @@ namespace dae
 
 		glm::vec2 m_LastFacedDirection{ 1, 0 }; // right by default
         float m_FireballCooldown{ 0.0f };
+        float m_ShootAnimTimer{ 0.0f };
     };
 }
 #endif

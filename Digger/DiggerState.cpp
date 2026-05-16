@@ -78,17 +78,40 @@ namespace dae
 	// SHOOTING
         digger->GetOwner()->SetLocalPosition(newX, newY);
 
-        if (currentDir.x != 0.0f) 
-        {
-            if (auto render = digger->GetOwner()->GetComponent<RenderComponent>()) 
-            {
-                render->SetFlip(currentDir.x < 0);
-            }
-        }
-
+		// remember direction
         if (glm::length(currentDir) > 0) 
         {
             digger->SetLastFacedDirection(currentDir);
+        }
+
+		// Cannon, Mouth, and Walking animation for digger
+        glm::vec2 facing = digger->GetLastFacedDirection();
+        std::string prefix = "VR"; // right
+        if (facing.x < 0) prefix = "VL"; // left
+        else if (facing.y < 0) prefix = "VU"; // up
+        else if (facing.y > 0) prefix = "VD"; // down
+
+        std::string frame = "1";
+
+        // 1 -> 2 -> 3 for animation
+        if (glm::length(currentDir) > 0) 
+        {
+            frame = std::to_string((SDL_GetTicks() / 100) % 3 + 1);
+        }
+
+        // mouth open
+        if (digger->GetShootAnimTimer() > 0.0f) 
+        {
+            frame = "3";
+        }
+
+        // "X" = fireball is on cooldown
+        std::string suffix = (digger->GetFireballCooldown() > 0.0f) ? "X" : "";
+
+        if (auto render = digger->GetOwner()->GetComponent<RenderComponent>()) 
+        {
+            render->SetTexture("PNG/Digger/" + prefix + "DIG" + frame + suffix + ".png");
+            render->SetFlip(false); // disable flip
         }
 
     // COLLISIONS

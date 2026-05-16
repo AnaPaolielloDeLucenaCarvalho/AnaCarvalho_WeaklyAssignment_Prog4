@@ -20,7 +20,29 @@ namespace dae
 
         void Update(float deltaTime) override
         {
-			float speed = 300.0f * deltaTime; // (300 units per second)
+			// explosion logic (if exploding, ignore movement and animate explosion instead)
+            if (m_IsExploding)
+            {
+                m_ExplodeTimer += deltaTime;
+                if (m_ExplodeTimer > 0.1f) // 0.1s per explosion
+                {
+                    m_ExplodeTimer -= 0.1f;
+                    m_ExplodeFrame++;
+
+                    if (m_ExplodeFrame > 3)
+                    {
+						GetOwner()->MarkForDestroy(); // destroy
+                    }
+                    else if (auto render = GetOwner()->GetComponent<RenderComponent>())
+                    {
+                        render->SetTexture("PNG/Other/VEXP" + std::to_string(m_ExplodeFrame) + ".png");
+                    }
+                }
+                return; // freeze in place
+            }
+
+			// shooting logic
+            float speed = 300.0f * deltaTime;
             auto pos = GetOwner()->GetTransform().GetPosition();
             float newX = pos.x + (m_Direction.x * speed);
             float newY = pos.y + (m_Direction.y * speed);
@@ -37,7 +59,6 @@ namespace dae
 
                 if (auto render = GetOwner()->GetComponent<RenderComponent>())
                 {
-					// TODO - check texture to game (im not usre if this is the actual one used)
                     render->SetTexture("PNG/Other/VFIRE" + std::to_string(m_Frame) + ".png");
                 }
             }
@@ -48,7 +69,11 @@ namespace dae
             if (LevelManager::GetInstance().IsDirtAt(newX, newY) ||
                 newX < 0 || newX > 1040 || newY < 0 || newY > 612)
             {
-                GetOwner()->MarkForDestroy();
+                m_IsExploding = true;
+                if (auto render = GetOwner()->GetComponent<RenderComponent>())
+                {
+					render->SetTexture("PNG/Other/VEXP1.png"); // explosion for collision
+                }
             }
         }
 
@@ -56,6 +81,11 @@ namespace dae
         glm::vec2 m_Direction;
         float m_AnimTimer{ 0.0f };
         int m_Frame{ 1 };
+
+		// explosion state
+        bool m_IsExploding{ false };
+        float m_ExplodeTimer{ 0.0f };
+        int m_ExplodeFrame{ 1 };
     };
 }
 #endif

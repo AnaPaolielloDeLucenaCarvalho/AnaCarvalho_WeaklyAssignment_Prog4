@@ -27,6 +27,7 @@ namespace dae
     void DiggerComponent::Update(float deltaTime)
     {
         if (m_FireballCooldown > 0.0f) m_FireballCooldown -= deltaTime;
+        if (m_ShootAnimTimer > 0.0f) m_ShootAnimTimer -= deltaTime;
 
         if (m_pCurrentState)
         {
@@ -83,6 +84,7 @@ namespace dae
         if (m_FireballCooldown <= 0.0f && !m_IsDead)
         {
 			m_FireballCooldown = 3.0f; // shooting mechanic has to wait 3s before used again
+            m_ShootAnimTimer = 0.2f;
 
             auto fireball = std::make_unique<GameObject>();
             fireball->AddComponent<RenderComponent>("PNG/Other/VFIRE1.png");
