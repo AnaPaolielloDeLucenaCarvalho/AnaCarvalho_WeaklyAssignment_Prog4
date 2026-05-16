@@ -87,6 +87,7 @@ add_executable(${TARGET_NAME} ${TARGET_PARAM}
   Digger/DiggerState.cpp
   Digger/DiggerComponent.cpp
   Digger/LevelManager.cpp
+  Digger/EnemyComponent.cpp
   # Add any .cpp for Digger here!!!
 )
 

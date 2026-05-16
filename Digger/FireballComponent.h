@@ -13,8 +13,10 @@ namespace dae
     class FireballComponent : public Component
     {
     public:
-        FireballComponent(GameObject* owner, const glm::vec2& dir)
-            : Component(owner), m_Direction(dir)
+        FireballComponent(GameObject* owner, const glm::vec2& dir, DiggerComponent* pDigger)
+            : Component(owner)
+            , m_Direction(dir)
+            , m_pDigger(pDigger) 
         {
         }
 
@@ -63,7 +65,25 @@ namespace dae
                 }
             }
 
-			// TODO - kill enemies in path here
+			// kill enemies if close enough to explosion and not already exploding
+            if (!m_IsExploding && m_pDigger)
+            {
+                for (auto& enemy : m_pDigger->GetEnemies())
+                {
+                    if (!enemy || enemy->IsMarkedForDestroy()) continue;
+                    auto ePos = enemy->GetTransform().GetPosition();
+
+                    if (glm::distance(glm::vec2(newX, newY), glm::vec2(ePos.x, ePos.y)) < 25.f)
+                    {
+						enemy->MarkForDestroy(); // kill enemy
+                        m_pDigger->AwardPoints(250); // 250 Points
+
+                        m_IsExploding = true;
+                        if (auto render = GetOwner()->GetComponent<RenderComponent>())
+                            render->SetTexture("PNG/Other/VEXP1.png");
+                    }
+                }
+            }
 
 			// destroy fireball if hits dirt or out of bounds
             if (LevelManager::GetInstance().IsDirtAt(newX, newY) ||
@@ -86,6 +106,8 @@ namespace dae
         bool m_IsExploding{ false };
         float m_ExplodeTimer{ 0.0f };
         int m_ExplodeFrame{ 1 };
+
+        DiggerComponent* m_pDigger;
     };
 }
 #endif

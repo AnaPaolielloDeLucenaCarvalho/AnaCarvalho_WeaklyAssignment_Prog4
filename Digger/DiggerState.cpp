@@ -188,7 +188,18 @@ namespace dae
             }
         }
         
-    // WIN (Collected all the Emeralds)
+	// DEATH
+        for (auto& enemy : digger->GetEnemies())
+        {
+            if (!enemy || enemy->IsMarkedForDestroy()) continue;
+            auto ePos = enemy->GetTransform().GetPosition();
+            if (glm::distance(glm::vec2{ newX, newY }, glm::vec2{ ePos.x, ePos.y }) < 20.f)
+            {
+                return new DiggerDeadState();
+            }
+        }
+
+    // WIN (Collected all the Emeralds OR All Enemies)
         if (!digger->GetDiamonds().empty())
         {
             bool allDiamondsCollected = true;
@@ -197,11 +208,19 @@ namespace dae
                 if (diamond && !diamond->IsMarkedForDestroy())
                 {
                     allDiamondsCollected = false;
-                    break;
                 }
             }
 
-            if (allDiamondsCollected)
+            bool allEnemiesDead = true;
+            for (auto& enemy : digger->GetEnemies())
+            {
+                if (enemy && !enemy->IsMarkedForDestroy())
+                {
+                    allEnemiesDead = false;
+                }
+            }
+
+            if (allDiamondsCollected || (allEnemiesDead && !digger->GetEnemies().empty()))
             {
                 return new DiggerLevelCompleteState();
             }

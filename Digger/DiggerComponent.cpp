@@ -88,11 +88,12 @@ namespace dae
 
             auto fireball = std::make_unique<GameObject>();
             fireball->AddComponent<RenderComponent>("PNG/Other/VFIRE1.png");
-            fireball->AddComponent<FireballComponent>(m_LastFacedDirection);
+
+			fireball->AddComponent<FireballComponent>(m_LastFacedDirection, this); // who shoots it
 
             auto myPos = GetOwner()->GetTransform().GetPosition();
-
-            fireball->SetLocalPosition(myPos.x + (m_LastFacedDirection.x * 20.0f), myPos.y + (m_LastFacedDirection.y * 20.0f));
+            fireball->SetLocalPosition(myPos.x + (m_LastFacedDirection.x * 20.0f),
+                myPos.y + (m_LastFacedDirection.y * 20.0f));
             fireball->SetZIndex(5);
 
             SceneManager::GetInstance().GetActiveScene()->Add(std::move(fireball));

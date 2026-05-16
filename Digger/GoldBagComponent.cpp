@@ -65,25 +65,45 @@ namespace dae
     {
         auto myPos = GetOwner()->GetTransform().GetPosition();
 
-        auto checkAndSmash = [&](GameObject* player) {
-            if (player && !player->IsMarkedForDestroy())
+        auto checkAndSmash = [&](GameObject* player) 
             {
-                auto pPos = player->GetTransform().GetPosition();
-
-                if (std::abs(pPos.x - myPos.x) < 20.f && (pPos.y - myPos.y) > 0 && (pPos.y - myPos.y) < 30.f)
+                if (player && !player->IsMarkedForDestroy())
                 {
-                    if (auto diggerComp = player->GetComponent<DiggerComponent>())
+                    auto pPos = player->GetTransform().GetPosition();
+
+                    if (std::abs(pPos.x - myPos.x) < 20.f && (pPos.y - myPos.y) > 0 && (pPos.y - myPos.y) < 30.f)
                     {
-                        if (!diggerComp->IsDead() && diggerComp->GetLives() > 0)
+                        if (auto diggerComp = player->GetComponent<DiggerComponent>())
                         {
-                            diggerComp->ChangeState(new DiggerDeadState());
+                            if (!diggerComp->IsDead() && diggerComp->GetLives() > 0)
+                            {
+                                diggerComp->ChangeState(new DiggerDeadState());
+                            }
                         }
                     }
                 }
-            }
             };
 
         checkAndSmash(m_pPlayer1);
         checkAndSmash(m_pPlayer2);
+
+		// enemies
+        if (m_pPlayer1)
+        {
+            if (auto digger = m_pPlayer1->GetComponent<DiggerComponent>())
+            {
+                for (auto& enemy : digger->GetEnemies())
+                {
+                    if (!enemy || enemy->IsMarkedForDestroy()) continue;
+                    auto ePos = enemy->GetTransform().GetPosition();
+
+                    if (std::abs(ePos.x - myPos.x) < 20.f && (ePos.y - myPos.y) > 0 && (ePos.y - myPos.y) < 30.f)
+                    {
+						enemy->MarkForDestroy(); // crush the enemy
+						digger->AwardPoints(250);
+                    }
+                }
+            }
+        }
     }
 }

@@ -41,6 +41,8 @@
 #endif
 
 #include <filesystem>
+#include "EnemyComponent.h"
+#include "EnemySpawnerComponent.h"
 namespace fs = std::filesystem;
 
 std::shared_ptr<dae::AchievementManager> g_AchievementMgr = nullptr;
@@ -104,6 +106,7 @@ public:
 		auto layout = dae::LevelManager::GetInstance().GetLevelLayout(levelIndex);
 		std::vector<dae::GameObject*> newBags;
 		std::vector<dae::GameObject*> newDiamonds;
+		std::vector<dae::GameObject*> newEnemies;
 		float tileWidth = 40.0f;
 		float startY = 52.0f;
 
@@ -152,7 +155,7 @@ public:
 				float bx = col * tileWidth;
 				float by = startY + (row * tileWidth);
 
-				if (c == ' ' || c == 'P' || c == 'E')
+				if (c == ' ' || c == 'P' || c == 'S' || c == 'E')
 				{
 					dae::LevelManager::GetInstance().Dig(bx, by);
 				}
@@ -162,10 +165,20 @@ public:
 					m_p1->SetSpawnPos({ bx, by });
 					m_p1->GetOwner()->SetLocalPosition(bx, by);
 				}
-				else if (c == 'E' && m_p2)
+				else if (c == 'S')
 				{
-					m_p2->SetSpawnPos({ bx, by });
-					m_p2->GetOwner()->SetLocalPosition(bx, by);
+					if (m_p2) // does player 2 exist
+					{
+						m_p2->SetSpawnPos({ bx, by });
+						m_p2->GetOwner()->SetLocalPosition(bx, by);
+					}
+				}
+				else if (c == 'E')
+				{
+					auto spawner = std::make_unique<dae::GameObject>();
+					spawner->AddComponent<dae::EnemySpawnerComponent>(m_p1, 4, 2);
+					spawner->SetLocalPosition(bx, by);
+					m_pScene->Add(std::move(spawner));
 				}
 				else if (c == 'D')
 				{
@@ -192,8 +205,16 @@ public:
 			}
 		}
 
-		m_p1->SetGoldBags(newBags); m_p1->SetDiamonds(newDiamonds);
-		if (m_p2) { m_p2->SetGoldBags(newBags); m_p2->SetDiamonds(newDiamonds); }
+		m_p1->SetGoldBags(newBags); 
+		m_p1->SetDiamonds(newDiamonds);
+		m_p1->SetEnemies(newEnemies);
+
+		if (m_p2) 
+		{ 
+			m_p2->SetGoldBags(newBags);
+			m_p2->SetDiamonds(newDiamonds);
+			m_p2->SetEnemies(newEnemies); 
+		}
 	}
 
 private:

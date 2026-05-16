@@ -57,6 +57,9 @@ namespace dae
         void AddEmeraldToCombo();
         void ResetEmeraldCombo() { m_ConsecutiveEmeralds = 0; }
 
+        void SetEnemies(const std::vector<GameObject*>& enemies) { m_pEnemies = enemies; }
+        const std::vector<GameObject*>& GetEnemies() const { return m_pEnemies; }
+
     private:
         Subject m_Subject;
         int m_Lives = 3;
@@ -79,6 +82,8 @@ namespace dae
         int m_TotalScore{ 0 };
         bool m_HasGottenExtraLife{ false };
         int m_ConsecutiveEmeralds{ 0 };
+
+        std::vector<GameObject*> m_pEnemies{};
     };
 }
 #endif

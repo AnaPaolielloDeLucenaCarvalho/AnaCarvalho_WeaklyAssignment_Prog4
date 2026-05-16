@@ -81,7 +81,8 @@ namespace dae
             // 'X' = Dirt
             // ' ' = Empty
             // 'P' = Player 1
-            // 'E' = Player 2 - this will be a problem later on when we add different modes
+            // 'S' = Player 2
+			// 'E' = Enemy
             // 'D' = Diamond
             // 'C' = Coin Bag
 
