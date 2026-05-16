@@ -35,15 +35,17 @@ namespace dae
 
         float distToCenter = glm::distance(glm::vec2(myPos.x, myPos.y), glm::vec2(centerX, centerY));
 
-        // MOVEMENT
+    // MOVEMENT
         if (distToCenter < 2.0f)
         {
             LevelManager::GetInstance().Dig(centerX, centerY);
 
-            if (glm::length(desiredDir) > 0) {
+            if (glm::length(desiredDir) > 0) 
+            {
                 currentDir = desiredDir;
             }
-            else {
+            else 
+            {
                 currentDir = glm::vec2{ 0, 0 };
             }
 
@@ -65,13 +67,31 @@ namespace dae
 
         digger->GetOwner()->SetLocalPosition(newX, newY);
 
-        if (currentDir.x != 0.0f) {
-            if (auto render = digger->GetOwner()->GetComponent<RenderComponent>()) {
+        if (currentDir.x != 0.0f) 
+        {
+            if (auto render = digger->GetOwner()->GetComponent<RenderComponent>()) 
+            {
                 render->SetFlip(currentDir.x < 0);
             }
         }
 
-        // COLLISIONS
+	// SHOOTING
+        digger->GetOwner()->SetLocalPosition(newX, newY);
+
+        if (currentDir.x != 0.0f) 
+        {
+            if (auto render = digger->GetOwner()->GetComponent<RenderComponent>()) 
+            {
+                render->SetFlip(currentDir.x < 0);
+            }
+        }
+
+        if (glm::length(currentDir) > 0) 
+        {
+            digger->SetLastFacedDirection(currentDir);
+        }
+
+    // COLLISIONS
         for (auto& diamond : digger->GetDiamonds())
         {
             if (!diamond || diamond->IsMarkedForDestroy()) continue;
@@ -138,7 +158,7 @@ namespace dae
             }
         }
         
-        // WIN (Collected all the Emeralds)
+    // WIN (Collected all the Emeralds)
         if (!digger->GetDiamonds().empty())
         {
             bool allDiamondsCollected = true;

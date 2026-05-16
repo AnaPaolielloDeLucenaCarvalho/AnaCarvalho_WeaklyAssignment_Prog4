@@ -31,6 +31,7 @@
 #include "DiggerState.h"
 #include "MenuManager.h"
 #include "SkipLevelCommand.h"
+#include "ShootCommand.h"
 
 #if USE_STEAMWORKS
 #pragma warning (push)
@@ -328,6 +329,7 @@ static void load()
 	input.BindCommand(SDL_SCANCODE_S, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(diggerComp1, glm::vec2{ 0, 1 }));
 	input.BindCommand(SDL_SCANCODE_A, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(diggerComp1, glm::vec2{ -1, 0 }));
 	input.BindCommand(SDL_SCANCODE_D, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(diggerComp1, glm::vec2{ 1, 0 }));
+	input.BindCommand(SDL_SCANCODE_SPACE, dae::KeyState::Pressed, std::make_unique<dae::ShootCommand>(diggerComp1));
 
 	input.BindCommand(0, dae::Gamepad::ControllerButton::DPadUp, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(diggerComp2, glm::vec2{ 0, -1 }));
 	input.BindCommand(0, dae::Gamepad::ControllerButton::DPadDown, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(diggerComp2, glm::vec2{ 0, 1 }));
@@ -357,10 +359,16 @@ static void load()
 	gameScene.Add(std::move(instructions2));
 
 	auto instructions3 = std::make_unique<dae::GameObject>();
-	instructions3->SetLocalPosition(10, 490);
+	instructions3->SetLocalPosition(10, 580);
 	instructions3->AddComponent<dae::TextComponent>("F2 to mute/unmute sound", fontSmall, SDL_Color{ 255, 255, 0, 255 });
 	instructions3->SetZIndex(10);
 	gameScene.Add(std::move(instructions3));
+
+	auto instructions4 = std::make_unique<dae::GameObject>();
+	instructions4->SetLocalPosition(10, 490);
+	instructions4->AddComponent<dae::TextComponent>("SPACE to shoot", fontSmall, SDL_Color{ 255, 255, 0, 255 });
+	instructions4->SetZIndex(10);
+	gameScene.Add(std::move(instructions4));
 
 	soundSystem.Play(DiggerSounds::MUSIC, 0.5f);
 

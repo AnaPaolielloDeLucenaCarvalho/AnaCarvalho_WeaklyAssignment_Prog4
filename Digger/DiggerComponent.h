@@ -48,6 +48,10 @@ namespace dae
         bool IsDead() const { return m_IsDead; }
         void SetDead(bool dead) { m_IsDead = dead; }
 
+        void Shoot();
+        void SetLastFacedDirection(const glm::vec2& dir) { m_LastFacedDirection = dir; }
+        glm::vec2 GetLastFacedDirection() const { return m_LastFacedDirection; }
+
     private:
         Subject m_Subject;
         int m_Lives = 3;
@@ -62,6 +66,9 @@ namespace dae
         glm::vec2 m_CurrentDirection{ 0, 0 };
         glm::vec2 m_SpawnPos{ 0, 0 };
         bool m_IsDead{ false };
+
+		glm::vec2 m_LastFacedDirection{ 1, 0 }; // right by default
+        float m_FireballCooldown{ 0.0f };
     };
 }
 #endif

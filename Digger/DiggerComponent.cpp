@@ -1,6 +1,11 @@
 #include "DiggerComponent.h"
 #include "DiggerState.h"
 #include "ServiceLocator.h"
+
+#include "FireballComponent.h"
+#include "SceneManager.h"
+#include "Scene.h"
+
 #include <iostream>
 
 namespace dae
@@ -21,6 +26,8 @@ namespace dae
 
     void DiggerComponent::Update(float deltaTime)
     {
+        if (m_FireballCooldown > 0.0f) m_FireballCooldown -= deltaTime;
+
         if (m_pCurrentState)
         {
             DiggerState* newState = m_pCurrentState->Update(this, deltaTime);
@@ -67,6 +74,26 @@ namespace dae
         {
 			// TODO - actually implement game over screen
             std::cout << "GAME OVER! Going back to Main Menu...\n";
+        }
+    }
+
+    void DiggerComponent::Shoot()
+    {
+        // shoot if cooldown ready and alive
+        if (m_FireballCooldown <= 0.0f && !m_IsDead)
+        {
+			m_FireballCooldown = 3.0f; // shooting mechanic has to wait 3s before used again
+
+            auto fireball = std::make_unique<GameObject>();
+            fireball->AddComponent<RenderComponent>("PNG/Other/VFIRE1.png");
+            fireball->AddComponent<FireballComponent>(m_LastFacedDirection);
+
+            auto myPos = GetOwner()->GetTransform().GetPosition();
+
+            fireball->SetLocalPosition(myPos.x + (m_LastFacedDirection.x * 20.0f), myPos.y + (m_LastFacedDirection.y * 20.0f));
+            fireball->SetZIndex(5);
+
+            SceneManager::GetInstance().GetActiveScene()->Add(std::move(fireball));
         }
     }
 }
