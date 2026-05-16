@@ -122,7 +122,11 @@ namespace dae
             if (glm::distance(glm::vec2{ newX, newY }, glm::vec2{ diamondPos.x, diamondPos.y }) < 20.f)
             {
                 diamond->MarkForDestroy();
-                digger->GetSubject().Notify(make_sdbm_hash("DiamondPickedUp"), 25);
+                //digger->GetSubject().Notify(make_sdbm_hash("DiamondPickedUp"), 25);
+
+                digger->AwardPoints(25);
+                digger->AddEmeraldToCombo();
+
             }
         }
 
@@ -140,7 +144,10 @@ namespace dae
                 if (bagComp && bagComp->IsBroken())
                 {
                     bag->MarkForDestroy();
-                    digger->GetSubject().Notify(make_sdbm_hash("DiamondPickedUp"), 500);
+                    //digger->GetSubject().Notify(make_sdbm_hash("DiamondPickedUp"), 500);
+
+                    digger->AwardPoints(500);
+                    digger->ResetEmeraldCombo();
                 }
                 else
                 {
@@ -230,7 +237,10 @@ namespace dae
             if (glm::distance(glm::vec2(myPos.x, myPos.y), glm::vec2(otherPos.x, otherPos.y)) < 25.f)
             {
                 otherPlayer->MarkForDestroy();
-                digger->GetSubject().Notify(make_sdbm_hash("DiamondPickedUp"), 500);
+                //digger->GetSubject().Notify(make_sdbm_hash("DiamondPickedUp"), 500);
+
+                digger->AwardPoints(500);
+                digger->ResetEmeraldCombo();
             }
         }
 

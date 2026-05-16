@@ -98,4 +98,34 @@ namespace dae
             SceneManager::GetInstance().GetActiveScene()->Add(std::move(fireball));
         }
     }
+
+    void DiggerComponent::AwardPoints(int points)
+    {
+        // notify UI to update score
+        m_Subject.Notify(dae::make_sdbm_hash("DiamondPickedUp"), points);
+
+        // track score for the extra life
+        m_TotalScore += points;
+        if (m_TotalScore >= 20000 && !m_HasGottenExtraLife)
+        {
+            m_Lives++;
+            m_HasGottenExtraLife = true;
+
+            m_Subject.Notify(dae::make_sdbm_hash("PlayerDied"), m_Lives);
+
+            // play bonus sound
+            ServiceLocator::GetSoundSystem().Play(1, 1.0f);
+        }
+    }
+
+    void DiggerComponent::AddEmeraldToCombo()
+    {
+        m_ConsecutiveEmeralds++;
+        if (m_ConsecutiveEmeralds >= 8)
+        {
+            // award 250 points and reset combo
+            AwardPoints(250);
+            m_ConsecutiveEmeralds = 0;
+        }
+    }
 }

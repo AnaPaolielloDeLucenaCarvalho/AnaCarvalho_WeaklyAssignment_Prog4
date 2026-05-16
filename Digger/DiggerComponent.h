@@ -38,7 +38,6 @@ namespace dae
 
         void SetDesiredDirection(const glm::vec2& dir) { m_DesiredDirection = dir; }
         glm::vec2 GetDesiredDirection() const { return m_DesiredDirection; }
-
         void SetCurrentDirection(const glm::vec2& dir) { m_CurrentDirection = dir; }
         glm::vec2 GetCurrentDirection() const { return m_CurrentDirection; }
 
@@ -53,6 +52,10 @@ namespace dae
         glm::vec2 GetLastFacedDirection() const { return m_LastFacedDirection; }
         float GetFireballCooldown() const { return m_FireballCooldown; }
         float GetShootAnimTimer() const { return m_ShootAnimTimer; }
+
+        void AwardPoints(int points);
+        void AddEmeraldToCombo();
+        void ResetEmeraldCombo() { m_ConsecutiveEmeralds = 0; }
 
     private:
         Subject m_Subject;
@@ -72,6 +75,10 @@ namespace dae
 		glm::vec2 m_LastFacedDirection{ 1, 0 }; // right by default
         float m_FireballCooldown{ 0.0f };
         float m_ShootAnimTimer{ 0.0f };
+
+        int m_TotalScore{ 0 };
+        bool m_HasGottenExtraLife{ false };
+        int m_ConsecutiveEmeralds{ 0 };
     };
 }
 #endif
