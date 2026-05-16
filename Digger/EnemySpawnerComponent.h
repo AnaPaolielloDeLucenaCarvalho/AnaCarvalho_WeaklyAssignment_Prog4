@@ -29,7 +29,7 @@ namespace dae
 
             m_SpawnedEnemies.erase(std::remove_if(m_SpawnedEnemies.begin(), m_SpawnedEnemies.end(), [](GameObject* e) { return e == nullptr || e->IsMarkedForDestroy(); }), m_SpawnedEnemies.end());
 
-            if (m_SpawnedEnemies.size() < m_MaxConcurrent)
+            if (static_cast<int>(m_SpawnedEnemies.size()) < m_MaxConcurrent)
             {
                 m_SpawnTimer -= deltaTime;
                 if (m_SpawnTimer <= 0.0f)
