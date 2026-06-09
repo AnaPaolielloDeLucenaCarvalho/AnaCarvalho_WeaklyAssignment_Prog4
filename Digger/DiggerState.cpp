@@ -88,6 +88,7 @@ namespace dae
             render->SetFlip(false); // disable flip
         }
 
+        return glm::vec2{ newX, newY }; // return new position for collision checks
     }
 	// normal state
     void DiggerNormalState::OnEnter(DiggerComponent* digger)
