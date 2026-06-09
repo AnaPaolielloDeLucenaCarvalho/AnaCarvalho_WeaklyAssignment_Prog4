@@ -85,6 +85,7 @@ namespace dae
 			// 'E' = Enemy
             // 'D' = Diamond
             // 'C' = Coin Bag
+			// 'B' = Bonus cherry spawn point
 
 			if (line == "[LEVEL]") // In the .txt file i separated the 3 levels using [LEVEL]
             {

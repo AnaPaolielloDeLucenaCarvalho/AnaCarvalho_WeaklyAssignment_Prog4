@@ -49,4 +49,12 @@ namespace dae
     {
         m_texture = ResourceManager::GetInstance().LoadTexture(filename);
     }
+
+    void RenderComponent::SetColorMod(uint8_t r, uint8_t g, uint8_t b)
+    {
+        if (m_texture)
+        {
+            SDL_SetTextureColorMod(m_texture->GetSDLTexture(), r, g, b);
+        }
+    }
 }

@@ -3,6 +3,7 @@
 
 #include <string>
 #include <memory>
+#include <cstdint>
 #include "Component.h"
 
 namespace dae
@@ -25,6 +26,7 @@ namespace dae
         void SetFlip(bool flip) { m_isFlipped = flip; }
         void SetScale(float scale) { m_scale = scale; }
         void SetRotation(double angle) { m_angle = angle; }
+        void SetColorMod(uint8_t r, uint8_t g, uint8_t b);
 
     private:
         std::shared_ptr<Texture2D> m_texture;
