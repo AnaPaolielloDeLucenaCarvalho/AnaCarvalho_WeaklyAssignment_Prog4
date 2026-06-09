@@ -13,16 +13,7 @@
 
 namespace dae
 {
-	// normal state
-    void DiggerNormalState::OnEnter(DiggerComponent* digger)
-    {
-        if (auto render = digger->GetOwner()->GetComponent<RenderComponent>())
-        {
-            render->SetTexture("PNG/Digger/VRDIG1X.png");
-        }
-    }
-
-    DiggerState* DiggerNormalState::Update(DiggerComponent* digger, float deltaTime)
+    static glm::vec2 ApplyDiggerMovement(DiggerComponent* digger, float deltaTime)
     {
         auto myPos = digger->GetOwner()->GetTransform().GetPosition();
         glm::vec2 desiredDir = digger->GetDesiredDirection();
@@ -41,14 +32,10 @@ namespace dae
         {
             LevelManager::GetInstance().Dig(centerX, centerY);
 
-            if (glm::length(desiredDir) > 0) 
-            {
+            if (glm::length(desiredDir) > 0)
                 currentDir = desiredDir;
-            }
-            else 
-            {
+            else
                 currentDir = glm::vec2{ 0, 0 };
-            }
 
             digger->SetCurrentDirection(currentDir);
             digger->GetOwner()->SetLocalPosition(centerX, centerY);
@@ -68,22 +55,8 @@ namespace dae
 
         digger->GetOwner()->SetLocalPosition(newX, newY);
 
-        if (currentDir.x != 0.0f) 
-        {
-            if (auto render = digger->GetOwner()->GetComponent<RenderComponent>()) 
-            {
-                render->SetFlip(currentDir.x < 0);
-            }
-        }
-
-	// SHOOTING
-        digger->GetOwner()->SetLocalPosition(newX, newY);
-
-		// remember direction
-        if (glm::length(currentDir) > 0) 
-        {
+        if (glm::length(currentDir) > 0)
             digger->SetLastFacedDirection(currentDir);
-        }
 
 		// Cannon, Mouth, and Walking animation for digger
         glm::vec2 facing = digger->GetLastFacedDirection();
@@ -115,6 +88,24 @@ namespace dae
             render->SetFlip(false); // disable flip
         }
 
+    }
+	// normal state
+    void DiggerNormalState::OnEnter(DiggerComponent* digger)
+    {
+        if (auto render = digger->GetOwner()->GetComponent<RenderComponent>())
+        {
+            render->SetTexture("PNG/Digger/VRDIG1X.png");
+        }
+    }
+
+    DiggerState* DiggerNormalState::Update(DiggerComponent* digger, float deltaTime)
+    {
+        auto myPos = digger->GetOwner()->GetTransform().GetPosition();
+
+        const glm::vec2 newPos = ApplyDiggerMovement(digger, deltaTime);
+        const float newX = newPos.x;
+        const float newY = newPos.y;
+
     // COLLISIONS
         for (auto& diamond : digger->GetDiamonds())
         {
@@ -123,11 +114,8 @@ namespace dae
             if (glm::distance(glm::vec2{ newX, newY }, glm::vec2{ diamondPos.x, diamondPos.y }) < 20.f)
             {
                 diamond->MarkForDestroy();
-                //digger->GetSubject().Notify(make_sdbm_hash("DiamondPickedUp"), 25);
-
                 digger->AwardPoints(25);
                 digger->AddEmeraldToCombo();
-
             }
         }
 
@@ -145,13 +133,12 @@ namespace dae
                 if (bagComp && bagComp->IsBroken())
                 {
                     bag->MarkForDestroy();
-                    //digger->GetSubject().Notify(make_sdbm_hash("DiamondPickedUp"), 500);
-
                     digger->AwardPoints(500);
                     digger->ResetEmeraldCombo();
                 }
                 else
                 {
+                    glm::vec2 currentDir = digger->GetCurrentDirection();
                     float oldDist = glm::distance(glm::vec2(myPos.x, myPos.y), glm::vec2(bagPos.x, bagPos.y));
                     float newDist = glm::distance(glm::vec2(newX, newY), glm::vec2(bagPos.x, bagPos.y));
 
@@ -212,16 +199,18 @@ namespace dae
                 }
             }
 
-            bool allEnemiesDead = true;
+            const int totalForLevel = digger->GetTotalEnemiesForLevel();
+            int deadCount = 0;
             for (auto& enemy : digger->GetEnemies())
             {
-                if (enemy && !enemy->IsMarkedForDestroy())
-                {
-                    allEnemiesDead = false;
-                }
+                if (!enemy || enemy->IsMarkedForDestroy()) deadCount++;
             }
+            const bool allSpawned     = totalForLevel > 0 &&
+                                        static_cast<int>(digger->GetEnemies().size()) >= totalForLevel;
+            const bool allEnemiesDead = allSpawned &&
+                                        (deadCount == static_cast<int>(digger->GetEnemies().size()));
 
-            if (allDiamondsCollected || (allEnemiesDead && !digger->GetEnemies().empty()))
+            if (allDiamondsCollected || allEnemiesDead)
             {
                 return new DiggerLevelCompleteState();
             }
@@ -233,34 +222,43 @@ namespace dae
 	// bonus state
     void DiggerBonusState::OnEnter(DiggerComponent* digger)
     {
+		// sound 1 = bonus.wav (Rossini / William Tell)
         ServiceLocator::GetSoundSystem().Play(1, 1.0f);
 
         if (auto render = digger->GetOwner()->GetComponent<RenderComponent>())
         {
-			// TODO - bonus texture
-            render->SetTexture("PNG/Digger/BONUS_TEXTURE.png");
+            render->SetTexture("PNG/Digger/VRDIG1X.png");
         }
+
+		// fire the event — the map manager owns the visual response
+        digger->GetSubject().Notify(make_sdbm_hash("BonusModeStart"), 15);
     }
 
-    void DiggerBonusState::OnExit(DiggerComponent* /*digger*/)
+    void DiggerBonusState::OnExit(DiggerComponent* digger)
     {
+		// resume main music (sound 0)
         ServiceLocator::GetSoundSystem().Play(0, 0.5f);
+
+		// tell the map manager to restore the normal palette
+        digger->GetSubject().Notify(make_sdbm_hash("BonusModeEnd"), 0);
     }
 
     DiggerState* DiggerBonusState::Update(DiggerComponent* digger, float deltaTime)
     {
-        auto myPos = digger->GetOwner()->GetTransform().GetPosition();
+        // Bug 2 fix: run the shared movement + animation logic so Digger is not frozen
+        const glm::vec2 newPos = ApplyDiggerMovement(digger, deltaTime);
+        const float newX = newPos.x;
+        const float newY = newPos.y;
 
-        if (auto otherPlayer = digger->GetOtherPlayer())
+        // in bonus mode, touching an enemy eats it (250 pts) instead of dying
+        for (auto& enemy : digger->GetEnemies())
         {
-            auto otherPos = otherPlayer->GetTransform().GetPosition();
-            if (glm::distance(glm::vec2(myPos.x, myPos.y), glm::vec2(otherPos.x, otherPos.y)) < 25.f)
+            if (!enemy || enemy->IsMarkedForDestroy()) continue;
+            auto ePos = enemy->GetTransform().GetPosition();
+            if (glm::distance(glm::vec2(newX, newY), glm::vec2(ePos.x, ePos.y)) < 25.f)
             {
-                otherPlayer->MarkForDestroy();
-                //digger->GetSubject().Notify(make_sdbm_hash("DiamondPickedUp"), 500);
-
-                digger->AwardPoints(500);
-                digger->ResetEmeraldCombo();
+                enemy->MarkForDestroy();
+                digger->AwardPoints(250);
             }
         }
 
@@ -319,6 +317,17 @@ namespace dae
         }
 
         return nullptr;
+    }
+
+	// game over state
+    void DiggerGameOverState::OnEnter(DiggerComponent* /*digger*/)
+    {
+		// intentionally empty — game-over screen handled by the menu/UI layer
+    }
+
+    DiggerState* DiggerGameOverState::Update(DiggerComponent* /*digger*/, float /*deltaTime*/)
+    {
+        return nullptr; // absorb all updates — player is frozen
     }
 
 	// level complete state

@@ -22,6 +22,7 @@ namespace dae
         void Update(float deltaTime)              override;
         void OnNotify(EventId eventId, int value) override;
 
+        // Called once by Main.cpp for the initial level load.
         void LoadLevel(int levelIndex);
 
     private:
@@ -31,6 +32,25 @@ namespace dae
         std::vector<GameObject*> m_VisualDirt;
         int                      m_CurrentLevelIndex{ 0 };
         uint64_t                 m_LastLoadTime{ 0 };
+
+        // 'B' tile position — set during LoadLevel, used by SpawnCherry()
+        float m_CherrySpawnX{ 0.0f };
+        float m_CherrySpawnY{ 0.0f };
+        bool  m_CherrySpawned{ false };
+
+        void SpawnCherry();
+
+        // bonus map flicker state machine
+        bool  m_BonusMapActive{ false };
+        bool  m_BonusFlickerPhase{ false };  // true during the first 5s flicker
+        float m_BonusFlickerTimer{ 0.0f };
+        float m_BonusFlickerInterval{ 0.0f };
+        bool  m_BonusLightOn{ false };       // which phase of the flicker we are in
+
+        // Enables or disables the additive-blend brightness boost on all live dirt tiles.
+        // true  = bonus bright: RenderComponent does a second additive pass (~47% brighter)
+        // false = normal: single render pass, original texture colours
+        void ApplyDirtBrightness(bool enable);
     };
 }
 

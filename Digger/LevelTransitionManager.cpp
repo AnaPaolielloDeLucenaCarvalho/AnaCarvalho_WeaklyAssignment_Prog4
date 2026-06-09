@@ -6,6 +6,7 @@
 #include "GoldBagComponent.h"
 #include "EnemySpawnerComponent.h"
 #include "RenderComponent.h"
+#include "CherryComponent.h"
 
 #include <SDL3/SDL.h>
 #include <string>
@@ -20,7 +21,31 @@ namespace dae
     {
     }
 
-    void LevelTransitionManager::Update(float /*deltaTime*/) {}
+    void LevelTransitionManager::Update(float deltaTime)
+    {
+        if (!m_BonusMapActive) return;
+
+        if (m_BonusFlickerPhase)
+        {
+            m_BonusFlickerTimer    += deltaTime;
+            m_BonusFlickerInterval += deltaTime;
+
+            if (m_BonusFlickerInterval >= 0.15f)
+            {
+                m_BonusFlickerInterval -= 0.15f;
+                m_BonusLightOn = !m_BonusLightOn;
+                ApplyDirtBrightness(m_BonusLightOn);
+            }
+
+            if (m_BonusFlickerTimer >= 5.0f)
+            {
+                // Flicker over — lock to BRIGHT for the rest of bonus time.
+                m_BonusFlickerPhase = false;
+                ApplyDirtBrightness(true);
+            }
+        }
+        // Solid-bright phase: boost already applied, nothing to do each frame.
+    }
 
     void LevelTransitionManager::OnNotify(EventId eventId, int /*value*/)
     {
@@ -32,10 +57,34 @@ namespace dae
 
             m_CurrentLevelIndex++;
             if (m_CurrentLevelIndex >= LevelManager::GetInstance().GetTotalLevels())
-            {
                 m_CurrentLevelIndex = 0;
-            }
+
             LoadLevel(m_CurrentLevelIndex);
+        }
+        else if (eventId == make_sdbm_hash("EnemyThresholdReached"))
+        {
+            // 75% of enemies spawned — show the cherry at the 'B' tile
+            if (!m_CherrySpawned && m_CherrySpawnX > 0.0f)
+            {
+                SpawnCherry();
+                m_CherrySpawned = true;
+            }
+        }
+        else if (eventId == make_sdbm_hash("BonusModeStart"))
+        {
+            // Start the flicker. Begin on NORMAL so the first toggle flashes BRIGHT.
+            m_BonusMapActive       = true;
+            m_BonusFlickerPhase    = true;
+            m_BonusFlickerTimer    = 0.0f;
+            m_BonusFlickerInterval = 0.0f;
+            m_BonusLightOn         = false;
+            ApplyDirtBrightness(false);
+        }
+        else if (eventId == make_sdbm_hash("BonusModeEnd"))
+        {
+            m_BonusMapActive    = false;
+            m_BonusFlickerPhase = false;
+            ApplyDirtBrightness(false);
         }
     }
 
@@ -48,14 +97,26 @@ namespace dae
 
         m_p1->SetGoldBags({});
         m_p1->SetDiamonds({});
+        m_p1->SetEnemies({});
         if (m_p2)
         {
             m_p2->SetGoldBags({});
             m_p2->SetDiamonds({});
+            m_p2->SetEnemies({});
         }
         m_VisualDirt.clear();
 
         // Reset and re-initialise the grid
+        m_CherrySpawnX  = 0.0f;
+        m_CherrySpawnY  = 0.0f;
+        m_CherrySpawned = false;
+
+        m_p1->SetTotalEnemiesForLevel(0);
+        if (m_p2) m_p2->SetTotalEnemiesForLevel(0);
+
+        m_BonusMapActive    = false;
+        m_BonusFlickerPhase = false;
+
         LevelManager::GetInstance().ClearLevel();
         m_pScene->RequestLevelCleanup(); // Scene cleans up at end of frame
         LevelManager::GetInstance().InitLevel(14, 26);
@@ -63,7 +124,10 @@ namespace dae
         // Parse tile layout
         const auto layout = LevelManager::GetInstance().GetLevelLayout(levelIndex);
         constexpr float tileWidth = 40.0f;
-        constexpr float startY = 52.0f;
+        constexpr float startY    = 52.0f;
+
+        const int textureNumber = (levelIndex % 3) + 1;
+        const std::string normalTexture = "PNG/Map/VBACK" + std::to_string(textureNumber) + ".png";
 
         std::vector<GameObject*> newBags;
         std::vector<GameObject*> newDiamonds;
@@ -81,14 +145,10 @@ namespace dae
                 {
                     LevelManager::GetInstance().AddDirtTile(col, row);
 
-                    // Cycle through three background textures based on level index
-                    const int textureNumber = (levelIndex % 3) + 1;
-                    const std::string texturePath = "PNG/Map/VBACK" + std::to_string(textureNumber) + ".png";
-
                     for (int strip = 0; strip < 5; ++strip)
                     {
                         auto tile = std::make_unique<GameObject>();
-                        tile->AddComponent<RenderComponent>(texturePath);
+                        tile->AddComponent<RenderComponent>(normalTexture);
                         tile->SetLocalPosition(bx, by + (static_cast<float>(strip) * 8.0f));
                         tile->SetZIndex(1);
                         m_VisualDirt.push_back(tile.get());
@@ -113,11 +173,8 @@ namespace dae
                 const float bx = static_cast<float>(col) * tileWidth;
                 const float by = startY + (static_cast<float>(row) * tileWidth);
 
-                // Passable tiles are dug out
-                if (c == ' ' || c == 'P' || c == 'S' || c == 'E')
-                {
+                if (c == ' ' || c == 'P' || c == 'S' || c == 'E' || c == 'B')
                     LevelManager::GetInstance().Dig(bx, by);
-                }
 
                 if (c == 'P')
                 {
@@ -131,11 +188,24 @@ namespace dae
                 }
                 else if (c == 'E')
                 {
-                    // Enemy spawner placed exactly at the 'E' tile position
-                    auto spawner = std::make_unique<GameObject>();
-                    spawner->AddComponent<EnemySpawnerComponent>(m_p1, 4, 2);
+                    constexpr int k_MaxTotal      = 4;
+                    constexpr int k_MaxConcurrent = 2;
+
+                    auto spawner   = std::make_unique<GameObject>();
+                    auto* spawnerC = spawner->AddComponent<EnemySpawnerComponent>(m_p1, k_MaxTotal, k_MaxConcurrent);
+
+                    m_p1->SetTotalEnemiesForLevel(k_MaxTotal);
+                    if (m_p2) m_p2->SetTotalEnemiesForLevel(k_MaxTotal);
+
+                    spawnerC->AddObserver(this); // notified when 75% spawned → SpawnCherry
                     spawner->SetLocalPosition(bx, by);
                     m_pScene->Add(std::move(spawner));
+                }
+                else if (c == 'B')
+                {
+                    // Cherry spawn point — record position, no GameObject yet
+                    m_CherrySpawnX = bx;
+                    m_CherrySpawnY = by;
                 }
                 else if (c == 'D')
                 {
@@ -172,6 +242,27 @@ namespace dae
             m_p2->SetGoldBags(newBags);
             m_p2->SetDiamonds(newDiamonds);
             m_p2->SetEnemies(newEnemies);
+        }
+    }
+
+    void LevelTransitionManager::SpawnCherry()
+    {
+        auto cherry  = std::make_unique<GameObject>();
+        auto* render = cherry->AddComponent<RenderComponent>("PNG/Other/CBONUS.png");
+        render->SetScale(2.f);
+        cherry->AddComponent<CherryComponent>(m_p1, m_p2);
+        cherry->SetLocalPosition(m_CherrySpawnX, m_CherrySpawnY);
+        cherry->SetZIndex(6);
+        m_pScene->Add(std::move(cherry));
+    }
+
+    void LevelTransitionManager::ApplyDirtBrightness(bool enable)
+    {
+        for (auto* tile : m_VisualDirt)
+        {
+            if (!tile || tile->IsMarkedForDestroy()) continue;
+            if (auto* render = tile->GetComponent<RenderComponent>())
+                render->SetAdditiveBoost(enable); // default boostAlpha=120 (~47% brighter)
         }
     }
 }

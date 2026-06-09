@@ -31,18 +31,25 @@ namespace dae
         float scaledH = size.y * m_scale;
 
         const auto flip = m_isFlipped ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
-        //dae::Renderer::GetInstance().RenderTexture(*m_texture, pos.x, pos.y, scaledW, scaledH, flip);
 
+        SDL_Texture* sdlTex = m_texture->GetSDLTexture();
+        SDL_Renderer* sdlRen = dae::Renderer::GetInstance().GetSDLRenderer();
         SDL_FRect dst{ pos.x, pos.y, scaledW, scaledH };
-        SDL_RenderTextureRotated(
-            dae::Renderer::GetInstance().GetSDLRenderer(),
-            m_texture->GetSDLTexture(),
-            nullptr,
-            &dst,
-            m_angle,
-            nullptr,
-            flip
-        );
+
+        SDL_RenderTextureRotated(sdlRen, sdlTex, nullptr, &dst, m_angle, nullptr, flip);
+
+        if (m_AdditiveBoost)
+        {
+            SDL_SetTextureBlendMode(sdlTex, SDL_BLENDMODE_ADD);
+            SDL_SetTextureAlphaMod(sdlTex,  m_BoostAlpha);
+            SDL_SetTextureColorMod(sdlTex,  255, 255, 255);
+
+            SDL_RenderTextureRotated(sdlRen, sdlTex, nullptr, &dst, m_angle, nullptr, flip);
+
+            SDL_SetTextureBlendMode(sdlTex, SDL_BLENDMODE_BLEND);
+            SDL_SetTextureAlphaMod(sdlTex,  255);
+            SDL_SetTextureColorMod(sdlTex,  255, 255, 255);
+        }
     }
 
     void RenderComponent::SetTexture(const std::string& filename)
@@ -53,8 +60,12 @@ namespace dae
     void RenderComponent::SetColorMod(uint8_t r, uint8_t g, uint8_t b)
     {
         if (m_texture)
-        {
             SDL_SetTextureColorMod(m_texture->GetSDLTexture(), r, g, b);
-        }
+    }
+
+    void RenderComponent::SetAdditiveBoost(bool enabled, uint8_t boostAlpha)
+    {
+        m_AdditiveBoost = enabled;
+        m_BoostAlpha    = boostAlpha;
     }
 }

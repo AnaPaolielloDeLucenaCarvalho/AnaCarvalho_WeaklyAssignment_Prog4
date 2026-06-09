@@ -6,6 +6,7 @@
 #include "DiggerComponent.h"
 #include "EnemyComponent.h"
 #include "RenderComponent.h"
+#include "Observer.h"
 
 #include <algorithm>
 
@@ -22,6 +23,11 @@ namespace dae
     {
     }
 
+    void EnemySpawnerComponent::AddObserver(Observer* obs)
+    {
+        m_Subject.AddObserver(obs);
+    }
+
     void EnemySpawnerComponent::Update(float deltaTime)
     {
         if (m_TotalSpawned >= m_MaxTotalEnemies) return;
@@ -32,6 +38,11 @@ namespace dae
                 [](GameObject* e) { return e == nullptr || e->IsMarkedForDestroy(); }),
             m_SpawnedEnemies.end()
         );
+
+        if (m_SpawnedEnemies.empty() && m_TotalSpawned < m_MaxTotalEnemies)
+        {
+            m_SpawnTimer = 0.0f;
+        }
 
         if (static_cast<int>(m_SpawnedEnemies.size()) < m_MaxConcurrent)
         {
@@ -58,6 +69,16 @@ namespace dae
                 m_p1->SetEnemies(allEnemies);
 
                 SceneManager::GetInstance().GetActiveScene()->Add(std::move(enemy));
+
+                if (!m_ThresholdNotified)
+                {
+                    const int threshold = (m_MaxTotalEnemies * 3) / 4; // integer 75%
+                    if (m_TotalSpawned >= threshold)
+                    {
+                        m_Subject.Notify(make_sdbm_hash("EnemyThresholdReached"), m_TotalSpawned);
+                        m_ThresholdNotified = true;
+                    }
+                }
             }
         }
     }

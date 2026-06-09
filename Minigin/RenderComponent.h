@@ -28,11 +28,15 @@ namespace dae
         void SetRotation(double angle) { m_angle = angle; }
         void SetColorMod(uint8_t r, uint8_t g, uint8_t b);
 
+        void SetAdditiveBoost(bool enabled, uint8_t boostAlpha = 120);
+
     private:
         std::shared_ptr<Texture2D> m_texture;
         bool m_isFlipped{ false };
         float m_scale{ 1.0f };
         double m_angle{ 0.0 };
+        bool m_AdditiveBoost{ false };
+        uint8_t m_BoostAlpha{ 120 };
     };
 }
 #endif // RENDERCOMPONENT_H

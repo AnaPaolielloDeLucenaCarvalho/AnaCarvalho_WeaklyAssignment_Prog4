@@ -36,7 +36,7 @@ namespace dae
         void OnExit(DiggerComponent* digger) override;
         DiggerState* Update(DiggerComponent* digger, float deltaTime) override;
     private:
-        float m_BonusTimer{ 5.0f };
+        float m_BonusTimer{ 15.0f }; // 15 seconds of bonus mode
     };
 
     class DiggerDeadState : public DiggerState
@@ -53,8 +53,8 @@ namespace dae
     class DiggerGameOverState : public DiggerState
     {
     public:
-        void OnEnter(DiggerComponent* /*digger*/) override {}
-        DiggerState* Update(DiggerComponent* /*digger*/, float /*deltaTime*/) override { return nullptr; }
+        void OnEnter(DiggerComponent* digger) override;
+        DiggerState* Update(DiggerComponent* digger, float deltaTime) override;
     };
 
     class DiggerLevelCompleteState : public DiggerState

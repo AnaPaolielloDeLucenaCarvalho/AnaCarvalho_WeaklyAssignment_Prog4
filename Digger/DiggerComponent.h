@@ -63,6 +63,10 @@ namespace dae
         void SetEnemies(const std::vector<GameObject*>& enemies) { m_pEnemies = enemies; }
         const std::vector<GameObject*>& GetEnemies() const { return m_pEnemies; }
 
+        // total enemies the level will ever spawn — set by LevelTransitionManager
+        void SetTotalEnemiesForLevel(int total) { m_TotalEnemiesForLevel = total; }
+        int  GetTotalEnemiesForLevel() const     { return m_TotalEnemiesForLevel; }
+
     private:
         Subject m_Subject;
         int m_Lives = 4; // 1 active + 3 reserve (arcade-accurate)
@@ -87,6 +91,7 @@ namespace dae
         int m_ConsecutiveEmeralds{ 0 };
 
         std::vector<GameObject*> m_pEnemies{};
+        int m_TotalEnemiesForLevel{ 0 }; // set per-level by LevelTransitionManager
     };
 }
 #endif
