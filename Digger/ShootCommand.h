@@ -2,24 +2,21 @@
 #define SHOOTCOMMAND_H
 
 #include "Command.h"
-#include "DiggerComponent.h"
 
 namespace dae
 {
+    class DiggerComponent; // forward declaration — full type only needed in .cpp
+
     class ShootCommand final : public Command
     {
     public:
-        ShootCommand(DiggerComponent* pDigger) : m_pDigger(pDigger) {}
+        explicit ShootCommand(DiggerComponent* pDigger);
 
-        void Execute(float /*deltaTime*/) override
-        {
-            if (m_pDigger)
-            {
-                m_pDigger->Shoot();
-            }
-        }
+        void Execute(float deltaTime) override;
+
     private:
         DiggerComponent* m_pDigger;
     };
 }
-#endif
+
+#endif // SHOOTCOMMAND_H

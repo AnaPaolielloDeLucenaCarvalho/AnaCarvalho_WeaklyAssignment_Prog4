@@ -2,27 +2,21 @@
 #define MUTE_COMMAND_H
 
 #include "Command.h"
-#include "ServiceLocator.h"
-#include <SDL3/SDL_timer.h>
+
+#include <cstdint>
 
 namespace dae
 {
     class MuteCommand final : public Command
     {
-        Uint64 m_LastToggleTime{ 0 };
     public:
         MuteCommand() = default;
 
-        void Execute(float /*deltaTime*/) override
-        {
-            Uint64 currentTime = SDL_GetTicks();
+        void Execute(float deltaTime) override;
 
-            if (currentTime - m_LastToggleTime > 300)
-            {
-                ServiceLocator::GetSoundSystem().ToggleMute();
-                m_LastToggleTime = currentTime;
-            }
-        }
+    private:
+        uint64_t m_LastToggleTime{ 0 }; // replaces SDL Uint64 — same underlying type
     };
 }
-#endif
+
+#endif // MUTE_COMMAND_H

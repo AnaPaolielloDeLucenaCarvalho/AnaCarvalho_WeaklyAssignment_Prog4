@@ -7,6 +7,7 @@
 #include "Scene.h"
 
 #include <iostream>
+#include <RenderComponent.h>
 
 namespace dae
 {

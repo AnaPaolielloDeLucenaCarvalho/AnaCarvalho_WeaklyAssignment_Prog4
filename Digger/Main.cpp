@@ -43,6 +43,8 @@
 #include <filesystem>
 #include "EnemyComponent.h"
 #include "EnemySpawnerComponent.h"
+#include "LevelTransitionManager.h"   // extracted from Main.cpp in Step 1
+#include <iostream>
 namespace fs = std::filesystem;
 
 std::shared_ptr<dae::AchievementManager> g_AchievementMgr = nullptr;
@@ -55,176 +57,6 @@ enum DiggerSounds
 	NEXT_LEVEL = 2,
 	DEATH = 3
 };
-
-class LevelTransitionManager : public dae::Component, public dae::Observer
-{
-public:
-	LevelTransitionManager(dae::GameObject* owner, dae::Scene* scene, dae::DiggerComponent* p1, dae::DiggerComponent* p2)
-		: Component(owner), m_pScene(scene), m_p1(p1), m_p2(p2) {
-	}
-
-	void Update(float /*deltaTime*/) override {}
-
-	void OnNotify(dae::EventId eventId, int /*value*/) override
-	{
-		if (eventId == dae::make_sdbm_hash("LoadNextLevel"))
-		{
-			Uint64 currentTime = SDL_GetTicks();
-			if (currentTime - m_LastLoadTime < 1000) return; // 1 second cooldown!
-			m_LastLoadTime = currentTime;
-
-			m_CurrentLevelIndex++;
-			if (m_CurrentLevelIndex >= dae::LevelManager::GetInstance().GetTotalLevels())
-			{
-				m_CurrentLevelIndex = 0;
-			}
-			LoadLevel(m_CurrentLevelIndex);
-		}
-	}
-
-	void LoadLevel(int levelIndex)
-	{
-		// wipe old entities
-		for (auto* bag : m_p1->GetGoldBags()) { if (bag) bag->MarkForDestroy(); }
-		for (auto* dia : m_p1->GetDiamonds()) { if (dia) dia->MarkForDestroy(); }
-		for (auto* dirt : m_VisualDirt) { if (dirt) dirt->MarkForDestroy(); }
-
-		// wipe old reference
-		m_p1->SetGoldBags({}); m_p1->SetDiamonds({});
-		if (m_p2) { m_p2->SetGoldBags({}); m_p2->SetDiamonds({}); }
-		m_VisualDirt.clear();
-
-		// wipe old grid
-		dae::LevelManager::GetInstance().ClearLevel();
-
-		// FLAG (Scene will clean at the end of the frame)
-		m_pScene->RequestLevelCleanup();
-
-		dae::LevelManager::GetInstance().InitLevel(14, 26);
-
-		// get new map
-		auto layout = dae::LevelManager::GetInstance().GetLevelLayout(levelIndex);
-		std::vector<dae::GameObject*> newBags;
-		std::vector<dae::GameObject*> newDiamonds;
-		std::vector<dae::GameObject*> newEnemies;
-		float tileWidth = 40.0f;
-		float startY = 52.0f;
-
-		// bg and dirt
-		for (int row = 0; row < static_cast<int>(layout.size()); ++row)
-		{
-			for (int col = 0; col < static_cast<int>(layout[row].size()); ++col)
-			{
-				float bx = col * tileWidth;
-				float by = startY + (row * tileWidth);
-
-				if (layout[row][col] != ' ')
-				{
-					dae::LevelManager::GetInstance().AddDirtTile(col, row);
-
-					// so bg changed with level
-					int textureNumber = (levelIndex % 3) + 1;
-					std::string texturePath = "PNG/Map/VBACK" + std::to_string(textureNumber) + ".png";
-
-					for (int strip = 0; strip < 5; ++strip)
-					{
-						auto tile = std::make_unique<dae::GameObject>();
-
-						tile->AddComponent<dae::RenderComponent>(texturePath);
-
-						tile->SetLocalPosition(bx, by + (strip * 8.0f));
-						tile->SetZIndex(1);
-						m_VisualDirt.push_back(tile.get());
-						m_pScene->Add(std::move(tile));
-					}
-				}
-
-				auto holeObj = std::make_unique<dae::GameObject>();
-				holeObj->SetLocalPosition(bx, by);
-
-				holeObj->SetZIndex(2);
-				dae::LevelManager::GetInstance().RegisterHoleObject(col, row, holeObj.get());
-				m_pScene->Add(std::move(holeObj));
-			}
-		}
-
-		// entities and player spawn
-		for (int row = 0; row < static_cast<int>(layout.size()); ++row) {
-			for (int col = 0; col < static_cast<int>(layout[row].size()); ++col) {
-				char c = layout[row][col];
-				float bx = col * tileWidth;
-				float by = startY + (row * tileWidth);
-
-				if (c == ' ' || c == 'P' || c == 'S' || c == 'E')
-				{
-					dae::LevelManager::GetInstance().Dig(bx, by);
-				}
-
-				if (c == 'P')
-				{
-					m_p1->SetSpawnPos({ bx, by });
-					m_p1->GetOwner()->SetLocalPosition(bx, by);
-				}
-				else if (c == 'S')
-				{
-					if (m_p2) // does player 2 exist
-					{
-						m_p2->SetSpawnPos({ bx, by });
-						m_p2->GetOwner()->SetLocalPosition(bx, by);
-					}
-				}
-				else if (c == 'E')
-				{
-					auto spawner = std::make_unique<dae::GameObject>();
-					spawner->AddComponent<dae::EnemySpawnerComponent>(m_p1, 4, 2);
-					spawner->SetLocalPosition(bx, by);
-					m_pScene->Add(std::move(spawner));
-				}
-				else if (c == 'D')
-				{
-					auto diamond = std::make_unique<dae::GameObject>();
-					auto render = diamond->AddComponent<dae::RenderComponent>("PNG/Money/CEMERALD.png");
-					render->SetScale(2.f);
-					diamond->SetLocalPosition(bx, by);
-					diamond->SetZIndex(3);
-					newDiamonds.push_back(diamond.get());
-					m_pScene->Add(std::move(diamond));
-				}
-				else if (c == 'C')
-				{
-					auto goldBag = std::make_unique<dae::GameObject>();
-					auto render = goldBag->AddComponent<dae::RenderComponent>("PNG/Money/CSBAG.png");
-					render->SetScale(2.f);
-					goldBag->SetLocalPosition(bx, by);
-					auto bagComp = goldBag->AddComponent<dae::GoldBagComponent>();
-					bagComp->SetPlayers(m_p1->GetOwner(), m_p2 ? m_p2->GetOwner() : nullptr);
-					goldBag->SetZIndex(4);
-					newBags.push_back(goldBag.get());
-					m_pScene->Add(std::move(goldBag));
-				}
-			}
-		}
-
-		m_p1->SetGoldBags(newBags); 
-		m_p1->SetDiamonds(newDiamonds);
-		m_p1->SetEnemies(newEnemies);
-
-		if (m_p2) 
-		{ 
-			m_p2->SetGoldBags(newBags);
-			m_p2->SetDiamonds(newDiamonds);
-			m_p2->SetEnemies(newEnemies); 
-		}
-	}
-
-private:
-	dae::Scene* m_pScene;
-	dae::DiggerComponent* m_p1;
-	dae::DiggerComponent* m_p2;
-	std::vector<dae::GameObject*> m_VisualDirt;
-	int m_CurrentLevelIndex{ 0 };
-	Uint64 m_LastLoadTime{ 0 };
-	};
 
 static void load()
 {
@@ -264,17 +96,16 @@ static void load()
 	auto titleObj = std::make_unique<dae::GameObject>();
 	auto titleRender = titleObj->AddComponent<dae::RenderComponent>("PNG/Other/CTITLE.png");
 	titleRender->SetScale(2.75f);
-	titleObj->SetLocalPosition( 70.f, 30.f);
+	titleObj->SetLocalPosition(70.f, 30.f);
 	menuScene.Add(std::move(titleObj));
 
 	auto startText = std::make_unique<dae::GameObject>();
 	startText->AddComponent<dae::TextComponent>("PRESS ANY KEY TO START", fontLarge, SDL_Color{ 255, 255, 0, 255 });
 	startText->SetLocalPosition(320, 400);
-
 	startText->AddComponent<dae::MenuManager>(&gameScene);
 	menuScene.Add(std::move(startText));
 
-	// start on Menu
+	// Start on the menu scene
 	dae::SceneManager::GetInstance().SetActiveScene(&menuScene);
 
 
@@ -286,7 +117,7 @@ static void load()
 	hudBg->SetZIndex(10);
 	gameScene.Add(std::move(hudBg));
 
-	// black bg for the level
+	// Black background for the level play area
 	auto levelBg = std::make_unique<dae::GameObject>();
 	levelBg->AddComponent<dae::UIPanelComponent>(1040.f, 612.f, SDL_Color{ 0, 0, 0, 255 });
 	levelBg->SetLocalPosition(0, 0);
@@ -397,7 +228,8 @@ static void load()
 	std::string levelPath = "Levels.txt";
 #else
 	std::string levelPath = "./Data/Levels.txt";
-	if (!fs::exists(levelPath)) {
+	if (!fs::exists(levelPath))
+	{
 		levelPath = "../Data/Levels.txt";
 	}
 #endif
@@ -405,7 +237,7 @@ static void load()
 	dae::LevelManager::GetInstance().LoadAllLevelsFromFile(levelPath);
 
 	auto transMgrObj = std::make_unique<dae::GameObject>();
-	auto transComp = transMgrObj->AddComponent<LevelTransitionManager>(&gameScene, diggerComp1, diggerComp2);
+	auto transComp = transMgrObj->AddComponent<dae::LevelTransitionManager>(&gameScene, diggerComp1, diggerComp2);
 
 	diggerComp1->AddObserver(transComp);
 	diggerComp2->AddObserver(transComp);
@@ -419,7 +251,7 @@ int main(int, char* [])
 #if USE_STEAMWORKS
 	if (!SteamAPI_Init())
 	{
-		std::cerr << "SteamAPI_Init() failed! Achievements will not work." << std::endl;
+		std::cout << "SteamAPI_Init() failed! Achievements will not work." << std::endl;
 	}
 	else
 	{

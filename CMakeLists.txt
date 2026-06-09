@@ -88,7 +88,17 @@ add_executable(${TARGET_NAME} ${TARGET_PARAM}
   Digger/DiggerComponent.cpp
   Digger/LevelManager.cpp
   Digger/EnemyComponent.cpp
-  # Add any .cpp for Digger here!!!
+  Digger/LevelTransitionManager.cpp
+  Digger/UIObservers.cpp
+  Digger/EnemySpawnerComponent.cpp
+  Digger/FadeComponent.cpp
+  Digger/FireballComponent.cpp
+  Digger/MenuManager.cpp
+  Digger/MoveCommand.cpp
+  Digger/MuteCommand.cpp
+  Digger/ShootCommand.cpp
+  Digger/SkipLevelCommand.cpp
+  Digger/AchievementManager.cpp
 )
 
 # Enable c++20 features for the game

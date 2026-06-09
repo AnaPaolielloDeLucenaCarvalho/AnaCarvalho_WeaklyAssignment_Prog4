@@ -2,28 +2,24 @@
 #define MOVECOMMAND_H
 
 #include "Command.h"
-#include "DiggerComponent.h"
-#include <glm/glm.hpp>
+
+#include <glm/vec2.hpp>
 
 namespace dae
 {
-    class MoveCommand : public Command
+    class DiggerComponent; // forward declaration — full type only needed in .cpp
+
+    class MoveCommand final : public Command
     {
     public:
-        MoveCommand(DiggerComponent* pDigger, const glm::vec2& direction)
-            : m_pDigger(pDigger), m_Direction(direction) {
-        }
+        MoveCommand(DiggerComponent* pDigger, const glm::vec2& direction);
 
-        void Execute(float /*deltaTime*/) override
-        {
-            if (m_pDigger)
-            {
-                m_pDigger->SetDesiredDirection(m_Direction);
-            }
-        }
+        void Execute(float deltaTime) override;
+
     private:
         DiggerComponent* m_pDigger;
-        glm::vec2 m_Direction;
+        glm::vec2        m_Direction;
     };
 }
-#endif
+
+#endif // MOVECOMMAND_H
