@@ -156,7 +156,7 @@ static void load()
 
 	auto livesUI1 = std::make_unique<dae::GameObject>();
 	livesUI1->SetLocalPosition(150, 15);
-	auto livesObs1 = livesUI1->AddComponent<dae::LivesSpriteDisplayComponent>("PNG/Digger/VRDIG1X.png", 3, 35.5f);
+	auto livesObs1 = livesUI1->AddComponent<dae::LivesSpriteDisplayComponent>("PNG/Digger/VRDIG1X.png", 4, 35.5f);
 	livesUI1->SetZIndex(10);
 	gameScene.Add(std::move(livesUI1));
 
@@ -168,7 +168,7 @@ static void load()
 
 	auto livesUI2 = std::make_unique<dae::GameObject>();
 	livesUI2->SetLocalPosition(940, 15);
-	auto livesObs2 = livesUI2->AddComponent<dae::LivesSpriteDisplayComponent>("PNG/Digger/VRDIG1X.png", 3, 35.5f);
+	auto livesObs2 = livesUI2->AddComponent<dae::LivesSpriteDisplayComponent>("PNG/Digger/VRDIG1X.png", 4, 35.5f);
 	livesUI2->SetZIndex(10);
 	gameScene.Add(std::move(livesUI2));
 

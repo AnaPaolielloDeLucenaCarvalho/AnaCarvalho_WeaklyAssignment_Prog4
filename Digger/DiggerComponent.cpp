@@ -130,4 +130,14 @@ namespace dae
             m_ConsecutiveEmeralds = 0;
         }
     }
+
+    void DiggerComponent::ActivateBonusMode()
+    {
+        ChangeState(new DiggerBonusState());
+    }
+
+    bool DiggerComponent::IsInBonusMode() const
+    {
+        return dynamic_cast<DiggerBonusState*>(m_pCurrentState.get()) != nullptr;
+    }
 }

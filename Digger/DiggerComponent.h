@@ -57,12 +57,15 @@ namespace dae
         void AddEmeraldToCombo();
         void ResetEmeraldCombo() { m_ConsecutiveEmeralds = 0; }
 
+        void ActivateBonusMode();
+        bool IsInBonusMode() const;
+
         void SetEnemies(const std::vector<GameObject*>& enemies) { m_pEnemies = enemies; }
         const std::vector<GameObject*>& GetEnemies() const { return m_pEnemies; }
 
     private:
         Subject m_Subject;
-        int m_Lives = 3;
+        int m_Lives = 4; // 1 active + 3 reserve (arcade-accurate)
 
         GameObject* m_pOtherPlayer{ nullptr };
         std::vector<GameObject*> m_pDiamonds{};
