@@ -1,5 +1,6 @@
 #include "MenuManager.h"
 
+#include "HighScoreManager.h"
 #include "SceneManager.h"
 #include "Scene.h"
 
@@ -7,9 +8,11 @@
 
 namespace dae
 {
-    MenuManager::MenuManager(GameObject* owner, Scene* targetGameScene)
+    MenuManager::MenuManager(GameObject* owner, HighScoreManager* pMgr, Scene* pScoreScene, Scene* pGameScene)
         : Component(owner)
-        , m_pTargetScene(targetGameScene)
+        , m_pMgr(pMgr)
+        , m_pScoreScene(pScoreScene)
+        , m_pGameScene(pGameScene)
     {
     }
 
@@ -22,7 +25,14 @@ namespace dae
         {
             if (pStates[i])
             {
-                SceneManager::GetInstance().SetActiveScene(m_pTargetScene);
+                if (m_pMgr && m_pMgr->HasSessionName())
+                {
+                    SceneManager::GetInstance().SetActiveScene(m_pGameScene);
+                }
+                else
+                {
+                    SceneManager::GetInstance().SetActiveScene(m_pScoreScene);
+                }
                 return;
             }
         }

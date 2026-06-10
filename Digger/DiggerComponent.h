@@ -11,6 +11,7 @@
 namespace dae
 {
     class DiggerState;
+    class HighScoreManager;
 
     class DiggerComponent : public Component
     {
@@ -33,6 +34,11 @@ namespace dae
         Subject& GetSubject() { return m_Subject; }
 
         int GetLives() const { return m_Lives; }
+        int GetTotalScore() const { return m_TotalScore; }
+
+        // High-score manager
+        void SetHighScoreManager(HighScoreManager* pMgr) { m_pHighScoreManager = pMgr; }
+        HighScoreManager* GetHighScoreManager() const { return m_pHighScoreManager; }
 
         void ChangeState(DiggerState* newState);
 
@@ -92,6 +98,8 @@ namespace dae
 
         std::vector<GameObject*> m_pEnemies{};
         int m_TotalEnemiesForLevel{ 0 }; // set per-level by LevelTransitionManager
+
+        HighScoreManager* m_pHighScoreManager{ nullptr }; // not owned
     };
 }
 #endif

@@ -100,6 +100,11 @@ add_executable(${TARGET_NAME} ${TARGET_PARAM}
   Digger/SkipLevelCommand.cpp
   Digger/AchievementManager.cpp
   Digger/CherryComponent.cpp
+  Digger/HighScoreManager.cpp
+  Digger/NameEntryComponent.cpp
+  Digger/AdvanceIndexCommand.cpp
+  Digger/ConfirmNameCommand.cpp
+  Digger/CycleLetterCommand.cpp
 )
 
 # Enable c++20 features for the game

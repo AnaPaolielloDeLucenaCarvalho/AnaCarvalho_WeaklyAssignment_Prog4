@@ -11,6 +11,8 @@
 #include "SceneManager.h"
 #include "Scene.h"
 #include <SDL3/SDL_timer.h>
+#include "HighScoreManager.h"
+#include <iostream>
 
 namespace dae
 {
@@ -434,9 +436,17 @@ namespace dae
     }
 
 	// game over state
-    void DiggerGameOverState::OnEnter(DiggerComponent* /*digger*/)
+    void DiggerGameOverState::OnEnter(DiggerComponent* digger)
     {
-		// intentionally empty — game-over screen handled by the menu/UI layer
+        if (digger)
+        {
+            HighScoreManager* mgr = digger->GetHighScoreManager();
+            if (mgr)
+            {
+                mgr->SaveScore(digger->GetTotalScore());
+                std::cout << "Score saved: " << digger->GetTotalScore() << "\n";
+            }
+        }
     }
 
     DiggerState* DiggerGameOverState::Update(DiggerComponent* /*digger*/, float /*deltaTime*/)

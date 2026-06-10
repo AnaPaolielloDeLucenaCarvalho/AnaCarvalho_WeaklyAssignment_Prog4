@@ -33,6 +33,11 @@
 #include "SkipLevelCommand.h"
 #include "ShootCommand.h"
 #include "DiggerSounds.h"
+#include "HighScoreManager.h"
+#include "NameEntryComponent.h"
+#include "CycleLetterCommand.h"
+#include "AdvanceIndexCommand.h"
+#include "ConfirmNameCommand.h"
 
 #if USE_STEAMWORKS
 #pragma warning (push)
@@ -49,6 +54,8 @@
 namespace fs = std::filesystem;
 
 std::shared_ptr<dae::AchievementManager> g_AchievementMgr = nullptr;
+
+static std::unique_ptr<dae::HighScoreManager> g_HighScoreMgr = nullptr;
 
 
 static void load()
@@ -79,9 +86,14 @@ static void load()
 
 // ----------------- SCENE SETUP -----------------
 
-	// 2 scenes
-	auto& menuScene = dae::SceneManager::GetInstance().CreateScene();
-	auto& gameScene = dae::SceneManager::GetInstance().CreateScene();
+	// 3 scenes: menu, name-entry (score), game
+	auto& menuScene  = dae::SceneManager::GetInstance().CreateScene();
+	auto& scoreScene = dae::SceneManager::GetInstance().CreateScene();
+	auto& gameScene  = dae::SceneManager::GetInstance().CreateScene();
+
+	// Create the HighScoreManager — no global, no static allocation before main().
+	g_HighScoreMgr = std::make_unique<dae::HighScoreManager>();
+	dae::HighScoreManager* pMgr = g_HighScoreMgr.get();
 
 	auto& input = dae::InputManager::GetInstance();
 
@@ -100,11 +112,40 @@ static void load()
 	auto startText = std::make_unique<dae::GameObject>();
 	startText->AddComponent<dae::TextComponent>("PRESS ANY KEY TO START", fontLarge, SDL_Color{ 255, 255, 0, 255 });
 	startText->SetLocalPosition(320, 400);
-	startText->AddComponent<dae::MenuManager>(&gameScene);
+	// MenuManager routes to scoreScene if no name is set, directly to gameScene if it is.
+	startText->AddComponent<dae::MenuManager>(pMgr, &scoreScene, &gameScene);
 	menuScene.Add(std::move(startText));
 
 	// Start on the menu scene
 	dae::SceneManager::GetInstance().SetActiveScene(&menuScene);
+
+
+// ----------------- SCORE SCENE (NAME ENTRY) SETUP -----------------
+
+	{
+		auto promptObj = std::make_unique<dae::GameObject>();
+		promptObj->AddComponent<dae::TextComponent>("ENTER YOUR INITIALS", fontLarge, SDL_Color{ 255, 255, 0, 255 });
+		promptObj->SetLocalPosition(330, 200);
+		scoreScene.Add(std::move(promptObj));
+
+		auto hintsObj = std::make_unique<dae::GameObject>();
+		hintsObj->AddComponent<dae::TextComponent>("UP/DOWN: change letter   RIGHT: next   ENTER: confirm", fontSmall, SDL_Color{ 180, 180, 180, 255 });
+		hintsObj->SetLocalPosition(200, 440);
+		scoreScene.Add(std::move(hintsObj));
+
+		// The text object that NameEntryComponent drives.
+		auto initialsObj = std::make_unique<dae::GameObject>();
+		initialsObj->SetLocalPosition(430, 300);
+		auto pInitialsText = initialsObj->AddComponent<dae::TextComponent>("A A A", fontLarge, SDL_Color{ 255, 255, 255, 255 });
+		auto pEntryComp    = initialsObj->AddComponent<dae::NameEntryComponent>(pInitialsText, pMgr, &gameScene);
+		scoreScene.Add(std::move(initialsObj));
+
+		// Bind name-entry keys — these live on top of any game bindings.
+		input.BindCommand(SDL_SCANCODE_UP,    dae::KeyState::Pressed, std::make_unique<dae::CycleLetterCommand>(pEntryComp, -1));
+		input.BindCommand(SDL_SCANCODE_DOWN,  dae::KeyState::Pressed, std::make_unique<dae::CycleLetterCommand>(pEntryComp, +1));
+		input.BindCommand(SDL_SCANCODE_RIGHT, dae::KeyState::Pressed, std::make_unique<dae::AdvanceIndexCommand>(pEntryComp));
+		input.BindCommand(SDL_SCANCODE_RETURN,dae::KeyState::Pressed, std::make_unique<dae::ConfirmNameCommand>(pEntryComp));
+	}
 
 
 // ----------------- GAME SCENE SETUP -----------------
@@ -145,6 +186,10 @@ static void load()
 
 	diggerComp1->SetOtherPlayer(diggerPtr2);
 	diggerComp2->SetOtherPlayer(diggerPtr1);
+
+	// Inject the session manager so DiggerGameOverState can call SaveScore().
+	diggerComp1->SetHighScoreManager(pMgr);
+	diggerComp2->SetHighScoreManager(pMgr);
 
 	auto scoreUI1 = std::make_unique<dae::GameObject>();
 	scoreUI1->SetLocalPosition(20, 13);

@@ -6,6 +6,7 @@
 #include "FireballComponent.h"
 #include "SceneManager.h"
 #include "Scene.h"
+#include "HighScoreManager.h"
 
 #include <iostream>
 #include <RenderComponent.h>
@@ -111,6 +112,12 @@ namespace dae
 
         // track score for the extra life
         m_TotalScore += points;
+
+        if (m_pHighScoreManager)
+        {
+            m_pHighScoreManager->UpdateCurrentScore(m_TotalScore);
+        }
+
         if (m_TotalScore >= 20000 && !m_HasGottenExtraLife)
         {
             m_Lives++;
