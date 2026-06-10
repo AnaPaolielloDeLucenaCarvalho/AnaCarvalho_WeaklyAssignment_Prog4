@@ -103,6 +103,7 @@ namespace dae
         // Destroy old entities
         for (auto* bag : m_p1->GetGoldBags()) { if (bag) bag->MarkForDestroy(); }
         for (auto* dia : m_p1->GetDiamonds()) { if (dia) dia->MarkForDestroy(); }
+        for (auto* enemy : m_p1->GetEnemies()) { if (enemy) enemy->MarkForDestroy(); }
         for (auto* dirt : m_VisualDirt) { if (dirt) dirt->MarkForDestroy(); }
 
         m_p1->SetGoldBags({});

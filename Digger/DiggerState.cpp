@@ -247,10 +247,82 @@ namespace dae
 
     DiggerState* DiggerBonusState::Update(DiggerComponent* digger, float deltaTime)
     {
+        auto myPos = digger->GetOwner()->GetTransform().GetPosition();
+
         // run the shared movement + animation logic so Digger is not frozen
         const glm::vec2 newPos = ApplyDiggerMovement(digger, deltaTime);
         const float newX = newPos.x;
         const float newY = newPos.y;
+
+    // COLLISIONS
+        for (auto& diamond : digger->GetDiamonds())
+        {
+            if (!diamond || diamond->IsMarkedForDestroy()) continue;
+            auto diamondPos = diamond->GetTransform().GetPosition();
+            if (glm::distance(glm::vec2{ newX, newY }, glm::vec2{ diamondPos.x, diamondPos.y }) < 20.f)
+            {
+                diamond->MarkForDestroy();
+                digger->AwardPoints(25);
+                digger->AddEmeraldToCombo();
+            }
+        }
+
+        for (auto& bag : digger->GetGoldBags())
+        {
+            if (!bag || bag->IsMarkedForDestroy()) continue;
+            auto bagPos = bag->GetTransform().GetPosition();
+
+            bool touchingX = std::abs(newX - bagPos.x) < 32.0f;
+            bool touchingY = std::abs(newY - bagPos.y) < 32.0f;
+
+            if (touchingX && touchingY)
+            {
+                auto bagComp = bag->GetComponent<GoldBagComponent>();
+                if (bagComp && bagComp->IsBroken())
+                {
+                    bag->MarkForDestroy();
+                    digger->AwardPoints(500);
+                    digger->ResetEmeraldCombo();
+                }
+                else
+                {
+                    glm::vec2 currentDir = digger->GetCurrentDirection();
+                    float oldDist = glm::distance(glm::vec2(myPos.x, myPos.y), glm::vec2(bagPos.x, bagPos.y));
+                    float newDist = glm::distance(glm::vec2(newX, newY), glm::vec2(bagPos.x, bagPos.y));
+
+                    if (newDist < oldDist)
+                    {
+                        float deltaX = newX - myPos.x;
+                        float deltaY = newY - myPos.y;
+
+                        bag->SetLocalPosition(bagPos.x + deltaX, bagPos.y + deltaY);
+
+                        for (int chain = 0; chain < 3; ++chain)
+                        {
+                            for (auto& b1 : digger->GetGoldBags())
+                            {
+                                if (!b1 || b1->IsMarkedForDestroy()) continue;
+                                auto p1 = b1->GetTransform().GetPosition();
+
+                                for (auto& b2 : digger->GetGoldBags())
+                                {
+                                    if (b1 == b2 || !b2 || b2->IsMarkedForDestroy()) continue;
+                                    auto p2 = b2->GetTransform().GetPosition();
+
+                                    if (std::abs(p1.x - p2.x) < 38.0f && std::abs(p1.y - p2.y) < 38.0f)
+                                    {
+                                        if (currentDir.x > 0 && p1.x < p2.x) b2->SetLocalPosition(p1.x + 38.0f, p2.y);
+                                        else if (currentDir.x < 0 && p1.x > p2.x) b2->SetLocalPosition(p1.x - 38.0f, p2.y);
+                                        else if (currentDir.y > 0 && p1.y < p2.y) b2->SetLocalPosition(p2.x, p1.y + 38.0f);
+                                        else if (currentDir.y < 0 && p1.y > p2.y) b2->SetLocalPosition(p2.x, p1.y - 38.0f);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
         // in bonus mode, touching an enemy eats it (250 pts) instead of dying
         for (auto& enemy : digger->GetEnemies())
@@ -261,6 +333,33 @@ namespace dae
             {
                 enemy->MarkForDestroy();
                 digger->AwardPoints(250);
+            }
+        }
+
+    // WIN (Collected all the Emeralds OR All Enemies)
+        if (!digger->GetDiamonds().empty())
+        {
+            bool allDiamondsCollected = true;
+            for (auto& diamond : digger->GetDiamonds())
+            {
+                if (diamond && !diamond->IsMarkedForDestroy())
+                {
+                    allDiamondsCollected = false;
+                }
+            }
+
+            const int totalForLevel = digger->GetTotalEnemiesForLevel();
+            int deadCount = 0;
+            for (auto& enemy : digger->GetEnemies())
+            {
+                if (!enemy || enemy->IsMarkedForDestroy()) deadCount++;
+            }
+            const bool allSpawned = totalForLevel > 0 && static_cast<int>(digger->GetEnemies().size()) >= totalForLevel;
+            const bool allEnemiesDead = allSpawned && (deadCount == static_cast<int>(digger->GetEnemies().size()));
+
+            if (allDiamondsCollected || allEnemiesDead)
+            {
+                return new DiggerLevelCompleteState();
             }
         }
 
@@ -346,7 +445,8 @@ namespace dae
         digger->SetDesiredDirection(glm::vec2{ 0,0 });
         digger->SetCurrentDirection(glm::vec2{ 0,0 });
 
-        ServiceLocator::GetSoundSystem().Play(DiggerSounds::NEXT_LEVEL, 0.5f);
+        ServiceLocator::GetSoundSystem().PauseMusic();
+        ServiceLocator::GetSoundSystem().PlaySfx(DiggerSounds::NEXT_LEVEL, 0.5f);
 
 		// fade 4s to black
         auto fadeObj = std::make_unique<GameObject>();

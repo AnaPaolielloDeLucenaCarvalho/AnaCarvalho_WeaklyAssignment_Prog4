@@ -70,7 +70,6 @@ namespace dae
         {
             m_Lives--;
             m_Subject.Notify(make_sdbm_hash("PlayerDied"), m_Lives);
-            ServiceLocator::GetSoundSystem().Play(3, 1.0f);
         }
 
         if (m_Lives <= 0)
