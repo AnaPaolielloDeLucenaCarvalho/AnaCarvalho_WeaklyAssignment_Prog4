@@ -91,10 +91,9 @@ namespace dae
 
     void LevelTransitionManager::LoadLevel(int levelIndex)
     {
-        // Hard audio reset — kill every track from the previous level before loading anything new
+        // Clean audio environment for the new level without restarting the main loop from 0
         ServiceLocator::GetSoundSystem().StopSfx();
-        ServiceLocator::GetSoundSystem().StopMusic();
-        ServiceLocator::GetSoundSystem().PlayMusic(DiggerSounds::MUSIC, 0.5f, true);
+        ServiceLocator::GetSoundSystem().ResumeMusic();
 
         // Destroy old entities
         for (auto* bag : m_p1->GetGoldBags()) { if (bag) bag->MarkForDestroy(); }

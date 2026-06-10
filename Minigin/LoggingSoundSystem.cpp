@@ -20,6 +20,18 @@ namespace dae
         _realSS->PlayMusic(id, volume, loop);
     }
 
+    void LoggingSoundSystem::PauseMusic()
+    {
+        std::cout << "[Sound Logger] Pausing music\n";
+        _realSS->PauseMusic();
+    }
+
+    void LoggingSoundSystem::ResumeMusic()
+    {
+        std::cout << "[Sound Logger] Resuming music\n";
+        _realSS->ResumeMusic();
+    }
+
     void LoggingSoundSystem::StopMusic()
     {
         std::cout << "[Sound Logger] Stopping music\n";

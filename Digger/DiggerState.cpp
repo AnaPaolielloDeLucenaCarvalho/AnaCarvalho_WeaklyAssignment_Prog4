@@ -219,11 +219,11 @@ namespace dae
 	// bonus state
     void DiggerBonusState::OnEnter(DiggerComponent* digger)
     {
-		// stop other music
-        ServiceLocator::GetSoundSystem().StopMusic();
+		// pause other music
+        ServiceLocator::GetSoundSystem().PauseMusic();
 
 		// sound 1 = bonus.wav (Rossini / William Tell)
-        ServiceLocator::GetSoundSystem().Play(1, 1.0f);
+        ServiceLocator::GetSoundSystem().PlaySfx(DiggerSounds::BONUS, 1.0f);
 
         if (auto render = digger->GetOwner()->GetComponent<RenderComponent>())
         {
@@ -236,8 +236,10 @@ namespace dae
 
     void DiggerBonusState::OnExit(DiggerComponent* digger)
     {
-		// resume main music (sound 0) with looping
-        ServiceLocator::GetSoundSystem().PlayMusic(0, 0.5f, true);
+		// stop bonus music
+        ServiceLocator::GetSoundSystem().StopSfx();
+		// resume main music
+        ServiceLocator::GetSoundSystem().ResumeMusic();
 
 		// tell the map manager to restore the normal palette
         digger->GetSubject().Notify(make_sdbm_hash("BonusModeEnd"), 0);
@@ -277,8 +279,8 @@ namespace dae
         digger->SetDead(true);
         digger->Die();
 
-		// stop music so death sound plays exclusively
-        ServiceLocator::GetSoundSystem().StopMusic();
+		// pause music so death sound plays exclusively
+        ServiceLocator::GetSoundSystem().PauseMusic();
         ServiceLocator::GetSoundSystem().PlaySfx(DiggerSounds::DEATH, 1.0f);
 
         if (auto render = digger->GetOwner()->GetComponent<RenderComponent>())
@@ -314,7 +316,7 @@ namespace dae
 
 				// cut the death sound and resume looping main music after respawn
                 ServiceLocator::GetSoundSystem().StopSfx();
-                ServiceLocator::GetSoundSystem().PlayMusic(DiggerSounds::MUSIC, 0.5f, true);
+                ServiceLocator::GetSoundSystem().ResumeMusic();
 
                 return new DiggerNormalState();
             }

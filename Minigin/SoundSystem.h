@@ -12,6 +12,8 @@ namespace dae
         virtual ~SoundSystem() = default;
         virtual void Play(const sound_id id, const float volume) = 0;
         virtual void PlayMusic(const sound_id id, const float volume, const bool loop) = 0;
+        virtual void PauseMusic() = 0;
+        virtual void ResumeMusic() = 0;
         virtual void StopMusic() = 0;
         virtual void PlaySfx(const sound_id id, const float volume) = 0;
         virtual void StopSfx() = 0;

@@ -15,6 +15,8 @@ namespace dae
 
         void Play(const sound_id id, const float volume) override;
         void PlayMusic(const sound_id id, const float volume, const bool loop) override;
+        void PauseMusic() override;
+        void ResumeMusic() override;
         void StopMusic() override;
         void PlaySfx(const sound_id id, const float volume) override;
         void StopSfx() override;

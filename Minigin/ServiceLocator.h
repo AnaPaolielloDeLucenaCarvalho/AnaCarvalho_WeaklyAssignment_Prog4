@@ -11,6 +11,8 @@ namespace dae
     public:
         void Play(const sound_id, const float) override {}
         void PlayMusic(const sound_id, const float, const bool) override {}
+        void PauseMusic() override {}
+        void ResumeMusic() override {}
         void StopMusic() override {}
         void PlaySfx(const sound_id, const float) override {}
         void StopSfx() override {}

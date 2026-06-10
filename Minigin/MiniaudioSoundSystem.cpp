@@ -20,6 +20,8 @@ namespace dae
         bool isMusic{ false };
         bool loop{ false };
         bool isStop{ false };
+        bool isPauseMusic{ false };
+        bool isResumeMusic{ false };
         bool isSfxStop{ false };
         bool isSfx{ false };
     };
@@ -94,6 +96,38 @@ namespace dae
                     ma_sound_start(&m_MusicSound);
                     m_MusicLoaded = true;
                 }
+            }
+#endif
+        }
+
+        void PauseMusic()
+        {
+#ifndef __EMSCRIPTEN__
+            std::lock_guard<std::mutex> lock(m_Mutex);
+            SoundRequest req{};
+            req.isPauseMusic = true;
+            m_Queue.push(req);
+            m_Condition.notify_one();
+#else
+            if (m_MusicLoaded)
+            {
+                ma_sound_stop(&m_MusicSound);
+            }
+#endif
+        }
+
+        void ResumeMusic()
+        {
+#ifndef __EMSCRIPTEN__
+            std::lock_guard<std::mutex> lock(m_Mutex);
+            SoundRequest req{};
+            req.isResumeMusic = true;
+            m_Queue.push(req);
+            m_Condition.notify_one();
+#else
+            if (m_MusicLoaded)
+            {
+                ma_sound_start(&m_MusicSound);
             }
 #endif
         }
@@ -200,6 +234,22 @@ namespace dae
             }
         }
 
+        void PauseMusicInternal()
+        {
+            if (m_MusicLoaded)
+            {
+                ma_sound_stop(&m_MusicSound);
+            }
+        }
+
+        void ResumeMusicInternal()
+        {
+            if (m_MusicLoaded)
+            {
+                ma_sound_start(&m_MusicSound);
+            }
+        }
+
         void PlaySfxInternal(sound_id id, float volume)
         {
             if (!m_SoundPaths.contains(id)) return;
@@ -249,6 +299,14 @@ namespace dae
                 {
                     StopMusicInternal();
                 }
+                else if (request.isPauseMusic)
+                {
+                    PauseMusicInternal();
+                }
+                else if (request.isResumeMusic)
+                {
+                    ResumeMusicInternal();
+                }
                 else if (request.isSfxStop)
                 {
                     StopSfxInternal();
@@ -288,6 +346,8 @@ namespace dae
     MiniaudioSoundSystem::~MiniaudioSoundSystem() = default;
     void MiniaudioSoundSystem::Play(const sound_id id, const float volume) { pImpl->Play(id, volume); }
     void MiniaudioSoundSystem::PlayMusic(const sound_id id, const float volume, const bool loop) { pImpl->PlayMusic(id, volume, loop); }
+    void MiniaudioSoundSystem::PauseMusic() { pImpl->PauseMusic(); }
+    void MiniaudioSoundSystem::ResumeMusic() { pImpl->ResumeMusic(); }
     void MiniaudioSoundSystem::StopMusic() { pImpl->StopMusic(); }
     void MiniaudioSoundSystem::PlaySfx(const sound_id id, const float volume) { pImpl->PlaySfx(id, volume); }
     void MiniaudioSoundSystem::StopSfx() { pImpl->StopSfx(); }
