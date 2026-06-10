@@ -64,7 +64,10 @@ namespace dae
         {
 #ifndef __EMSCRIPTEN__
             std::lock_guard<std::mutex> lock(m_Mutex);
-            m_Queue.push({ id, volume, false, false, false });
+            SoundRequest req{};
+            req.id = id;
+            req.volume = volume;
+            m_Queue.push(req);
             m_Condition.notify_one();
 #else
             if (m_SoundPaths.contains(id)) 
@@ -78,7 +81,12 @@ namespace dae
         {
 #ifndef __EMSCRIPTEN__
             std::lock_guard<std::mutex> lock(m_Mutex);
-            m_Queue.push({ id, volume, true, loop, false });
+            SoundRequest req{};
+            req.id = id;
+            req.volume = volume;
+            req.isMusic = true;
+            req.loop = loop;
+            m_Queue.push(req);
             m_Condition.notify_one();
 #else
             if (m_SoundPaths.contains(id))
@@ -136,7 +144,9 @@ namespace dae
         {
 #ifndef __EMSCRIPTEN__
             std::lock_guard<std::mutex> lock(m_Mutex);
-            m_Queue.push({ 0, 0.0f, false, false, true, false });
+            SoundRequest req{};
+            req.isStop = true;
+            m_Queue.push(req);
             m_Condition.notify_one();
 #else
             if (m_MusicLoaded)
@@ -179,7 +189,9 @@ namespace dae
         {
 #ifndef __EMSCRIPTEN__
             std::lock_guard<std::mutex> lock(m_Mutex);
-            m_Queue.push({ 0, 0.0f, false, false, false, true });
+            SoundRequest req{};
+            req.isSfxStop = true;
+            m_Queue.push(req);
             m_Condition.notify_one();
 #else
             if (m_SfxLoaded)

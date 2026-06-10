@@ -9,6 +9,7 @@
 #include "CherryComponent.h"
 #include "ServiceLocator.h"
 #include "DiggerSounds.h"
+#include "DiggerState.h"
 
 #include <SDL3/SDL.h>
 #include <string>
@@ -94,6 +95,10 @@ namespace dae
         // Clean audio environment for the new level without restarting the main loop from 0
         ServiceLocator::GetSoundSystem().StopSfx();
         ServiceLocator::GetSoundSystem().ResumeMusic();
+
+        // Enforce a strict state reset to destroy any active Bonus Mode and its timer
+        if (m_p1) m_p1->ChangeState(new DiggerNormalState());
+        if (m_p2) m_p2->ChangeState(new DiggerNormalState());
 
         // Destroy old entities
         for (auto* bag : m_p1->GetGoldBags()) { if (bag) bag->MarkForDestroy(); }
