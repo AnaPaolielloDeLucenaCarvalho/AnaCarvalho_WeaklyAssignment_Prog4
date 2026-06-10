@@ -4,6 +4,8 @@
 #include "RenderComponent.h"
 #include "LevelManager.h"
 #include "GameObject.h"
+#include "ServiceLocator.h"
+#include "DiggerSounds.h"
 
 #include <glm/glm.hpp>
 #include <string>
@@ -74,6 +76,7 @@ namespace dae
                 {
                     enemy->MarkForDestroy();
                     m_pDigger->AwardPoints(250); // 250 pts per enemy killed by fireball
+                    ServiceLocator::GetSoundSystem().Play(DiggerSounds::KILL_ENEMY, 0.5f);
 
                     m_IsExploding = true;
                     if (auto* render = GetOwner()->GetComponent<RenderComponent>()) render->SetTexture("PNG/Other/VEXP1.png");

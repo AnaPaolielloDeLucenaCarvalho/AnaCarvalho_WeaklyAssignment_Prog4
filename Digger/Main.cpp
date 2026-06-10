@@ -71,6 +71,11 @@ static void load()
 	soundSystem.LoadSound(DiggerSounds::BONUS, soundFolder + "bonus.wav");
 	soundSystem.LoadSound(DiggerSounds::NEXT_LEVEL, soundFolder + "next_level.wav");
 	soundSystem.LoadSound(DiggerSounds::DEATH, soundFolder + "death.wav");
+	soundSystem.LoadSound(DiggerSounds::PICK_UP, soundFolder + "pickUp.mp3");
+	soundSystem.LoadSound(DiggerSounds::BONUS_PICKUP, soundFolder + "bonusPickUp.mp3");
+	soundSystem.LoadSound(DiggerSounds::COMBO_8_EMES, soundFolder + "8ComboEmes.mp3");
+	soundSystem.LoadSound(DiggerSounds::KILL_ENEMY, soundFolder + "killEnemy.mp3");
+	soundSystem.LoadSound(DiggerSounds::SHOOT, soundFolder + "shoot.mp3");
 
 // ----------------- SCENE SETUP -----------------
 

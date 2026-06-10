@@ -115,6 +115,7 @@ namespace dae
                 diamond->MarkForDestroy();
                 digger->AwardPoints(25);
                 digger->AddEmeraldToCombo();
+                ServiceLocator::GetSoundSystem().Play(DiggerSounds::PICK_UP, 0.5f);
             }
         }
 
@@ -134,6 +135,7 @@ namespace dae
                     bag->MarkForDestroy();
                     digger->AwardPoints(500);
                     digger->ResetEmeraldCombo();
+                    ServiceLocator::GetSoundSystem().Play(DiggerSounds::PICK_UP, 0.5f);
                 }
                 else
                 {
@@ -264,6 +266,7 @@ namespace dae
                 diamond->MarkForDestroy();
                 digger->AwardPoints(25);
                 digger->AddEmeraldToCombo();
+                ServiceLocator::GetSoundSystem().Play(DiggerSounds::PICK_UP, 0.5f);
             }
         }
 
@@ -283,6 +286,7 @@ namespace dae
                     bag->MarkForDestroy();
                     digger->AwardPoints(500);
                     digger->ResetEmeraldCombo();
+                    ServiceLocator::GetSoundSystem().Play(DiggerSounds::PICK_UP, 0.5f);
                 }
                 else
                 {
@@ -333,6 +337,7 @@ namespace dae
             {
                 enemy->MarkForDestroy();
                 digger->AwardPoints(250);
+                ServiceLocator::GetSoundSystem().Play(DiggerSounds::KILL_ENEMY, 0.5f);
             }
         }
 
