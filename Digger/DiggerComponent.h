@@ -65,7 +65,7 @@ namespace dae
 
         // total enemies the level will ever spawn — set by LevelTransitionManager
         void SetTotalEnemiesForLevel(int total) { m_TotalEnemiesForLevel = total; }
-        int  GetTotalEnemiesForLevel() const     { return m_TotalEnemiesForLevel; }
+        int GetTotalEnemiesForLevel() const { return m_TotalEnemiesForLevel; }
 
     private:
         Subject m_Subject;

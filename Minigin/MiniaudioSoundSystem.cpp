@@ -17,6 +17,11 @@ namespace dae
     {
         sound_id id;
         float volume;
+        bool isMusic{ false };
+        bool loop{ false };
+        bool isStop{ false };
+        bool isSfxStop{ false };
+        bool isSfx{ false };
     };
 
     class MiniaudioSoundSystem::MiniaudioSoundSystemImpl
@@ -24,7 +29,8 @@ namespace dae
     public:
         MiniaudioSoundSystemImpl()
         {
-            if (ma_engine_init(NULL, &m_AudioEngine) != MA_SUCCESS) {
+            if (ma_engine_init(NULL, &m_AudioEngine) != MA_SUCCESS) 
+            {
                 std::cerr << "Failed to initialize miniaudio engine.\n";
             }
 
@@ -39,6 +45,16 @@ namespace dae
             m_Quit = true;
             m_Condition.notify_one();
 #endif
+            if (m_MusicLoaded)
+            {
+                ma_sound_uninit(&m_MusicSound);
+                m_MusicLoaded = false;
+            }
+            if (m_SfxLoaded)
+            {
+                ma_sound_uninit(&m_SfxSound);
+                m_SfxLoaded = false;
+            }
             ma_engine_uninit(&m_AudioEngine);
         }
 
@@ -46,11 +62,95 @@ namespace dae
         {
 #ifndef __EMSCRIPTEN__
             std::lock_guard<std::mutex> lock(m_Mutex);
-            m_Queue.push({ id, volume });
+            m_Queue.push({ id, volume, false, false, false });
             m_Condition.notify_one();
 #else
-            if (m_SoundPaths.contains(id)) {
+            if (m_SoundPaths.contains(id)) 
+            {
                 ma_engine_play_sound(&m_AudioEngine, m_SoundPaths[id].c_str(), NULL);
+            }
+#endif
+        }
+
+        void PlayMusic(sound_id id, float volume, bool loop)
+        {
+#ifndef __EMSCRIPTEN__
+            std::lock_guard<std::mutex> lock(m_Mutex);
+            m_Queue.push({ id, volume, true, loop, false });
+            m_Condition.notify_one();
+#else
+            if (m_SoundPaths.contains(id))
+            {
+                if (m_MusicLoaded)
+                {
+                    ma_sound_uninit(&m_MusicSound);
+                    m_MusicLoaded = false;
+                }
+                if (ma_sound_init_from_file(&m_AudioEngine, m_SoundPaths[id].c_str(),
+                    MA_SOUND_FLAG_NO_SPATIALIZATION, NULL, NULL, &m_MusicSound) == MA_SUCCESS)
+                {
+                    ma_sound_set_looping(&m_MusicSound, loop ? MA_TRUE : MA_FALSE);
+                    ma_sound_set_volume(&m_MusicSound, volume);
+                    ma_sound_start(&m_MusicSound);
+                    m_MusicLoaded = true;
+                }
+            }
+#endif
+        }
+
+        void StopMusic()
+        {
+#ifndef __EMSCRIPTEN__
+            std::lock_guard<std::mutex> lock(m_Mutex);
+            m_Queue.push({ 0, 0.0f, false, false, true, false });
+            m_Condition.notify_one();
+#else
+            if (m_MusicLoaded)
+            {
+                ma_sound_stop(&m_MusicSound);
+            }
+#endif
+        }
+
+        void PlaySfx(sound_id id, float volume)
+        {
+#ifndef __EMSCRIPTEN__
+            std::lock_guard<std::mutex> lock(m_Mutex);
+            SoundRequest req{};
+            req.id     = id;
+            req.volume = volume;
+            req.isSfx  = true;
+            m_Queue.push(req);
+            m_Condition.notify_one();
+#else
+            if (m_SfxLoaded)
+            {
+                ma_sound_uninit(&m_SfxSound);
+                m_SfxLoaded = false;
+            }
+            if (m_SoundPaths.contains(id))
+            {
+                if (ma_sound_init_from_file(&m_AudioEngine, m_SoundPaths[id].c_str(),
+                    MA_SOUND_FLAG_NO_SPATIALIZATION, NULL, NULL, &m_SfxSound) == MA_SUCCESS)
+                {
+                    ma_sound_set_volume(&m_SfxSound, volume);
+                    ma_sound_start(&m_SfxSound);
+                    m_SfxLoaded = true;
+                }
+            }
+#endif
+        }
+
+        void StopSfx()
+        {
+#ifndef __EMSCRIPTEN__
+            std::lock_guard<std::mutex> lock(m_Mutex);
+            m_Queue.push({ 0, 0.0f, false, false, false, true });
+            m_Condition.notify_one();
+#else
+            if (m_SfxLoaded)
+            {
+                ma_sound_stop(&m_SfxSound);
             }
 #endif
         }
@@ -68,6 +168,70 @@ namespace dae
 
     private:
 #ifndef __EMSCRIPTEN__
+        void PlayMusicInternal(sound_id id, float volume, bool loop)
+        {
+            if (!m_SoundPaths.contains(id)) return;
+
+            if (m_MusicLoaded)
+            {
+                ma_sound_stop(&m_MusicSound);
+                ma_sound_uninit(&m_MusicSound);
+                m_MusicLoaded = false;
+            }
+
+            if (ma_sound_init_from_file(&m_AudioEngine, m_SoundPaths[id].c_str(), MA_SOUND_FLAG_NO_SPATIALIZATION, NULL, NULL, &m_MusicSound) == MA_SUCCESS)
+            {
+                ma_sound_set_looping(&m_MusicSound, loop ? MA_TRUE : MA_FALSE);
+                ma_sound_set_volume(&m_MusicSound, volume);
+                ma_sound_start(&m_MusicSound);
+                m_MusicLoaded = true;
+            }
+            else
+            {
+                std::cerr << "[MiniaudioSoundSystem] Failed to load music track: " << m_SoundPaths[id] << "\n";
+            }
+        }
+
+        void StopMusicInternal()
+        {
+            if (m_MusicLoaded)
+            {
+                ma_sound_stop(&m_MusicSound);
+            }
+        }
+
+        void PlaySfxInternal(sound_id id, float volume)
+        {
+            if (!m_SoundPaths.contains(id)) return;
+
+            if (m_SfxLoaded)
+            {
+                ma_sound_stop(&m_SfxSound);
+                ma_sound_uninit(&m_SfxSound);
+                m_SfxLoaded = false;
+            }
+
+            if (ma_sound_init_from_file(&m_AudioEngine, m_SoundPaths[id].c_str(),
+                MA_SOUND_FLAG_NO_SPATIALIZATION, NULL, NULL, &m_SfxSound) == MA_SUCCESS)
+            {
+                ma_sound_set_volume(&m_SfxSound, volume);
+                ma_sound_start(&m_SfxSound);
+                m_SfxLoaded = true;
+            }
+            else
+            {
+                std::cerr << "[MiniaudioSoundSystem] Failed to load sfx track: " << m_SoundPaths[id] << "\n";
+            }
+        }
+
+        void StopSfxInternal()
+        {
+            if (m_SfxLoaded)
+            {
+                ma_sound_stop(&m_SfxSound);
+            }
+        }
+
         void ProcessQueue()
         {
             while (true)
@@ -81,7 +245,23 @@ namespace dae
                 m_Queue.pop();
                 lock.unlock();
 
-                if (m_SoundPaths.contains(request.id))
+                if (request.isStop)
+                {
+                    StopMusicInternal();
+                }
+                else if (request.isSfxStop)
+                {
+                    StopSfxInternal();
+                }
+                else if (request.isMusic)
+                {
+                    PlayMusicInternal(request.id, request.volume, request.loop);
+                }
+                else if (request.isSfx)
+                {
+                    PlaySfxInternal(request.id, request.volume);
+                }
+                else if (m_SoundPaths.contains(request.id))
                 {
                     ma_engine_play_sound(&m_AudioEngine, m_SoundPaths[request.id].c_str(), NULL);
                 }
@@ -96,6 +276,10 @@ namespace dae
 #endif
 
         ma_engine m_AudioEngine;
+        ma_sound  m_MusicSound;
+        bool      m_MusicLoaded{ false };
+        ma_sound  m_SfxSound;
+        bool      m_SfxLoaded{ false };
         std::unordered_map<sound_id, std::string> m_SoundPaths;
         bool m_Muted{ false };
     };
@@ -103,6 +287,10 @@ namespace dae
     MiniaudioSoundSystem::MiniaudioSoundSystem() : pImpl(std::make_unique<MiniaudioSoundSystemImpl>()) {}
     MiniaudioSoundSystem::~MiniaudioSoundSystem() = default;
     void MiniaudioSoundSystem::Play(const sound_id id, const float volume) { pImpl->Play(id, volume); }
+    void MiniaudioSoundSystem::PlayMusic(const sound_id id, const float volume, const bool loop) { pImpl->PlayMusic(id, volume, loop); }
+    void MiniaudioSoundSystem::StopMusic() { pImpl->StopMusic(); }
+    void MiniaudioSoundSystem::PlaySfx(const sound_id id, const float volume) { pImpl->PlaySfx(id, volume); }
+    void MiniaudioSoundSystem::StopSfx() { pImpl->StopSfx(); }
     void MiniaudioSoundSystem::LoadSound(const sound_id id, const std::string& filePath) { pImpl->LoadSound(id, filePath); }
     void MiniaudioSoundSystem::ToggleMute() { pImpl->ToggleMute(); }
 }

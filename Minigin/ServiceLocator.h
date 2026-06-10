@@ -10,6 +10,10 @@ namespace dae
     {
     public:
         void Play(const sound_id, const float) override {}
+        void PlayMusic(const sound_id, const float, const bool) override {}
+        void StopMusic() override {}
+        void PlaySfx(const sound_id, const float) override {}
+        void StopSfx() override {}
         void LoadSound(const sound_id, const std::string&) override {}
 
         void ToggleMute() override {}

@@ -18,12 +18,12 @@ namespace dae
 
     private:
         glm::vec2 m_Direction;
-        float     m_AnimTimer{ 0.0f };
-        int       m_Frame{ 1 };
+        float m_AnimTimer{ 0.0f };
+        int m_Frame{ 1 };
 
-        bool  m_IsExploding{ false };
+        bool m_IsExploding{ false };
         float m_ExplodeTimer{ 0.0f };
-        int   m_ExplodeFrame{ 1 };
+        int m_ExplodeFrame{ 1 };
 
         DiggerComponent* m_pDigger;
     };

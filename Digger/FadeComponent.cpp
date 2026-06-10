@@ -17,7 +17,8 @@ namespace dae
     void FadeComponent::Update(float deltaTime)
     {
         m_Timer += deltaTime;
-        m_Alpha = static_cast<uint8_t>(
+        m_Alpha = static_cast<uint8_t>
+        (
             std::min(255.0f, (m_Timer / m_FadeDuration) * 255.0f)
         );
 

@@ -18,7 +18,7 @@ namespace dae
 
     private:
         DiggerComponent* m_pDigger;
-        glm::vec2        m_Direction;
+        glm::vec2 m_Direction;
     };
 }
 

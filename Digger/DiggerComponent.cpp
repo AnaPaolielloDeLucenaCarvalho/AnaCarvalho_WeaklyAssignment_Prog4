@@ -11,7 +11,8 @@
 
 namespace dae
 {
-    DiggerComponent::DiggerComponent(GameObject* owner) : Component(owner)
+    DiggerComponent::DiggerComponent(GameObject* owner) 
+        : Component(owner)
     {
         m_pCurrentState = std::make_unique<DiggerNormalState>();
         m_pCurrentState->OnEnter(this);

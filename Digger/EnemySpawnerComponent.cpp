@@ -12,10 +12,7 @@
 
 namespace dae
 {
-    EnemySpawnerComponent::EnemySpawnerComponent(GameObject* owner,
-                                                  DiggerComponent* p1,
-                                                  int maxTotal,
-                                                  int maxConcurrent)
+    EnemySpawnerComponent::EnemySpawnerComponent(GameObject* owner, DiggerComponent* p1, int maxTotal, int maxConcurrent)
         : Component(owner)
         , m_p1(p1)
         , m_MaxTotalEnemies(maxTotal)
@@ -33,10 +30,9 @@ namespace dae
         if (m_TotalSpawned >= m_MaxTotalEnemies) return;
 
         // Remove dead / destroyed enemies from the tracking list
-        m_SpawnedEnemies.erase(
-            std::remove_if(m_SpawnedEnemies.begin(), m_SpawnedEnemies.end(),
-                [](GameObject* e) { return e == nullptr || e->IsMarkedForDestroy(); }),
-            m_SpawnedEnemies.end()
+        m_SpawnedEnemies.erase
+        (
+            std::remove_if(m_SpawnedEnemies.begin(), m_SpawnedEnemies.end(), [](GameObject* e) { return e == nullptr || e->IsMarkedForDestroy(); }), m_SpawnedEnemies.end()
         );
 
         if (m_SpawnedEnemies.empty() && m_TotalSpawned < m_MaxTotalEnemies)

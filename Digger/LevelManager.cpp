@@ -34,8 +34,7 @@ namespace dae
         int col = static_cast<int>(std::round(x / m_GridSize));
         int row = static_cast<int>(std::round((y - m_OffsetY) / m_GridSize));
 
-        if (row < 0 || row >= static_cast<int>(m_DirtGrid.size()) || col < 0 || col >= static_cast<int>(m_DirtGrid[0].size()))
-            return false;
+        if (row < 0 || row >= static_cast<int>(m_DirtGrid.size()) || col < 0 || col >= static_cast<int>(m_DirtGrid[0].size())) return false;
 
         return m_DirtGrid[row][col];
     }
@@ -74,7 +73,8 @@ namespace dae
 
         while (std::getline(file, line))
         {
-            if (!line.empty() && line.back() == '\r') {
+            if (!line.empty() && line.back() == '\r') 
+            {
                 line.pop_back();
             }
 

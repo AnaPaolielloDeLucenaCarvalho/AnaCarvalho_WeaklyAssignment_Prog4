@@ -7,7 +7,8 @@
 
 namespace dae
 {
-    GoldBagComponent::GoldBagComponent(dae::GameObject* owner) : dae::Component(owner)
+    GoldBagComponent::GoldBagComponent(dae::GameObject* owner) 
+        : dae::Component(owner)
     {
         m_pCurrentState = std::make_unique<GoldBagIdleState>();
         m_pCurrentState->OnEnter(this);

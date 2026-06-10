@@ -32,6 +32,7 @@
 #include "MenuManager.h"
 #include "SkipLevelCommand.h"
 #include "ShootCommand.h"
+#include "DiggerSounds.h"
 
 #if USE_STEAMWORKS
 #pragma warning (push)
@@ -49,14 +50,6 @@ namespace fs = std::filesystem;
 
 std::shared_ptr<dae::AchievementManager> g_AchievementMgr = nullptr;
 
-// Digger Sounds
-enum DiggerSounds
-{
-	MUSIC = 0,
-	BONUS = 1,
-	NEXT_LEVEL = 2,
-	DEATH = 3
-};
 
 static void load()
 {
@@ -222,7 +215,7 @@ static void load()
 	instructions4->SetZIndex(10);
 	gameScene.Add(std::move(instructions4));
 
-	soundSystem.Play(DiggerSounds::MUSIC, 0.5f);
+	soundSystem.PlayMusic(DiggerSounds::MUSIC, 0.5f, true);
 
 #ifdef __EMSCRIPTEN__
 	std::string levelPath = "Levels.txt";

@@ -17,8 +17,8 @@ namespace dae
         void SetAlpha(uint8_t alpha);
 
     private:
-        bool    m_Active{ false };
-        uint8_t m_Alpha{ 80 }; // default: moderately visible white overlay
+        bool m_Active{ false };
+        uint8_t m_Alpha{ 90 }; // default - moderately visible white overlay
     };
 }
 

@@ -7,6 +7,8 @@
 #include "EnemySpawnerComponent.h"
 #include "RenderComponent.h"
 #include "CherryComponent.h"
+#include "ServiceLocator.h"
+#include "DiggerSounds.h"
 
 #include <SDL3/SDL.h>
 #include <string>
@@ -27,7 +29,7 @@ namespace dae
 
         if (m_BonusFlickerPhase)
         {
-            m_BonusFlickerTimer    += deltaTime;
+            m_BonusFlickerTimer += deltaTime;
             m_BonusFlickerInterval += deltaTime;
 
             if (m_BonusFlickerInterval >= 0.15f)
@@ -56,8 +58,7 @@ namespace dae
             m_LastLoadTime = currentTime;
 
             m_CurrentLevelIndex++;
-            if (m_CurrentLevelIndex >= LevelManager::GetInstance().GetTotalLevels())
-                m_CurrentLevelIndex = 0;
+            if (m_CurrentLevelIndex >= LevelManager::GetInstance().GetTotalLevels()) m_CurrentLevelIndex = 0;
 
             LoadLevel(m_CurrentLevelIndex);
         }
@@ -73,16 +74,16 @@ namespace dae
         else if (eventId == make_sdbm_hash("BonusModeStart"))
         {
             // Start the flicker. Begin on NORMAL so the first toggle flashes BRIGHT.
-            m_BonusMapActive       = true;
-            m_BonusFlickerPhase    = true;
-            m_BonusFlickerTimer    = 0.0f;
+            m_BonusMapActive = true;
+            m_BonusFlickerPhase = true;
+            m_BonusFlickerTimer = 0.0f;
             m_BonusFlickerInterval = 0.0f;
-            m_BonusLightOn         = false;
+            m_BonusLightOn = false;
             ApplyDirtBrightness(false);
         }
         else if (eventId == make_sdbm_hash("BonusModeEnd"))
         {
-            m_BonusMapActive    = false;
+            m_BonusMapActive = false;
             m_BonusFlickerPhase = false;
             ApplyDirtBrightness(false);
         }
@@ -90,6 +91,11 @@ namespace dae
 
     void LevelTransitionManager::LoadLevel(int levelIndex)
     {
+        // Hard audio reset — kill every track from the previous level before loading anything new
+        ServiceLocator::GetSoundSystem().StopSfx();
+        ServiceLocator::GetSoundSystem().StopMusic();
+        ServiceLocator::GetSoundSystem().PlayMusic(DiggerSounds::MUSIC, 0.5f, true);
+
         // Destroy old entities
         for (auto* bag : m_p1->GetGoldBags()) { if (bag) bag->MarkForDestroy(); }
         for (auto* dia : m_p1->GetDiamonds()) { if (dia) dia->MarkForDestroy(); }
@@ -107,14 +113,14 @@ namespace dae
         m_VisualDirt.clear();
 
         // Reset and re-initialise the grid
-        m_CherrySpawnX  = 0.0f;
-        m_CherrySpawnY  = 0.0f;
+        m_CherrySpawnX = 0.0f;
+        m_CherrySpawnY = 0.0f;
         m_CherrySpawned = false;
 
         m_p1->SetTotalEnemiesForLevel(0);
         if (m_p2) m_p2->SetTotalEnemiesForLevel(0);
 
-        m_BonusMapActive    = false;
+        m_BonusMapActive = false;
         m_BonusFlickerPhase = false;
 
         LevelManager::GetInstance().ClearLevel();
@@ -124,7 +130,7 @@ namespace dae
         // Parse tile layout
         const auto layout = LevelManager::GetInstance().GetLevelLayout(levelIndex);
         constexpr float tileWidth = 40.0f;
-        constexpr float startY    = 52.0f;
+        constexpr float startY = 52.0f;
 
         const int textureNumber = (levelIndex % 3) + 1;
         const std::string normalTexture = "PNG/Map/VBACK" + std::to_string(textureNumber) + ".png";
@@ -173,8 +179,7 @@ namespace dae
                 const float bx = static_cast<float>(col) * tileWidth;
                 const float by = startY + (static_cast<float>(row) * tileWidth);
 
-                if (c == ' ' || c == 'P' || c == 'S' || c == 'E' || c == 'B')
-                    LevelManager::GetInstance().Dig(bx, by);
+                if (c == ' ' || c == 'P' || c == 'S' || c == 'E' || c == 'B') LevelManager::GetInstance().Dig(bx, by);
 
                 if (c == 'P')
                 {
@@ -188,10 +193,10 @@ namespace dae
                 }
                 else if (c == 'E')
                 {
-                    constexpr int k_MaxTotal      = 4;
+                    constexpr int k_MaxTotal = 4;
                     constexpr int k_MaxConcurrent = 2;
 
-                    auto spawner   = std::make_unique<GameObject>();
+                    auto spawner = std::make_unique<GameObject>();
                     auto* spawnerC = spawner->AddComponent<EnemySpawnerComponent>(m_p1, k_MaxTotal, k_MaxConcurrent);
 
                     m_p1->SetTotalEnemiesForLevel(k_MaxTotal);
@@ -247,7 +252,7 @@ namespace dae
 
     void LevelTransitionManager::SpawnCherry()
     {
-        auto cherry  = std::make_unique<GameObject>();
+        auto cherry = std::make_unique<GameObject>();
         auto* render = cherry->AddComponent<RenderComponent>("PNG/Other/CBONUS.png");
         render->SetScale(2.f);
         cherry->AddComponent<CherryComponent>(m_p1, m_p2);
@@ -261,8 +266,7 @@ namespace dae
         for (auto* tile : m_VisualDirt)
         {
             if (!tile || tile->IsMarkedForDestroy()) continue;
-            if (auto* render = tile->GetComponent<RenderComponent>())
-                render->SetAdditiveBoost(enable); // default boostAlpha=120 (~47% brighter)
+            if (auto* render = tile->GetComponent<RenderComponent>()) render->SetAdditiveBoost(enable); // default boostAlpha=120 (~47% brighter)
         }
     }
 }

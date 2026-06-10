@@ -1,4 +1,5 @@
 #include "DiggerState.h"
+#include "DiggerSounds.h"
 #include "DiggerComponent.h"
 #include "RenderComponent.h"
 #include "ServiceLocator.h"
@@ -32,10 +33,8 @@ namespace dae
         {
             LevelManager::GetInstance().Dig(centerX, centerY);
 
-            if (glm::length(desiredDir) > 0)
-                currentDir = desiredDir;
-            else
-                currentDir = glm::vec2{ 0, 0 };
+            if (glm::length(desiredDir) > 0) currentDir = desiredDir;
+            else currentDir = glm::vec2{ 0, 0 };
 
             digger->SetCurrentDirection(currentDir);
             digger->GetOwner()->SetLocalPosition(centerX, centerY);
@@ -55,8 +54,7 @@ namespace dae
 
         digger->GetOwner()->SetLocalPosition(newX, newY);
 
-        if (glm::length(currentDir) > 0)
-            digger->SetLastFacedDirection(currentDir);
+        if (glm::length(currentDir) > 0) digger->SetLastFacedDirection(currentDir);
 
 		// Cannon, Mouth, and Walking animation for digger
         glm::vec2 facing = digger->GetLastFacedDirection();
@@ -206,10 +204,8 @@ namespace dae
             {
                 if (!enemy || enemy->IsMarkedForDestroy()) deadCount++;
             }
-            const bool allSpawned     = totalForLevel > 0 &&
-                                        static_cast<int>(digger->GetEnemies().size()) >= totalForLevel;
-            const bool allEnemiesDead = allSpawned &&
-                                        (deadCount == static_cast<int>(digger->GetEnemies().size()));
+            const bool allSpawned = totalForLevel > 0 && static_cast<int>(digger->GetEnemies().size()) >= totalForLevel;
+            const bool allEnemiesDead = allSpawned && (deadCount == static_cast<int>(digger->GetEnemies().size()));
 
             if (allDiamondsCollected || allEnemiesDead)
             {
@@ -223,6 +219,9 @@ namespace dae
 	// bonus state
     void DiggerBonusState::OnEnter(DiggerComponent* digger)
     {
+		// stop other music
+        ServiceLocator::GetSoundSystem().StopMusic();
+
 		// sound 1 = bonus.wav (Rossini / William Tell)
         ServiceLocator::GetSoundSystem().Play(1, 1.0f);
 
@@ -237,8 +236,8 @@ namespace dae
 
     void DiggerBonusState::OnExit(DiggerComponent* digger)
     {
-		// resume main music (sound 0)
-        ServiceLocator::GetSoundSystem().Play(0, 0.5f);
+		// resume main music (sound 0) with looping
+        ServiceLocator::GetSoundSystem().PlayMusic(0, 0.5f, true);
 
 		// tell the map manager to restore the normal palette
         digger->GetSubject().Notify(make_sdbm_hash("BonusModeEnd"), 0);
@@ -246,7 +245,7 @@ namespace dae
 
     DiggerState* DiggerBonusState::Update(DiggerComponent* digger, float deltaTime)
     {
-        // Bug 2 fix: run the shared movement + animation logic so Digger is not frozen
+        // run the shared movement + animation logic so Digger is not frozen
         const glm::vec2 newPos = ApplyDiggerMovement(digger, deltaTime);
         const float newX = newPos.x;
         const float newY = newPos.y;
@@ -277,6 +276,10 @@ namespace dae
     {
         digger->SetDead(true);
         digger->Die();
+
+		// stop music so death sound plays exclusively
+        ServiceLocator::GetSoundSystem().StopMusic();
+        ServiceLocator::GetSoundSystem().PlaySfx(DiggerSounds::DEATH, 1.0f);
 
         if (auto render = digger->GetOwner()->GetComponent<RenderComponent>())
         {
@@ -309,6 +312,10 @@ namespace dae
                 digger->SetCurrentDirection(glm::vec2{ 0,0 });
                 digger->GetOwner()->SetLocalPosition(digger->GetSpawnPos().x, digger->GetSpawnPos().y);
 
+				// cut the death sound and resume looping main music after respawn
+                ServiceLocator::GetSoundSystem().StopSfx();
+                ServiceLocator::GetSoundSystem().PlayMusic(DiggerSounds::MUSIC, 0.5f, true);
+
                 return new DiggerNormalState();
             }
             else
@@ -337,7 +344,7 @@ namespace dae
         digger->SetDesiredDirection(glm::vec2{ 0,0 });
         digger->SetCurrentDirection(glm::vec2{ 0,0 });
 
-        ServiceLocator::GetSoundSystem().Play(2, 0.5f);
+        ServiceLocator::GetSoundSystem().Play(DiggerSounds::NEXT_LEVEL, 0.5f);
 
 		// fade 4s to black
         auto fadeObj = std::make_unique<GameObject>();
