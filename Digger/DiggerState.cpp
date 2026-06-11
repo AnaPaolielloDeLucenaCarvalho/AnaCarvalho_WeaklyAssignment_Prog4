@@ -494,14 +494,6 @@ namespace dae
                 ServiceLocator::GetSoundSystem().StopSfx();
                 ServiceLocator::GetSoundSystem().ResumeMusic();
 
-                if (LevelManager::GetInstance().GetGameMode() == GameMode::Versus && digger->IsPlayerOne()) {
-                    auto other = digger->GetOtherPlayer();
-                    if (other) {
-                        auto otherDigger = other->GetComponent<DiggerComponent>();
-                        if (otherDigger) other->SetLocalPosition(otherDigger->GetSpawnPos().x, otherDigger->GetSpawnPos().y);
-                    }
-                }
-
                 return new DiggerNormalState();
             }
             else

@@ -6,20 +6,42 @@
 #include "LevelManager.h"
 
 #include <SDL3/SDL.h>
+#include <sstream>
+#include <iomanip>
 
 namespace dae
 {
-    MenuManager::MenuManager(GameObject* owner, HighScoreManager* pMgr, Scene* pScoreScene, Scene* pGameScene, const std::vector<TextComponent*>& options)
+    MenuManager::MenuManager(GameObject* owner, HighScoreManager* pMgr, Scene* pScoreScene, Scene* pGameScene, 
+                             const std::vector<TextComponent*>& options,
+                             const std::vector<TextComponent*>& scoreTexts,
+                             const std::vector<TextComponent*>& nameTexts)
         : Component(owner)
         , m_pMgr(pMgr)
         , m_pScoreScene(pScoreScene)
         , m_pGameScene(pGameScene)
         , m_Options(options)
+        , m_ScoreTexts(scoreTexts)
+        , m_NameTexts(nameTexts)
     {
     }
 
     void MenuManager::Update(float deltaTime)
     {
+        // Refresh the Leaderboard periodically while the menu is active
+        m_RefreshTimer -= deltaTime;
+        if (m_RefreshTimer <= 0.0f && m_pMgr)
+        {
+            m_RefreshTimer = 1.0f; // Check every 1 second
+            auto topScores = m_pMgr->GetTopScores(5);
+            for (size_t i = 0; i < topScores.size() && i < m_ScoreTexts.size(); ++i)
+            {
+                std::ostringstream scoreOss;
+                scoreOss << std::setfill('0') << std::setw(5) << topScores[i].score;
+                if (m_ScoreTexts[i]) m_ScoreTexts[i]->SetText(scoreOss.str());
+                if (m_NameTexts[i]) m_NameTexts[i]->SetText(topScores[i].initials);
+            }
+        }
+
         if (m_InputCooldown > 0.0f)
         {
             m_InputCooldown -= deltaTime;

@@ -134,6 +134,9 @@ static void load()
 	headerName->SetLocalPosition(400.f, 260.f);
 	menuScene.Add(std::move(headerName));
 
+	std::vector<dae::TextComponent*> menuScoreTexts;
+	std::vector<dae::TextComponent*> menuNameTexts;
+
 	for (size_t i = 0; i < topScores.size(); ++i)
 	{
 		float currentY = 290.f + static_cast<float>(i) * 30.0f;
@@ -146,12 +149,14 @@ static void load()
 		std::ostringstream scoreOss;
 		scoreOss << std::setfill('0') << std::setw(5) << topScores[i].score;
 		auto scoreObj = std::make_unique<dae::GameObject>();
-		scoreObj->AddComponent<dae::TextComponent>(scoreOss.str(), fontSmall, SDL_Color{ 255, 255, 255, 255 });
+		auto pScoreText = scoreObj->AddComponent<dae::TextComponent>(scoreOss.str(), fontSmall, SDL_Color{ 255, 255, 255, 255 });
+		menuScoreTexts.push_back(pScoreText);
 		scoreObj->SetLocalPosition(250.f, currentY);
 		menuScene.Add(std::move(scoreObj));
 
 		auto nameObj = std::make_unique<dae::GameObject>();
-		nameObj->AddComponent<dae::TextComponent>(topScores[i].initials, fontSmall, SDL_Color{ 255, 255, 255, 255 });
+		auto pNameText = nameObj->AddComponent<dae::TextComponent>(topScores[i].initials, fontSmall, SDL_Color{ 255, 255, 255, 255 });
+		menuNameTexts.push_back(pNameText);
 		nameObj->SetLocalPosition(400.f, currentY);
 		menuScene.Add(std::move(nameObj));
 	}
@@ -174,7 +179,7 @@ static void load()
 	std::vector<dae::TextComponent*> menuOptions = { opt1Text, opt2Text, opt3Text };
 
 	auto menuManagerObj = std::make_unique<dae::GameObject>();
-	menuManagerObj->AddComponent<dae::MenuManager>(pMgr, &scoreScene, &gameScene, menuOptions);
+	menuManagerObj->AddComponent<dae::MenuManager>(pMgr, &scoreScene, &gameScene, menuOptions, menuScoreTexts, menuNameTexts);
 	menuScene.Add(std::move(menuManagerObj));
 
 	// Start on the menu scene
