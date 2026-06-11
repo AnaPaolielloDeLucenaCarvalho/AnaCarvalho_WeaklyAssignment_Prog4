@@ -32,6 +32,8 @@ namespace dae
         int m_CurrentLevelIndex{ 0 };
         uint64_t m_LastLoadTime{ 0 };
 
+        std::vector<GameObject*> m_MiscEntities;
+
         // 'B' tile position — set during LoadLevel, used by SpawnCherry()
         float m_CherrySpawnX{ 0.0f };
         float m_CherrySpawnY{ 0.0f };

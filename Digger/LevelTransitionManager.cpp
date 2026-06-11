@@ -105,7 +105,9 @@ namespace dae
         for (auto* dia : m_p1->GetDiamonds()) { if (dia) dia->MarkForDestroy(); }
         for (auto* enemy : m_p1->GetEnemies()) { if (enemy) enemy->MarkForDestroy(); }
         for (auto* dirt : m_VisualDirt) { if (dirt) dirt->MarkForDestroy(); }
+        for (auto* entity : m_MiscEntities) { if (entity) entity->MarkForDestroy(); }
 
+        m_MiscEntities.clear();
         m_p1->SetGoldBags({});
         m_p1->SetDiamonds({});
         m_p1->SetEnemies({});
@@ -209,6 +211,7 @@ namespace dae
 
                     spawnerC->AddObserver(this); // notified when 75% spawned → SpawnCherry
                     spawner->SetLocalPosition(bx, by);
+                    m_MiscEntities.push_back(spawner.get());
                     m_pScene->Add(std::move(spawner));
                 }
                 else if (c == 'B')
@@ -263,6 +266,7 @@ namespace dae
         cherry->AddComponent<CherryComponent>(m_p1, m_p2);
         cherry->SetLocalPosition(m_CherrySpawnX, m_CherrySpawnY);
         cherry->SetZIndex(6);
+        m_MiscEntities.push_back(cherry.get());
         m_pScene->Add(std::move(cherry));
     }
 

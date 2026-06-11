@@ -26,6 +26,20 @@ namespace dae
 
     void GoldBagComponent::Update(float deltaTime)
     {
+        auto checkPlayerPaused = [](GameObject* playerObj) {
+            if (!playerObj) return false;
+            if (auto digger = playerObj->GetComponent<DiggerComponent>())
+            {
+                return digger->IsDead() || digger->IsLevelComplete();
+            }
+            return false;
+        };
+
+        if (checkPlayerPaused(m_pPlayer1) || checkPlayerPaused(m_pPlayer2))
+        {
+            return;
+        }
+
         if (m_pCurrentState)
         {
             GoldBagState* newState = m_pCurrentState->Update(this, deltaTime);

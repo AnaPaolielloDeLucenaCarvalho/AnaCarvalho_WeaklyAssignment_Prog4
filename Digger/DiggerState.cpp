@@ -93,6 +93,7 @@ namespace dae
 	// normal state
     void DiggerNormalState::OnEnter(DiggerComponent* digger)
     {
+        digger->SetLevelComplete(false);
         if (auto render = digger->GetOwner()->GetComponent<RenderComponent>())
         {
             render->SetTexture("PNG/Digger/VRDIG1X.png");
@@ -457,6 +458,7 @@ namespace dae
 	// level complete state
     void DiggerLevelCompleteState::OnEnter(DiggerComponent* digger)
     {
+        digger->SetLevelComplete(true);
         digger->SetDesiredDirection(glm::vec2{ 0,0 });
         digger->SetCurrentDirection(glm::vec2{ 0,0 });
 

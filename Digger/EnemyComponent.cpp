@@ -22,6 +22,19 @@ namespace dae
 
     void EnemyComponent::Update(float deltaTime)
     {
+        if (m_pTarget)
+        {
+            if (m_pTarget->IsDead() || m_pTarget->IsLevelComplete()) return;
+            
+            if (auto otherPlayer = m_pTarget->GetOtherPlayer())
+            {
+                if (auto otherDigger = otherPlayer->GetComponent<DiggerComponent>())
+                {
+                    if (otherDigger->IsDead() || otherDigger->IsLevelComplete()) return;
+                }
+            }
+        }
+
         if (m_pCurrentState)
         {
             EnemyState* newState = m_pCurrentState->Update(this, deltaTime);
