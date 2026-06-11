@@ -4,6 +4,7 @@
 #include <cctype>
 #include <fstream>
 #include <filesystem>
+#include <sstream>
 #include <SDL3/SDL_messagebox.h>
 
 namespace dae
@@ -37,6 +38,59 @@ namespace dae
     const std::string& HighScoreManager::GetSessionName() const
     {
         return m_sessionName;
+    }
+
+    std::vector<ScoreEntry> HighScoreManager::GetTopScores(int count) const
+    {
+        namespace fs = std::filesystem;
+
+#ifdef __EMSCRIPTEN__
+        const fs::path filePath = "highscores.txt";
+#else
+        fs::path dataDir = "./Data";
+        if (!fs::exists(dataDir))
+        {
+            dataDir = "../Data";
+        }
+        const fs::path filePath = dataDir / "highscores.txt";
+#endif
+
+        std::vector<ScoreEntry> entries;
+        std::ifstream ifs(filePath);
+        if (ifs.is_open())
+        {
+            std::string line;
+            while (std::getline(ifs, line))
+            {
+                if (line.empty()) continue;
+                std::istringstream iss(line);
+                std::string initials;
+                int score;
+                if (iss >> initials >> score)
+                {
+                    entries.push_back({ initials, score });
+                }
+            }
+        }
+
+        std::sort(entries.begin(), entries.end(), [](const ScoreEntry& a, const ScoreEntry& b) {
+            return a.score > b.score;
+        });
+
+        if (entries.size() > static_cast<size_t>(count))
+        {
+            entries.resize(count);
+        }
+
+        char dummyChar = 'A';
+        while (entries.size() < static_cast<size_t>(count))
+        {
+            std::string dummyName(3, dummyChar);
+            entries.push_back({ dummyName, 0 });
+            if (dummyChar < 'Z') dummyChar++;
+        }
+
+        return entries;
     }
 
     void HighScoreManager::UpdateCurrentScore(int score)

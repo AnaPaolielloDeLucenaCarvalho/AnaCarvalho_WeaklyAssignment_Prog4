@@ -30,6 +30,8 @@ namespace dae
 
         const std::string& GetSessionName() const;
 
+        std::vector<ScoreEntry> GetTopScores(int count) const;
+
         void UpdateCurrentScore(int score);
 
         void SaveScore(int score);

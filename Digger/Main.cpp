@@ -51,6 +51,8 @@
 #include "EnemySpawnerComponent.h"
 #include "LevelTransitionManager.h"   // extracted from Main.cpp in Step 1
 #include <iostream>
+#include <sstream>
+#include <iomanip>
 namespace fs = std::filesystem;
 
 std::shared_ptr<dae::AchievementManager> g_AchievementMgr = nullptr;
@@ -109,9 +111,53 @@ static void load()
 	titleObj->SetLocalPosition(70.f, 30.f);
 	menuScene.Add(std::move(titleObj));
 
+	auto topScores = pMgr->GetTopScores(5);
+
+	auto leaderboardTitle = std::make_unique<dae::GameObject>();
+	leaderboardTitle->AddComponent<dae::TextComponent>("TOP 5 PLAYERS", fontLarge, SDL_Color{ 0, 255, 255, 255 }); // Cyan
+	leaderboardTitle->SetLocalPosition(175.f, 210.f);
+	menuScene.Add(std::move(leaderboardTitle));
+
+	auto headerRank = std::make_unique<dae::GameObject>();
+	headerRank->AddComponent<dae::TextComponent>("RANK", fontSmall, SDL_Color{ 255, 255, 255, 255 });
+	headerRank->SetLocalPosition(150.f, 260.f);
+	menuScene.Add(std::move(headerRank));
+
+	auto headerScore = std::make_unique<dae::GameObject>();
+	headerScore->AddComponent<dae::TextComponent>("SCORE", fontSmall, SDL_Color{ 255, 255, 255, 255 });
+	headerScore->SetLocalPosition(250.f, 260.f);
+	menuScene.Add(std::move(headerScore));
+
+	auto headerName = std::make_unique<dae::GameObject>();
+	headerName->AddComponent<dae::TextComponent>("NAME", fontSmall, SDL_Color{ 255, 255, 255, 255 });
+	headerName->SetLocalPosition(400.f, 260.f);
+	menuScene.Add(std::move(headerName));
+
+	for (size_t i = 0; i < topScores.size(); ++i)
+	{
+		float currentY = 290.f + static_cast<float>(i) * 30.0f;
+
+		auto rankObj = std::make_unique<dae::GameObject>();
+		rankObj->AddComponent<dae::TextComponent>(std::to_string(i + 1), fontSmall, SDL_Color{ 255, 255, 255, 255 });
+		rankObj->SetLocalPosition(150.f, currentY);
+		menuScene.Add(std::move(rankObj));
+
+		std::ostringstream scoreOss;
+		scoreOss << std::setfill('0') << std::setw(5) << topScores[i].score;
+		auto scoreObj = std::make_unique<dae::GameObject>();
+		scoreObj->AddComponent<dae::TextComponent>(scoreOss.str(), fontSmall, SDL_Color{ 255, 255, 255, 255 });
+		scoreObj->SetLocalPosition(250.f, currentY);
+		menuScene.Add(std::move(scoreObj));
+
+		auto nameObj = std::make_unique<dae::GameObject>();
+		nameObj->AddComponent<dae::TextComponent>(topScores[i].initials, fontSmall, SDL_Color{ 255, 255, 255, 255 });
+		nameObj->SetLocalPosition(400.f, currentY);
+		menuScene.Add(std::move(nameObj));
+	}
+
 	auto startText = std::make_unique<dae::GameObject>();
-	startText->AddComponent<dae::TextComponent>("PRESS ANY KEY TO START", fontLarge, SDL_Color{ 255, 255, 0, 255 });
-	startText->SetLocalPosition(320, 400);
+	startText->AddComponent<dae::TextComponent>("PRESS ANY KEY TO START", fontSmall, SDL_Color{ 255, 255, 0, 255 });
+	startText->SetLocalPosition(550.f, 300.f);
 	// MenuManager routes to scoreScene if no name is set, directly to gameScene if it is.
 	startText->AddComponent<dae::MenuManager>(pMgr, &scoreScene, &gameScene);
 	menuScene.Add(std::move(startText));
