@@ -32,7 +32,7 @@ namespace dae
     class LivesSpriteDisplayComponent : public Component, public Observer
     {
     public:
-        LivesSpriteDisplayComponent(GameObject* pOwner, const std::string& texturePath, int startLives, float spacing = 35.f);
+        LivesSpriteDisplayComponent(GameObject* pOwner, const std::string& texturePath, int startLives, float spacing = 35.f, bool drawLeft = false);
 
         void Update(float deltaTime) override;
         void Render() const override;
@@ -42,6 +42,7 @@ namespace dae
         std::shared_ptr<Texture2D> m_texture;
         int m_lives;
         float m_spacing;
+        bool m_DrawLeft;
     };
 
     // ScoreDisplayComponent — text-based score display

@@ -18,6 +18,7 @@ namespace dae
         , m_pGameScene(pGameScene)
         , m_Initials { 'A', 'A', 'A' }
         , m_CurrentIndex(0)
+        , m_InputCooldown(0.3f)
     {
         RefreshDisplay();
     }

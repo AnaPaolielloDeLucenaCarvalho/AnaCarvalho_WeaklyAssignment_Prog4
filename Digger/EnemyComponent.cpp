@@ -4,12 +4,14 @@
 #include "RenderComponent.h"
 #include <glm/geometric.hpp>
 #include <cmath>
+#include <glm/glm.hpp>
 
 namespace dae
 {
-    EnemyComponent::EnemyComponent(GameObject* owner, DiggerComponent* targetPlayer)
+    EnemyComponent::EnemyComponent(GameObject* owner, DiggerComponent* p1, DiggerComponent* p2)
         : Component(owner)
-        , m_pTarget(targetPlayer)
+        , m_p1(p1)
+        , m_p2(p2)
     {
         m_pCurrentState = std::make_unique<NobbinState>();
         m_pCurrentState->OnEnter(this);
@@ -22,18 +24,29 @@ namespace dae
 
     void EnemyComponent::Update(float deltaTime)
     {
-        if (m_pTarget)
+        m_pTarget = nullptr;
+        float minDist = 999999.f;
+        auto myPos = GetOwner()->GetTransform().GetPosition();
+
+        if (m_p1 && !m_p1->IsDead() && !m_p1->IsLevelComplete())
         {
-            if (m_pTarget->IsDead() || m_pTarget->IsLevelComplete()) return;
-            
-            if (auto otherPlayer = m_pTarget->GetOtherPlayer())
+            auto p1Pos = m_p1->GetOwner()->GetTransform().GetPosition();
+            float d = glm::distance(glm::vec2(myPos.x, myPos.y), glm::vec2(p1Pos.x, p1Pos.y));
+            m_pTarget = m_p1;
+            minDist = d;
+        }
+
+        if (m_p2 && !m_p2->IsDead() && !m_p2->IsLevelComplete())
+        {
+            auto p2Pos = m_p2->GetOwner()->GetTransform().GetPosition();
+            float d = glm::distance(glm::vec2(myPos.x, myPos.y), glm::vec2(p2Pos.x, p2Pos.y));
+            if (!m_pTarget || d < minDist)
             {
-                if (auto otherDigger = otherPlayer->GetComponent<DiggerComponent>())
-                {
-                    if (otherDigger->IsDead() || otherDigger->IsLevelComplete()) return;
-                }
+                m_pTarget = m_p2;
             }
         }
+
+        if (!m_pTarget) return;
 
         if (m_pCurrentState)
         {

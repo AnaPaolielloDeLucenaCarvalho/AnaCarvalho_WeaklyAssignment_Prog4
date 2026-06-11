@@ -71,6 +71,7 @@ namespace dae
 
         void SetEnemies(const std::vector<GameObject*>& enemies) { m_pEnemies = enemies; }
         const std::vector<GameObject*>& GetEnemies() const { return m_pEnemies; }
+        void AddEnemy(GameObject* enemy) { m_pEnemies.push_back(enemy); }
 
         // total enemies the level will ever spawn — set by LevelTransitionManager
         void SetTotalEnemiesForLevel(int total) { m_TotalEnemiesForLevel = total; }

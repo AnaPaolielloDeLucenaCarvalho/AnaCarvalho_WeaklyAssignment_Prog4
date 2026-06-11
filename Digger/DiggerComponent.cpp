@@ -10,12 +10,14 @@
 
 #include <iostream>
 #include <RenderComponent.h>
+#include "LevelManager.h"
 
 namespace dae
 {
     DiggerComponent::DiggerComponent(GameObject* owner) 
         : Component(owner)
     {
+        m_FireballCooldown = 0.3f;
         m_pCurrentState = std::make_unique<DiggerNormalState>();
         m_pCurrentState->OnEnter(this);
     }
@@ -107,11 +109,24 @@ namespace dae
 
     void DiggerComponent::AwardPoints(int points)
     {
-        // notify UI to update score
-        m_Subject.Notify(dae::make_sdbm_hash("DiamondPickedUp"), points);
+        GameMode mode = LevelManager::GetInstance().GetGameMode();
 
-        // track score for the extra life
-        m_TotalScore += points;
+        if (mode == GameMode::CoOp && m_pOtherPlayer)
+        {
+            m_TotalScore += points;
+            m_Subject.Notify(dae::make_sdbm_hash("DiamondPickedUp"), points);
+
+            if (auto otherDigger = m_pOtherPlayer->GetComponent<DiggerComponent>())
+            {
+                otherDigger->m_TotalScore = m_TotalScore;
+                otherDigger->GetSubject().Notify(dae::make_sdbm_hash("DiamondPickedUp"), points);
+            }
+        }
+        else
+        {
+            m_TotalScore += points;
+            m_Subject.Notify(dae::make_sdbm_hash("DiamondPickedUp"), points);
+        }
 
         if (m_pHighScoreManager)
         {

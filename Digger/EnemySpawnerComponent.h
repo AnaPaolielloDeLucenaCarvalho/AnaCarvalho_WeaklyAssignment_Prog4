@@ -15,7 +15,7 @@ namespace dae
     class EnemySpawnerComponent final : public Component
     {
     public:
-        EnemySpawnerComponent(GameObject* owner, DiggerComponent* p1, int maxTotal, int maxConcurrent);
+        EnemySpawnerComponent(GameObject* owner, DiggerComponent* p1, DiggerComponent* p2, int maxTotal, int maxConcurrent);
 
         void Update(float deltaTime) override;
 
@@ -23,6 +23,7 @@ namespace dae
 
     private:
         DiggerComponent* m_p1;
+        DiggerComponent* m_p2;
         int m_MaxTotalEnemies;
         int m_MaxConcurrent;
         int m_TotalSpawned{ 0 };

@@ -57,11 +57,10 @@ namespace dae
 
         if (pStates[SDL_SCANCODE_RETURN] && m_InputCooldown <= 0.0f)
         {
-            GameMode mode = GameMode::SinglePlayer;
-            if (m_SelectedIndex == 1) mode = GameMode::CoOp;
-            else if (m_SelectedIndex == 2) mode = GameMode::Versus;
-
-            LevelManager::GetInstance().SetGameMode(mode);
+            m_InputCooldown = 0.3f;
+            if (m_SelectedIndex == 0) LevelManager::GetInstance().SetGameMode(GameMode::SinglePlayer);
+            else if (m_SelectedIndex == 1) LevelManager::GetInstance().SetGameMode(GameMode::CoOp);
+            else if (m_SelectedIndex == 2) LevelManager::GetInstance().SetGameMode(GameMode::Versus);
 
             if (m_pMgr && m_pMgr->HasSessionName())
             {

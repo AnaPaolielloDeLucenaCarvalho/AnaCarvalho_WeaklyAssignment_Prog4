@@ -14,7 +14,7 @@ namespace dae
     class EnemyComponent : public Component
     {
     public:
-        EnemyComponent(GameObject* owner, DiggerComponent* targetPlayer);
+        EnemyComponent(GameObject* owner, DiggerComponent* p1, DiggerComponent* p2);
         ~EnemyComponent() override;
 
         void Update(float deltaTime) override;
@@ -29,6 +29,8 @@ namespace dae
 
     private:
         std::unique_ptr<EnemyState> m_pCurrentState{ nullptr };
+        DiggerComponent* m_p1{ nullptr };
+        DiggerComponent* m_p2{ nullptr };
         DiggerComponent* m_pTarget{ nullptr };
 
         glm::vec2 m_CurrentDirection{ 1, 0 };

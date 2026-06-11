@@ -201,8 +201,8 @@ static void load()
 		scoreScene.Add(std::move(initialsObj));
 
 		// Bind name-entry keys — these live on top of any game bindings.
-		input.BindCommand(SDL_SCANCODE_UP,    dae::KeyState::Pressed, std::make_unique<dae::CycleLetterCommand>(pEntryComp, -1));
-		input.BindCommand(SDL_SCANCODE_DOWN,  dae::KeyState::Pressed, std::make_unique<dae::CycleLetterCommand>(pEntryComp, +1));
+		input.BindCommand(SDL_SCANCODE_UP, dae::KeyState::Pressed, std::make_unique<dae::CycleLetterCommand>(pEntryComp, -1));
+		input.BindCommand(SDL_SCANCODE_DOWN, dae::KeyState::Pressed, std::make_unique<dae::CycleLetterCommand>(pEntryComp, +1));
 		input.BindCommand(SDL_SCANCODE_RIGHT, dae::KeyState::Pressed, std::make_unique<dae::AdvanceIndexCommand>(pEntryComp));
 		input.BindCommand(SDL_SCANCODE_RETURN,dae::KeyState::Pressed, std::make_unique<dae::ConfirmNameCommand>(pEntryComp));
 	}
@@ -223,10 +223,23 @@ static void load()
 	levelBg->SetZIndex(-1);
 	gameScene.Add(std::move(levelBg));
 
+	auto p1LabelObj = std::make_unique<dae::GameObject>();
+	p1LabelObj->AddComponent<dae::TextComponent>("PLAYER 1", fontSmall, SDL_Color{ 255, 255, 0, 255 });
+	p1LabelObj->SetLocalPosition(20, 15);
+	p1LabelObj->SetZIndex(11);
+	gameScene.Add(std::move(p1LabelObj));
+
+	auto p2LabelObj = std::make_unique<dae::GameObject>();
+	p2LabelObj->AddComponent<dae::TextComponent>("PLAYER 2", fontSmall, SDL_Color{ 255, 255, 0, 255 });
+	p2LabelObj->SetLocalPosition(905, 15);
+	p2LabelObj->SetZIndex(11);
+	auto p2LabelPtr = p2LabelObj.get();
+	gameScene.Add(std::move(p2LabelObj));
+
 	auto fpsObject = std::make_unique<dae::GameObject>();
 	fpsObject->AddComponent<dae::TextComponent>("0 FPS", fontSmall, SDL_Color{ 150, 150, 150, 255 });
 	fpsObject->AddComponent<dae::FPSComponent>();
-	fpsObject->SetLocalPosition(475, 15);
+	fpsObject->SetLocalPosition(400, 15);
 	fpsObject->SetZIndex(10);
 	gameScene.Add(std::move(fpsObject));
 
@@ -252,32 +265,26 @@ static void load()
 	diggerComp2->SetHighScoreManager(pMgr);
 
 	auto scoreUI1 = std::make_unique<dae::GameObject>();
-	scoreUI1->SetLocalPosition(20, 13);
+	scoreUI1->SetLocalPosition(500, 13);
 	auto scoreObs1 = scoreUI1->AddComponent<dae::SpriteScoreDisplayComponent>("PNG/UI/VNUM", ".png", 24.f);
 	scoreUI1->SetZIndex(10);
 	gameScene.Add(std::move(scoreUI1));
 
 	auto livesUI1 = std::make_unique<dae::GameObject>();
-	livesUI1->SetLocalPosition(150, 15);
-	auto livesObs1 = livesUI1->AddComponent<dae::LivesSpriteDisplayComponent>("PNG/Digger/VRDIG1X.png", 4, 35.5f);
+	livesUI1->SetLocalPosition(140, 15);
+	auto livesObs1 = livesUI1->AddComponent<dae::LivesSpriteDisplayComponent>("PNG/Digger/VRDIG1X.png", 4, 35.5f, false);
 	livesUI1->SetZIndex(10);
 	gameScene.Add(std::move(livesUI1));
 
-	auto scoreUI2 = std::make_unique<dae::GameObject>();
-	scoreUI2->SetLocalPosition(810, 13);
-	auto scoreObs2 = scoreUI2->AddComponent<dae::SpriteScoreDisplayComponent>("PNG/UI/VNUM", ".png", 24.f);
-	scoreUI2->SetZIndex(10);
-	gameScene.Add(std::move(scoreUI2));
-
 	auto livesUI2 = std::make_unique<dae::GameObject>();
-	livesUI2->SetLocalPosition(940, 15);
-	auto livesObs2 = livesUI2->AddComponent<dae::LivesSpriteDisplayComponent>("PNG/Digger/VRDIG1X.png", 4, 35.5f);
+	livesUI2->SetLocalPosition(850, 15);
+	auto livesObs2 = livesUI2->AddComponent<dae::LivesSpriteDisplayComponent>("PNG/Digger/VRDIG1X.png", 4, 35.5f, true);
 	livesUI2->SetZIndex(10);
+	auto livesUI2Ptr = livesUI2.get();
 	gameScene.Add(std::move(livesUI2));
 
 	diggerComp1->AddObserver(scoreObs1);
 	diggerComp1->AddObserver(livesObs1);
-	diggerComp2->AddObserver(scoreObs2);
 	diggerComp2->AddObserver(livesObs2);
 
 	input.BindCommand(SDL_SCANCODE_W, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(diggerComp1, glm::vec2{ 0, -1 }));
@@ -285,6 +292,13 @@ static void load()
 	input.BindCommand(SDL_SCANCODE_A, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(diggerComp1, glm::vec2{ -1, 0 }));
 	input.BindCommand(SDL_SCANCODE_D, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(diggerComp1, glm::vec2{ 1, 0 }));
 	input.BindCommand(SDL_SCANCODE_SPACE, dae::KeyState::Pressed, std::make_unique<dae::ShootCommand>(diggerComp1));
+
+	input.BindCommand(SDL_SCANCODE_RSHIFT, dae::KeyState::Pressed, std::make_unique<dae::ShootCommand>(diggerComp2));
+
+	input.BindCommand(SDL_SCANCODE_I, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(diggerComp2, glm::vec2{ 0, -1 }));
+	input.BindCommand(SDL_SCANCODE_K, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(diggerComp2, glm::vec2{ 0, 1 }));
+	input.BindCommand(SDL_SCANCODE_J, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(diggerComp2, glm::vec2{ -1, 0 }));
+	input.BindCommand(SDL_SCANCODE_L, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(diggerComp2, glm::vec2{ 1, 0 }));
 
 	input.BindCommand(0, dae::Gamepad::ControllerButton::DPadUp, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(diggerComp2, glm::vec2{ 0, -1 }));
 	input.BindCommand(0, dae::Gamepad::ControllerButton::DPadDown, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(diggerComp2, glm::vec2{ 0, 1 }));
@@ -299,7 +313,6 @@ static void load()
 
 	g_AchievementMgr = std::make_shared<dae::AchievementManager>();
 	scoreObs1->AddObserver(g_AchievementMgr.get());
-	scoreObs2->AddObserver(g_AchievementMgr.get());
 
 	auto instructions1 = std::make_unique<dae::GameObject>();
 	instructions1->SetLocalPosition(10, 520);
@@ -340,13 +353,11 @@ static void load()
 	dae::LevelManager::GetInstance().LoadAllLevelsFromFile(levelPath);
 
 	auto transMgrObj = std::make_unique<dae::GameObject>();
-	auto transComp = transMgrObj->AddComponent<dae::LevelTransitionManager>(&gameScene, diggerComp1, diggerComp2);
+	auto transComp = transMgrObj->AddComponent<dae::LevelTransitionManager>(&gameScene, diggerComp1, diggerComp2, p2LabelPtr, livesUI2Ptr);
 
 	diggerComp1->AddObserver(transComp);
 	diggerComp2->AddObserver(transComp);
 	gameScene.Add(std::move(transMgrObj));
-
-	transComp->LoadLevel(0);
 }
 
 int main(int, char* [])

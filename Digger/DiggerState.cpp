@@ -444,8 +444,11 @@ namespace dae
             HighScoreManager* mgr = digger->GetHighScoreManager();
             if (mgr)
             {
-                mgr->SaveScore(digger->GetTotalScore());
-                std::cout << "Score saved: " << digger->GetTotalScore() << "\n";
+                if (LevelManager::GetInstance().GetGameMode() != GameMode::Versus)
+                {
+                    mgr->SaveScore(digger->GetTotalScore());
+                    std::cout << "Score saved: " << digger->GetTotalScore() << "\n";
+                }
             }
         }
     }

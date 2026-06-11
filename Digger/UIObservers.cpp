@@ -33,10 +33,11 @@ namespace dae
     }
 
     // LivesSpriteDisplayComponent
-    LivesSpriteDisplayComponent::LivesSpriteDisplayComponent(GameObject* pOwner, const std::string& texturePath, int startLives, float spacing)
+    LivesSpriteDisplayComponent::LivesSpriteDisplayComponent(GameObject* pOwner, const std::string& texturePath, int startLives, float spacing, bool drawLeft)
         : Component(pOwner)
         , m_lives(startLives)
         , m_spacing(spacing)
+        , m_DrawLeft(drawLeft)
     {
         m_texture = ResourceManager::GetInstance().LoadTexture(texturePath);
     }
@@ -54,9 +55,15 @@ namespace dae
         // With 4 total lives: m_lives=4 → 3 sprites, m_lives=3 → 2, etc.
         for (int i = 0; i < m_lives - 1; ++i)
         {
+            float xPos = pos.x + (static_cast<float>(i) * m_spacing);
+            if (m_DrawLeft)
+            {
+                xPos = pos.x - (static_cast<float>(i) * m_spacing);
+            }
+
             Renderer::GetInstance().RenderTexture(
                 *m_texture,
-                pos.x + (static_cast<float>(i) * m_spacing),
+                xPos,
                 pos.y,
                 size.x,
                 size.y

@@ -1,5 +1,6 @@
 #include "LevelTransitionManager.h"
 
+#include "SceneManager.h"
 #include "Scene.h"
 #include "LevelManager.h"
 #include "DiggerComponent.h"
@@ -16,16 +17,25 @@
 
 namespace dae
 {
-    LevelTransitionManager::LevelTransitionManager(GameObject* owner, Scene* scene, DiggerComponent* p1, DiggerComponent* p2)
+    LevelTransitionManager::LevelTransitionManager(GameObject* owner, Scene* scene, DiggerComponent* p1, DiggerComponent* p2, GameObject* p2Label, GameObject* p2Lives)
         : Component(owner)
         , m_pScene(scene)
         , m_p1(p1)
         , m_p2(p2)
+        , m_p2Label(p2Label)
+        , m_p2Lives(p2Lives)
     {
     }
 
     void LevelTransitionManager::Update(float deltaTime)
     {
+        // Wait to load the first level until this scene actually becomes the active one!
+        if (!m_HasLoadedFirstLevel && SceneManager::GetInstance().GetActiveScene() == m_pScene)
+        {
+            m_HasLoadedFirstLevel = true;
+            LoadLevel(0);
+        }
+
         if (!m_BonusMapActive) return;
 
         if (m_BonusFlickerPhase)
@@ -134,6 +144,31 @@ namespace dae
         m_pScene->RequestLevelCleanup(); // Scene cleans up at end of frame
         LevelManager::GetInstance().InitLevel(14, 26);
 
+        GameMode mode = LevelManager::GetInstance().GetGameMode();
+        if (mode == GameMode::SinglePlayer && m_p2)
+        {
+            m_p2->GetOwner()->MarkForDestroy();
+            m_p2 = nullptr;
+
+            if (m_p2Label)
+            {
+                m_p2Label->MarkForDestroy();
+                m_p2Label = nullptr;
+            }
+            if (m_p2Lives)
+            {
+                m_p2Lives->MarkForDestroy();
+                m_p2Lives = nullptr;
+            }
+        }
+        else if (mode == GameMode::Versus && m_p2)
+        {
+            if (auto p2Render = m_p2->GetOwner()->GetComponent<RenderComponent>())
+            {
+                p2Render->SetTexture("PNG/Enemy/VNOB1.png");
+            }
+        }
+
         // Parse tile layout
         const auto layout = LevelManager::GetInstance().GetLevelLayout(levelIndex);
         constexpr float tileWidth = 40.0f;
@@ -204,7 +239,7 @@ namespace dae
                     constexpr int k_MaxConcurrent = 2;
 
                     auto spawner = std::make_unique<GameObject>();
-                    auto* spawnerC = spawner->AddComponent<EnemySpawnerComponent>(m_p1, k_MaxTotal, k_MaxConcurrent);
+                    auto* spawnerC = spawner->AddComponent<EnemySpawnerComponent>(m_p1, m_p2, k_MaxTotal, k_MaxConcurrent);
 
                     m_p1->SetTotalEnemiesForLevel(k_MaxTotal);
                     if (m_p2) m_p2->SetTotalEnemiesForLevel(k_MaxTotal);

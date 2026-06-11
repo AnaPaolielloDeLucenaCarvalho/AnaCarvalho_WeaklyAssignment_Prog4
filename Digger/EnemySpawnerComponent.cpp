@@ -12,9 +12,10 @@
 
 namespace dae
 {
-    EnemySpawnerComponent::EnemySpawnerComponent(GameObject* owner, DiggerComponent* p1, int maxTotal, int maxConcurrent)
+    EnemySpawnerComponent::EnemySpawnerComponent(GameObject* owner, DiggerComponent* p1, DiggerComponent* p2, int maxTotal, int maxConcurrent)
         : Component(owner)
         , m_p1(p1)
+        , m_p2(p2)
         , m_MaxTotalEnemies(maxTotal)
         , m_MaxConcurrent(maxConcurrent)
     {
@@ -51,7 +52,7 @@ namespace dae
                 // Spawn exactly at the owner (the 'E' tile) position
                 auto enemy = std::make_unique<GameObject>();
                 enemy->AddComponent<RenderComponent>("PNG/Enemy/VNOB1.png");
-                enemy->AddComponent<EnemyComponent>(m_p1);
+                enemy->AddComponent<EnemyComponent>(m_p1, m_p2);
 
                 const auto myPos = GetOwner()->GetTransform().GetPosition();
                 enemy->SetLocalPosition(myPos.x, myPos.y);
@@ -60,9 +61,8 @@ namespace dae
                 m_SpawnedEnemies.push_back(enemy.get());
 
                 // Register with the player so fireballs can target this enemy
-                auto allEnemies = m_p1->GetEnemies();
-                allEnemies.push_back(enemy.get());
-                m_p1->SetEnemies(allEnemies);
+                m_p1->AddEnemy(enemy.get());
+                if (m_p2) m_p2->AddEnemy(enemy.get());
 
                 SceneManager::GetInstance().GetActiveScene()->Add(std::move(enemy));
 
