@@ -9,6 +9,7 @@
 #include "RenderComponent.h"
 #include "CherryComponent.h"
 #include "ServiceLocator.h"
+#include "UIObservers.h"
 #include "DiggerSounds.h"
 #include "DiggerState.h"
 
@@ -17,13 +18,15 @@
 
 namespace dae
 {
-    LevelTransitionManager::LevelTransitionManager(GameObject* owner, Scene* scene, DiggerComponent* p1, DiggerComponent* p2, GameObject* p2Label, GameObject* p2Lives)
+    LevelTransitionManager::LevelTransitionManager(GameObject* owner, Scene* scene, DiggerComponent* p1, DiggerComponent* p2, GameObject* p2Label, GameObject* p2Lives, GameObject* scoreUI1, LivesSpriteDisplayComponent* p2LivesUI)
         : Component(owner)
         , m_pScene(scene)
         , m_p1(p1)
         , m_p2(p2)
         , m_p2Label(p2Label)
         , m_p2Lives(p2Lives)
+        , m_pScoreUI1(scoreUI1)
+        , m_p2LivesUI(p2LivesUI)
     {
     }
 
@@ -163,10 +166,17 @@ namespace dae
         }
         else if (mode == GameMode::Versus && m_p2)
         {
+            if (m_pScoreUI1) m_pScoreUI1->SetLocalPosition(-1000, -1000); // Hide score offscreen
+            if (m_p2LivesUI) m_p2LivesUI->SetTexture("PNG/Enemy/VNOB1.png"); // Change P2 lives to Nobbin
             if (auto p2Render = m_p2->GetOwner()->GetComponent<RenderComponent>())
             {
                 p2Render->SetTexture("PNG/Enemy/VNOB1.png");
             }
+        }
+        else
+        {
+            if (m_pScoreUI1) m_pScoreUI1->SetLocalPosition(500, 13); // Restore score position for Classic/Co-Op
+            if (m_p2LivesUI) m_p2LivesUI->SetTexture("PNG/Digger/VRDIG1X.png"); // Restore Digger lives
         }
 
         // Parse tile layout

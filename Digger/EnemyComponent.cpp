@@ -36,13 +36,15 @@ namespace dae
             minDist = d;
         }
 
-        if (m_p2 && !m_p2->IsDead() && !m_p2->IsLevelComplete())
-        {
-            auto p2Pos = m_p2->GetOwner()->GetTransform().GetPosition();
-            float d = glm::distance(glm::vec2(myPos.x, myPos.y), glm::vec2(p2Pos.x, p2Pos.y));
-            if (!m_pTarget || d < minDist)
+        if (LevelManager::GetInstance().GetGameMode() != GameMode::Versus) {
+            if (m_p2 && !m_p2->IsDead() && !m_p2->IsLevelComplete())
             {
-                m_pTarget = m_p2;
+                auto p2Pos = m_p2->GetOwner()->GetTransform().GetPosition();
+                float d = glm::distance(glm::vec2(myPos.x, myPos.y), glm::vec2(p2Pos.x, p2Pos.y));
+                if (!m_pTarget || d < minDist)
+                {
+                    m_pTarget = m_p2;
+                }
             }
         }
 

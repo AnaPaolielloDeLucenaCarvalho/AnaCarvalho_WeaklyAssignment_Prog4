@@ -39,6 +39,16 @@ namespace dae
         return m_DirtGrid[row][col];
     }
 
+    bool LevelManager::IsDug(float x, float y) const
+    {
+        int col = static_cast<int>(std::round(x / m_GridSize));
+        int row = static_cast<int>(std::round((y - m_OffsetY) / m_GridSize));
+
+        if (row < 0 || row >= static_cast<int>(m_DirtGrid.size()) || col < 0 || col >= static_cast<int>(m_DirtGrid[0].size())) return true;
+
+        return !m_DirtGrid[row][col];
+    }
+
     void LevelManager::Dig(float x, float y)
     {
         int col = static_cast<int>(std::round(x / m_GridSize));

@@ -102,7 +102,15 @@ namespace dae
             };
 
         checkAndSmash(m_pPlayer1);
-        checkAndSmash(m_pPlayer2);
+
+        if (m_pPlayer2 && !m_pPlayer2->IsMarkedForDestroy()) {
+            auto p2Pos = m_pPlayer2->GetTransform().GetPosition();
+            if (glm::distance(glm::vec2(myPos.x, myPos.y), glm::vec2(p2Pos.x, p2Pos.y)) < 24.f) { // Use your existing radius
+                if (auto p2Digger = m_pPlayer2->GetComponent<DiggerComponent>()) {
+                    p2Digger->ChangeState(new dae::DiggerDeadState());
+                }
+            }
+        }
 
 		// enemies
         if (m_pPlayer1)

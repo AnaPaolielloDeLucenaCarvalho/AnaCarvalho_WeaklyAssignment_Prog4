@@ -12,11 +12,12 @@ namespace dae
 {
     class Scene;
     class DiggerComponent;
+    class LivesSpriteDisplayComponent;
 
     class LevelTransitionManager final : public Component, public Observer
     {
     public:
-        LevelTransitionManager(GameObject* owner, Scene* scene, DiggerComponent* p1, DiggerComponent* p2, GameObject* p2Label = nullptr, GameObject* p2Lives = nullptr);
+        LevelTransitionManager(GameObject* owner, Scene* scene, DiggerComponent* p1, DiggerComponent* p2, GameObject* p2Label = nullptr, GameObject* p2Lives = nullptr, GameObject* scoreUI1 = nullptr, LivesSpriteDisplayComponent* p2LivesUI = nullptr);
 
         void Update(float deltaTime) override;
         void OnNotify(EventId eventId, int value) override;
@@ -30,6 +31,8 @@ namespace dae
         DiggerComponent* m_p2;
         GameObject* m_p2Label;
         GameObject* m_p2Lives;
+        GameObject* m_pScoreUI1;
+        LivesSpriteDisplayComponent* m_p2LivesUI;
         std::vector<GameObject*> m_VisualDirt;
         int m_CurrentLevelIndex{ 0 };
         uint64_t m_LastLoadTime{ 0 };

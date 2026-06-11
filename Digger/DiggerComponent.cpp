@@ -62,6 +62,16 @@ namespace dae
         }
     }
 
+    void DiggerComponent::SetIsPlayerOne(bool isP1)
+    {
+        m_IsPlayerOne = isP1;
+    }
+
+    bool DiggerComponent::IsPlayerOne() const
+    {
+        return m_IsPlayerOne;
+    }
+
     void DiggerComponent::Die()
     {
         // If level won make digger invincible
@@ -85,6 +95,8 @@ namespace dae
 
     void DiggerComponent::Shoot()
     {
+        if (!m_IsPlayerOne && LevelManager::GetInstance().GetGameMode() == GameMode::Versus) return;
+
         // shoot if cooldown ready and alive
         if (m_FireballCooldown <= 0.0f && !m_IsDead)
         {
@@ -109,6 +121,8 @@ namespace dae
 
     void DiggerComponent::AwardPoints(int points)
     {
+        if (LevelManager::GetInstance().GetGameMode() == GameMode::Versus) return;
+
         GameMode mode = LevelManager::GetInstance().GetGameMode();
 
         if (mode == GameMode::CoOp && m_pOtherPlayer)

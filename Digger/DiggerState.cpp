@@ -33,7 +33,9 @@ namespace dae
     // MOVEMENT
         if (distToCenter < 2.0f)
         {
-            LevelManager::GetInstance().Dig(centerX, centerY);
+            if (digger->IsPlayerOne() || LevelManager::GetInstance().GetGameMode() != GameMode::Versus) {
+                LevelManager::GetInstance().Dig(centerX, centerY);
+            }
 
             if (glm::length(desiredDir) > 0) currentDir = desiredDir;
             else currentDir = glm::vec2{ 0, 0 };
@@ -53,6 +55,16 @@ namespace dae
         if (newX > maxX) newX = maxX;
         if (newY < offsetY) newY = offsetY;
         if (newY > maxY) newY = maxY;
+
+        if (!digger->IsPlayerOne() && LevelManager::GetInstance().GetGameMode() == GameMode::Versus) 
+        {
+            if (!LevelManager::GetInstance().IsDug(newX, newY)) 
+            {
+                newX = centerX; // Snap back to the valid grid intersection!
+                newY = centerY;
+                digger->SetCurrentDirection({0, 0}); // Freezes momentum so they can turn around!
+            }
+        }
 
         digger->GetOwner()->SetLocalPosition(newX, newY);
 
@@ -84,12 +96,18 @@ namespace dae
 
         if (auto render = digger->GetOwner()->GetComponent<RenderComponent>()) 
         {
-            render->SetTexture("PNG/Digger/" + prefix + "DIG" + frame + suffix + ".png");
+            if (!digger->IsPlayerOne() && LevelManager::GetInstance().GetGameMode() == GameMode::Versus) {
+                std::string nobFrame = std::to_string((SDL_GetTicks() / 150) % 3 + 1);
+                render->SetTexture("PNG/Enemy/VNOB" + nobFrame + ".png");
+            } else {
+                render->SetTexture("PNG/Digger/" + prefix + "DIG" + frame + suffix + ".png");
+            }
             render->SetFlip(false); // disable flip
         }
 
         return glm::vec2{ newX, newY }; // return new position for collision checks
     }
+
 	// normal state
     void DiggerNormalState::OnEnter(DiggerComponent* digger)
     {
@@ -109,16 +127,21 @@ namespace dae
         const float newY = newPos.y;
 
     // COLLISIONS
-        for (auto& diamond : digger->GetDiamonds())
+        if (digger->IsPlayerOne() || LevelManager::GetInstance().GetGameMode() != GameMode::Versus)
         {
-            if (!diamond || diamond->IsMarkedForDestroy()) continue;
-            auto diamondPos = diamond->GetTransform().GetPosition();
-            if (glm::distance(glm::vec2{ newX, newY }, glm::vec2{ diamondPos.x, diamondPos.y }) < 20.f)
+            for (auto& diamond : digger->GetDiamonds())
             {
-                diamond->MarkForDestroy();
-                digger->AwardPoints(25);
-                digger->AddEmeraldToCombo();
-                ServiceLocator::GetSoundSystem().Play(DiggerSounds::PICK_UP, 0.5f);
+                if (!diamond || diamond->IsMarkedForDestroy()) continue;
+
+                auto diamondPos = diamond->GetTransform().GetPosition();
+
+                if (glm::distance(glm::vec2{ newX, newY }, glm::vec2{ diamondPos.x, diamondPos.y }) < 20.f)
+                {
+                    diamond->MarkForDestroy();
+                    digger->AwardPoints(25);
+                    digger->AddEmeraldToCombo();
+                    ServiceLocator::GetSoundSystem().Play(DiggerSounds::PICK_UP, 0.5f);
+                }
             }
         }
 
@@ -181,13 +204,30 @@ namespace dae
         }
         
 	// DEATH
-        for (auto& enemy : digger->GetEnemies())
+        if (digger->IsPlayerOne() || LevelManager::GetInstance().GetGameMode() != GameMode::Versus) 
         {
-            if (!enemy || enemy->IsMarkedForDestroy()) continue;
-            auto ePos = enemy->GetTransform().GetPosition();
-            if (glm::distance(glm::vec2{ newX, newY }, glm::vec2{ ePos.x, ePos.y }) < 20.f)
+            for (auto& enemy : digger->GetEnemies())
             {
-                return new DiggerDeadState();
+                if (!enemy || enemy->IsMarkedForDestroy()) continue;
+                auto ePos = enemy->GetTransform().GetPosition();
+
+                if (glm::distance(glm::vec2{ newX, newY }, glm::vec2{ ePos.x, ePos.y }) < 20.f)
+                {
+                    return new DiggerDeadState();
+                }
+            }
+        }
+
+        if (digger->IsPlayerOne() && LevelManager::GetInstance().GetGameMode() == GameMode::Versus) 
+        {
+            auto p2 = digger->GetOtherPlayer();
+            if (p2) 
+            {
+                auto p2Pos = p2->GetTransform().GetPosition();
+                if (glm::distance(glm::vec2(newX, newY), glm::vec2(p2Pos.x, p2Pos.y)) < 20.f) 
+                {
+                    return new DiggerDeadState();
+                }
             }
         }
 
@@ -260,16 +300,21 @@ namespace dae
         const float newY = newPos.y;
 
     // COLLISIONS
-        for (auto& diamond : digger->GetDiamonds())
+        if (digger->IsPlayerOne() || LevelManager::GetInstance().GetGameMode() != GameMode::Versus)
         {
-            if (!diamond || diamond->IsMarkedForDestroy()) continue;
-            auto diamondPos = diamond->GetTransform().GetPosition();
-            if (glm::distance(glm::vec2{ newX, newY }, glm::vec2{ diamondPos.x, diamondPos.y }) < 20.f)
+            for (auto& diamond : digger->GetDiamonds())
             {
-                diamond->MarkForDestroy();
-                digger->AwardPoints(25);
-                digger->AddEmeraldToCombo();
-                ServiceLocator::GetSoundSystem().Play(DiggerSounds::PICK_UP, 0.5f);
+                if (!diamond || diamond->IsMarkedForDestroy()) continue;
+
+                auto diamondPos = diamond->GetTransform().GetPosition();
+
+                if (glm::distance(glm::vec2{ newX, newY }, glm::vec2{ diamondPos.x, diamondPos.y }) < 20.f)
+                {
+                    diamond->MarkForDestroy();
+                    digger->AwardPoints(25);
+                    digger->AddEmeraldToCombo();
+                    ServiceLocator::GetSoundSystem().Play(DiggerSounds::PICK_UP, 0.5f);
+                }
             }
         }
 
@@ -341,6 +386,25 @@ namespace dae
                 enemy->MarkForDestroy();
                 digger->AwardPoints(250);
                 ServiceLocator::GetSoundSystem().Play(DiggerSounds::KILL_ENEMY, 0.5f);
+            }
+        }
+
+        if (digger->IsPlayerOne() && LevelManager::GetInstance().GetGameMode() == GameMode::Versus) 
+        {
+            auto p2 = digger->GetOtherPlayer();
+            if (p2 && !p2->IsMarkedForDestroy()) 
+            {
+                auto p2Digger = p2->GetComponent<DiggerComponent>();
+                if (p2Digger && !p2Digger->IsDead()) 
+                {
+                    auto p2Pos = p2->GetTransform().GetPosition();
+                    if (glm::distance(glm::vec2(newX, newY), glm::vec2(p2Pos.x, p2Pos.y)) < 25.f) 
+                    {
+                        p2Digger->ChangeState(new DiggerDeadState()); // Trigger death state!
+                        digger->AwardPoints(250);
+                        ServiceLocator::GetSoundSystem().Play(DiggerSounds::KILL_ENEMY, 0.5f);
+                    }
+                }
             }
         }
 
@@ -424,6 +488,14 @@ namespace dae
 				// cut the death sound and resume looping main music after respawn
                 ServiceLocator::GetSoundSystem().StopSfx();
                 ServiceLocator::GetSoundSystem().ResumeMusic();
+
+                if (LevelManager::GetInstance().GetGameMode() == GameMode::Versus && digger->IsPlayerOne()) {
+                    auto other = digger->GetOtherPlayer();
+                    if (other) {
+                        auto otherDigger = other->GetComponent<DiggerComponent>();
+                        if (otherDigger) other->SetLocalPosition(otherDigger->GetSpawnPos().x, otherDigger->GetSpawnPos().y);
+                    }
+                }
 
                 return new DiggerNormalState();
             }

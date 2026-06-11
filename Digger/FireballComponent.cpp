@@ -1,6 +1,7 @@
 #include "FireballComponent.h"
 
 #include "DiggerComponent.h"
+#include "DiggerState.h"
 #include "RenderComponent.h"
 #include "LevelManager.h"
 #include "GameObject.h"
@@ -82,6 +83,18 @@ namespace dae
                     if (auto* render = GetOwner()->GetComponent<RenderComponent>()) render->SetTexture("PNG/Other/VEXP1.png");
 
                     return; // Only one hit registered per frame
+                }
+            }
+        }
+
+        if (LevelManager::GetInstance().GetGameMode() == GameMode::Versus) {
+            auto p2 = m_pDigger->GetOtherPlayer();
+            if (p2 && !p2->IsMarkedForDestroy()) {
+                auto p2Pos = p2->GetTransform().GetPosition();
+                if (glm::distance(glm::vec2(newX, newY), glm::vec2(p2Pos.x, p2Pos.y)) < 20.f) {
+                    p2->GetComponent<DiggerComponent>()->ChangeState(new dae::DiggerDeadState());
+                    GetOwner()->MarkForDestroy();
+                    return;
                 }
             }
         }

@@ -24,6 +24,7 @@ namespace dae
         void RegisterHoleObject(int col, int row, GameObject* pObj);
 
         bool IsDirtAt(float x, float y) const;
+        bool IsDug(float x, float y) const;
         void Dig(float x, float y);
 
         float GetGridSize() const { return m_GridSize; }

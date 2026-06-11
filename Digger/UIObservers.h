@@ -37,6 +37,7 @@ namespace dae
         void Update(float deltaTime) override;
         void Render() const override;
         void OnNotify(EventId eventId, int value) override;
+        void SetTexture(const std::string& texturePath);
 
     private:
         std::shared_ptr<Texture2D> m_texture;

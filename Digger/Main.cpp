@@ -259,6 +259,7 @@ static void load()
 
 	diggerComp1->SetOtherPlayer(diggerPtr2);
 	diggerComp2->SetOtherPlayer(diggerPtr1);
+	diggerComp2->SetIsPlayerOne(false);
 
 	// Inject the session manager so DiggerGameOverState can call SaveScore().
 	diggerComp1->SetHighScoreManager(pMgr);
@@ -353,7 +354,7 @@ static void load()
 	dae::LevelManager::GetInstance().LoadAllLevelsFromFile(levelPath);
 
 	auto transMgrObj = std::make_unique<dae::GameObject>();
-	auto transComp = transMgrObj->AddComponent<dae::LevelTransitionManager>(&gameScene, diggerComp1, diggerComp2, p2LabelPtr, livesUI2Ptr);
+	auto transComp = transMgrObj->AddComponent<dae::LevelTransitionManager>(&gameScene, diggerComp1, diggerComp2, p2LabelPtr, livesUI2Ptr, scoreUI1.get(), livesObs2);
 
 	diggerComp1->AddObserver(transComp);
 	diggerComp2->AddObserver(transComp);

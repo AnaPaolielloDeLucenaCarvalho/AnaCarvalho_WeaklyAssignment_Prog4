@@ -3,6 +3,7 @@
 #include "TextComponent.h"
 #include "ResourceManager.h"
 #include "Renderer.h"
+#include "LevelManager.h"
 
 #include <iomanip>
 #include <sstream>
@@ -38,6 +39,11 @@ namespace dae
         , m_lives(startLives)
         , m_spacing(spacing)
         , m_DrawLeft(drawLeft)
+    {
+        m_texture = ResourceManager::GetInstance().LoadTexture(texturePath);
+    }
+
+    void LivesSpriteDisplayComponent::SetTexture(const std::string& texturePath)
     {
         m_texture = ResourceManager::GetInstance().LoadTexture(texturePath);
     }
@@ -132,6 +138,8 @@ namespace dae
 
     void SpriteScoreDisplayComponent::Render() const
     {
+        if (LevelManager::GetInstance().GetGameMode() == GameMode::Versus) return;
+
         // Always render exactly 5 digits (e.g. "00250")
         std::ostringstream ss;
         ss << std::setw(5) << std::setfill('0') << m_score;

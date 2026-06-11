@@ -62,6 +62,9 @@ namespace dae
         float GetFireballCooldown() const { return m_FireballCooldown; }
         float GetShootAnimTimer() const { return m_ShootAnimTimer; }
 
+        void SetIsPlayerOne(bool isP1);
+        bool IsPlayerOne() const;
+
         void AwardPoints(int points);
         void AddEmeraldToCombo();
         void ResetEmeraldCombo() { m_ConsecutiveEmeralds = 0; }
@@ -96,6 +99,7 @@ namespace dae
 		glm::vec2 m_LastFacedDirection{ 1, 0 }; // right by default
         float m_FireballCooldown{ 0.0f };
         float m_ShootAnimTimer{ 0.0f };
+        bool m_IsPlayerOne{ true };
 
         int m_TotalScore{ 0 };
         bool m_HasGottenExtraLife{ false };
