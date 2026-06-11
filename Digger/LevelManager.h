@@ -7,6 +7,8 @@
 
 namespace dae
 {
+    enum class GameMode { SinglePlayer, CoOp, Versus };
+
     class GameObject;
 
     class LevelManager : public Singleton<LevelManager>
@@ -29,6 +31,9 @@ namespace dae
 
         void ClearLevel();
 
+        void SetGameMode(GameMode mode) { m_CurrentGameMode = mode; }
+        GameMode GetGameMode() const { return m_CurrentGameMode; }
+
     private:
         friend class Singleton<LevelManager>;
         LevelManager() = default;
@@ -40,6 +45,8 @@ namespace dae
         std::vector<std::vector<GameObject*>> m_HoleObjects;
 
         std::vector<std::vector<std::string>> m_AllLevelLayouts;
+        
+        GameMode m_CurrentGameMode{ GameMode::SinglePlayer };
     };
 }
 

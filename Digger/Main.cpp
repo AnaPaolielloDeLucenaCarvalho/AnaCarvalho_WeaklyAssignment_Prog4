@@ -155,12 +155,26 @@ static void load()
 		menuScene.Add(std::move(nameObj));
 	}
 
-	auto startText = std::make_unique<dae::GameObject>();
-	startText->AddComponent<dae::TextComponent>("PRESS ANY KEY TO START", fontSmall, SDL_Color{ 255, 255, 0, 255 });
-	startText->SetLocalPosition(550.f, 300.f);
-	// MenuManager routes to scoreScene if no name is set, directly to gameScene if it is.
-	startText->AddComponent<dae::MenuManager>(pMgr, &scoreScene, &gameScene);
-	menuScene.Add(std::move(startText));
+	auto opt1Obj = std::make_unique<dae::GameObject>();
+	auto opt1Text = opt1Obj->AddComponent<dae::TextComponent>("1 PLAYER CLASSIC", fontSmall, SDL_Color{ 255, 255, 255, 255 });
+	opt1Obj->SetLocalPosition(600.f, 280.f);
+	menuScene.Add(std::move(opt1Obj));
+
+	auto opt2Obj = std::make_unique<dae::GameObject>();
+	auto opt2Text = opt2Obj->AddComponent<dae::TextComponent>("2 PLAYER CO-OP", fontSmall, SDL_Color{ 255, 255, 255, 255 });
+	opt2Obj->SetLocalPosition(600.f, 320.f);
+	menuScene.Add(std::move(opt2Obj));
+
+	auto opt3Obj = std::make_unique<dae::GameObject>();
+	auto opt3Text = opt3Obj->AddComponent<dae::TextComponent>("2 PLAYER VERSUS", fontSmall, SDL_Color{ 255, 255, 255, 255 });
+	opt3Obj->SetLocalPosition(600.f, 360.f);
+	menuScene.Add(std::move(opt3Obj));
+
+	std::vector<dae::TextComponent*> menuOptions = { opt1Text, opt2Text, opt3Text };
+
+	auto menuManagerObj = std::make_unique<dae::GameObject>();
+	menuManagerObj->AddComponent<dae::MenuManager>(pMgr, &scoreScene, &gameScene, menuOptions);
+	menuScene.Add(std::move(menuManagerObj));
 
 	// Start on the menu scene
 	dae::SceneManager::GetInstance().SetActiveScene(&menuScene);
