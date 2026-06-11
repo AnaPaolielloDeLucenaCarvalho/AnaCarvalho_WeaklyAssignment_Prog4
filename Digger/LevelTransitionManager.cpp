@@ -110,8 +110,14 @@ namespace dae
         ServiceLocator::GetSoundSystem().ResumeMusic();
 
         // Enforce a strict state reset to destroy any active Bonus Mode and its timer
-        if (m_p1) m_p1->ChangeState(new DiggerNormalState());
-        if (m_p2) m_p2->ChangeState(new DiggerNormalState());
+        if (m_p1) {
+            if (m_p1->GetLives() > 0) m_p1->ChangeState(new DiggerNormalState());
+            else m_p1->GetOwner()->SetLocalPosition(-1000.f, -1000.f); // Keep them hidden
+        }
+        if (m_p2) {
+            if (m_p2->GetLives() > 0) m_p2->ChangeState(new DiggerNormalState());
+            else m_p2->GetOwner()->SetLocalPosition(-1000.f, -1000.f); // Keep them hidden
+        }
 
         // Destroy old entities
         for (auto* bag : m_p1->GetGoldBags()) { if (bag) bag->MarkForDestroy(); }
@@ -236,12 +242,12 @@ namespace dae
                 if (c == 'P')
                 {
                     m_p1->SetSpawnPos({ bx, by });
-                    m_p1->GetOwner()->SetLocalPosition(bx, by);
+                    if (m_p1->GetLives() > 0) m_p1->GetOwner()->SetLocalPosition(bx, by);
                 }
                 else if (c == 'S' && m_p2)
                 {
                     m_p2->SetSpawnPos({ bx, by });
-                    m_p2->GetOwner()->SetLocalPosition(bx, by);
+                    if (m_p2->GetLives() > 0) m_p2->GetOwner()->SetLocalPosition(bx, by);
                 }
                 else if (c == 'E')
                 {

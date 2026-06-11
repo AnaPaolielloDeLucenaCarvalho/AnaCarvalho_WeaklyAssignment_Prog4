@@ -173,7 +173,23 @@ namespace dae
 
     void DiggerComponent::ActivateBonusMode()
     {
+        // Prevent infinite recursion and double-activations
+        if (IsInBonusMode()) return; 
+
         ChangeState(new DiggerBonusState());
+
+        // Shared Co-Op Power-up Logic
+        if (LevelManager::GetInstance().GetGameMode() == GameMode::CoOp && m_pOtherPlayer)
+        {
+            if (auto otherDigger = m_pOtherPlayer->GetComponent<DiggerComponent>())
+            {
+                // Only force them into bonus mode if they aren't already in it!
+                if (!otherDigger->IsInBonusMode())
+                {
+                    otherDigger->ChangeState(new DiggerBonusState());
+                }
+            }
+        }
     }
 
     bool DiggerComponent::IsInBonusMode() const

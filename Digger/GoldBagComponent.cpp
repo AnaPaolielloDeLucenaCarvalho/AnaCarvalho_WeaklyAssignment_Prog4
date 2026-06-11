@@ -26,18 +26,26 @@ namespace dae
 
     void GoldBagComponent::Update(float deltaTime)
     {
-        auto checkPlayerPaused = [](GameObject* playerObj) {
+        auto isPaused = [](GameObject* playerObj) {
             if (!playerObj) return false;
             if (auto digger = playerObj->GetComponent<DiggerComponent>())
             {
                 return digger->IsDead() || digger->IsLevelComplete();
             }
-            return false;
+            return true; // if no digger comp, assume paused/dead
         };
 
-        if (checkPlayerPaused(m_pPlayer1) || checkPlayerPaused(m_pPlayer2))
+        bool p1Paused = isPaused(m_pPlayer1);
+        bool p2Paused = m_pPlayer2 ? isPaused(m_pPlayer2) : true;
+
+        if (LevelManager::GetInstance().GetGameMode() == GameMode::SinglePlayer)
         {
-            return;
+            if (p1Paused) return;
+        }
+        else
+        {
+            // In Co-Op or Versus, bags only pause if BOTH players are paused/dead
+            if (p1Paused && p2Paused) return;
         }
 
         if (m_pCurrentState)

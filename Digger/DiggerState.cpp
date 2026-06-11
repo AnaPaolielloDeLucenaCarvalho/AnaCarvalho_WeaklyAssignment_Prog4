@@ -522,6 +522,7 @@ namespace dae
                     std::cout << "Score saved: " << digger->GetTotalScore() << "\n";
                 }
             }
+            digger->GetOwner()->SetLocalPosition(-1000.f, -1000.f);
         }
     }
 
