@@ -49,7 +49,8 @@
 #include <filesystem>
 #include "EnemyComponent.h"
 #include "EnemySpawnerComponent.h"
-#include "LevelTransitionManager.h"   // extracted from Main.cpp in Step 1
+#include "LevelTransitionManager.h"
+#include "GameOverManager.h"
 #include <iostream>
 #include <sstream>
 #include <iomanip>
@@ -88,10 +89,10 @@ static void load()
 
 // ----------------- SCENE SETUP -----------------
 
-	// 3 scenes: menu, name-entry (score), game
 	auto& menuScene  = dae::SceneManager::GetInstance().CreateScene();
 	auto& scoreScene = dae::SceneManager::GetInstance().CreateScene();
 	auto& gameScene  = dae::SceneManager::GetInstance().CreateScene();
+	auto& gameOverScene = dae::SceneManager::GetInstance().CreateScene();
 
 	// Create the HighScoreManager — no global, no static allocation before main().
 	g_HighScoreMgr = std::make_unique<dae::HighScoreManager>();
@@ -207,6 +208,36 @@ static void load()
 		input.BindCommand(SDL_SCANCODE_RETURN,dae::KeyState::Pressed, std::make_unique<dae::ConfirmNameCommand>(pEntryComp));
 	}
 
+
+// ----------------- GAME OVER SCENE SETUP -----------------
+
+	{
+		auto goTitleObj = std::make_unique<dae::GameObject>();
+		auto pTitleText = goTitleObj->AddComponent<dae::TextComponent>("GAME OVER", fontLarge, SDL_Color{ 255, 0, 0, 255 });
+		goTitleObj->SetLocalPosition(380, 150);
+		gameOverScene.Add(std::move(goTitleObj));
+
+		auto scoreObj = std::make_unique<dae::GameObject>();
+		auto pScoreText = scoreObj->AddComponent<dae::TextComponent>("FINAL SCORE: 0", fontLarge, SDL_Color{ 255, 255, 255, 255 });
+		scoreObj->SetLocalPosition(380, 250);
+		gameOverScene.Add(std::move(scoreObj));
+
+		auto goOpt1Obj = std::make_unique<dae::GameObject>();
+		auto pOpt1Text = goOpt1Obj->AddComponent<dae::TextComponent>("TRY AGAIN", fontSmall, SDL_Color{ 255, 255, 255, 255 });
+		goOpt1Obj->SetLocalPosition(430, 400);
+		gameOverScene.Add(std::move(goOpt1Obj));
+
+		auto goOpt2Obj = std::make_unique<dae::GameObject>();
+		auto pOpt2Text = goOpt2Obj->AddComponent<dae::TextComponent>("MAIN MENU", fontSmall, SDL_Color{ 255, 255, 255, 255 });
+		goOpt2Obj->SetLocalPosition(430, 450);
+		gameOverScene.Add(std::move(goOpt2Obj));
+
+		std::vector<dae::TextComponent*> options = { pOpt1Text, pOpt2Text };
+
+		auto managerObj = std::make_unique<dae::GameObject>();
+		managerObj->AddComponent<dae::GameOverManager>(&menuScene, &gameScene, pMgr, pTitleText, pScoreText, options);
+		gameOverScene.Add(std::move(managerObj));
+	}
 
 // ----------------- GAME SCENE SETUP -----------------
 

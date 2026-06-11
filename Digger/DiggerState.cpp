@@ -18,6 +18,9 @@ namespace dae
 {
     static glm::vec2 ApplyDiggerMovement(DiggerComponent* digger, float deltaTime)
     {
+        // Stop hidden/dead players from clamping back onto the screen!
+        if (digger->GetLives() <= 0) return digger->GetOwner()->GetTransform().GetPosition();
+
         auto myPos = digger->GetOwner()->GetTransform().GetPosition();
         glm::vec2 desiredDir = digger->GetDesiredDirection();
         glm::vec2 currentDir = digger->GetCurrentDirection();
@@ -111,7 +114,9 @@ namespace dae
 	// normal state
     void DiggerNormalState::OnEnter(DiggerComponent* digger)
     {
+        digger->SetDead(false); // Fix: Wake up the enemies!
         digger->SetLevelComplete(false);
+
         if (auto render = digger->GetOwner()->GetComponent<RenderComponent>())
         {
             render->SetTexture("PNG/Digger/VRDIG1X.png");
@@ -526,9 +531,53 @@ namespace dae
         }
     }
 
-    DiggerState* DiggerGameOverState::Update(DiggerComponent* /*digger*/, float /*deltaTime*/)
+    DiggerState* DiggerGameOverState::Update(DiggerComponent* digger, float deltaTime)
     {
-        return nullptr; // absorb all updates — player is frozen
+        // Prevent the dead state from hijacking the scene if a reset is pending!
+        if (LevelManager::GetInstance().NeedsGameReset()) return nullptr;
+
+        m_Timer += deltaTime;
+        if (m_Timer >= 2.0f)
+        {
+            auto& scenes = SceneManager::GetInstance();
+            Scene* gameOverScene = scenes.GetScene(3); // Menu=0, Score=1, Game=2, GameOver=3
+
+            auto mode = LevelManager::GetInstance().GetGameMode();
+
+            if (mode == GameMode::SinglePlayer)
+            {
+                if (gameOverScene) scenes.SetActiveScene(gameOverScene);
+            }
+            else if (mode == GameMode::CoOp)
+            {
+                auto other = digger->GetOtherPlayer();
+                if (!other || other->IsMarkedForDestroy())
+                {
+                    if (gameOverScene) scenes.SetActiveScene(gameOverScene);
+                }
+                else
+                {
+                    auto otherDigger = other->GetComponent<DiggerComponent>();
+                    if (otherDigger && otherDigger->GetLives() <= 0)
+                    {
+                        if (gameOverScene) scenes.SetActiveScene(gameOverScene);
+                    }
+                }
+            }
+            else if (mode == GameMode::Versus)
+            {
+                if (digger->IsPlayerOne())
+                {
+                    LevelManager::GetInstance().SetWinnerText("PLAYER 2 WINS!");
+                }
+                else
+                {
+                    LevelManager::GetInstance().SetWinnerText("PLAYER 1 WINS!");
+                }
+                if (gameOverScene) scenes.SetActiveScene(gameOverScene);
+            }
+        }
+        return nullptr;
     }
 
 	// level complete state

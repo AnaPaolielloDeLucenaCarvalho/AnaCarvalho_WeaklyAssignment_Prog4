@@ -33,6 +33,8 @@ namespace dae
         std::vector<ScoreEntry> GetTopScores(int count) const;
 
         void UpdateCurrentScore(int score);
+        int GetCurrentScore() const { return m_currentScore; }
+        void SetCurrentScore(int score) { m_currentScore = score; }
 
         void SaveScore(int score);
 

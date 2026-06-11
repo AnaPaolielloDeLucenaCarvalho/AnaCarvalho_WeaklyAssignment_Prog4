@@ -34,7 +34,12 @@ namespace dae
         Subject& GetSubject() { return m_Subject; }
 
         int GetLives() const { return m_Lives; }
+        void SetLives(int lives) { m_Lives = lives; m_Subject.Notify(make_sdbm_hash("PlayerDied"), m_Lives); }
         int GetTotalScore() const { return m_TotalScore; }
+        void SetTotalScore(int score) { 
+            m_TotalScore = score; 
+            m_Subject.Notify(make_sdbm_hash("ScoreReset"), score); 
+        }
 
         // High-score manager
         void SetHighScoreManager(HighScoreManager* pMgr) { m_pHighScoreManager = pMgr; }

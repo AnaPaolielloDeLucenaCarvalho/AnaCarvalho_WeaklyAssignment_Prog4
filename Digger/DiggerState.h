@@ -55,6 +55,8 @@ namespace dae
     public:
         void OnEnter(DiggerComponent* digger) override;
         DiggerState* Update(DiggerComponent* digger, float deltaTime) override;
+    private:
+        float m_Timer{0.0f};
     };
 
     class DiggerLevelCompleteState : public DiggerState

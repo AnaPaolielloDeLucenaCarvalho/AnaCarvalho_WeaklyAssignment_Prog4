@@ -35,6 +35,12 @@ namespace dae
         void SetGameMode(GameMode mode) { m_CurrentGameMode = mode; }
         GameMode GetGameMode() const { return m_CurrentGameMode; }
 
+        void SetWinnerText(const std::string& text) { m_WinnerText = text; }
+        std::string GetWinnerText() const { return m_WinnerText; }
+
+        void SetNeedsGameReset(bool needsReset) { m_NeedsGameReset = needsReset; }
+        bool NeedsGameReset() const { return m_NeedsGameReset; }
+
     private:
         friend class Singleton<LevelManager>;
         LevelManager() = default;
@@ -48,6 +54,8 @@ namespace dae
         std::vector<std::vector<std::string>> m_AllLevelLayouts;
         
         GameMode m_CurrentGameMode{ GameMode::SinglePlayer };
+        std::string m_WinnerText{""};
+        bool m_NeedsGameReset{false};
     };
 }
 

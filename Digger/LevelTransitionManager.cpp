@@ -12,6 +12,7 @@
 #include "UIObservers.h"
 #include "DiggerSounds.h"
 #include "DiggerState.h"
+#include "HighScoreManager.h"
 
 #include <SDL3/SDL.h>
 #include <string>
@@ -36,6 +37,24 @@ namespace dae
         if (!m_HasLoadedFirstLevel && SceneManager::GetInstance().GetActiveScene() == m_pScene)
         {
             m_HasLoadedFirstLevel = true;
+            LoadLevel(0);
+        }
+
+        {
+            LevelManager::GetInstance().SetNeedsGameReset(false);
+
+            GameMode mode = LevelManager::GetInstance().GetGameMode();
+
+            if (m_p1) { m_p1->SetLives(4); m_p1->SetTotalScore(0); }
+            if (m_p2) { 
+                if (mode == GameMode::SinglePlayer) m_p2->SetLives(0);
+                else { m_p2->SetLives(4); m_p2->SetTotalScore(0); }
+            }
+
+            // Update score in the HighScoreManager to 0
+            if (m_p1 && m_p1->GetHighScoreManager()) m_p1->GetHighScoreManager()->SetCurrentScore(0);
+
+            m_CurrentLevelIndex = 0;
             LoadLevel(0);
         }
 
@@ -154,35 +173,41 @@ namespace dae
         LevelManager::GetInstance().InitLevel(14, 26);
 
         GameMode mode = LevelManager::GetInstance().GetGameMode();
+        
+        // 1. Handle Player 2 Physics/Visuals
         if (mode == GameMode::SinglePlayer && m_p2)
         {
-            m_p2->GetOwner()->MarkForDestroy();
-            m_p2 = nullptr;
-
-            if (m_p2Label)
-            {
-                m_p2Label->MarkForDestroy();
-                m_p2Label = nullptr;
-            }
-            if (m_p2Lives)
-            {
-                m_p2Lives->MarkForDestroy();
-                m_p2Lives = nullptr;
-            }
+            m_p2->SetLives(0);
+            m_p2->GetOwner()->SetLocalPosition(-1000.f, -1000.f); // Safely hide
         }
         else if (mode == GameMode::Versus && m_p2)
         {
-            if (m_pScoreUI1) m_pScoreUI1->SetLocalPosition(-1000, -1000); // Hide score offscreen
-            if (m_p2LivesUI) m_p2LivesUI->SetTexture("PNG/Enemy/VNOB1.png"); // Change P2 lives to Nobbin
             if (auto p2Render = m_p2->GetOwner()->GetComponent<RenderComponent>())
             {
                 p2Render->SetTexture("PNG/Enemy/VNOB1.png");
             }
         }
-        else
+
+        // 2. Safely toggle HUD visibility via coordinates (Never Destroy!)
+        if (mode == GameMode::SinglePlayer)
         {
-            if (m_pScoreUI1) m_pScoreUI1->SetLocalPosition(500, 13); // Restore score position for Classic/Co-Op
-            if (m_p2LivesUI) m_p2LivesUI->SetTexture("PNG/Digger/VRDIG1X.png"); // Restore Digger lives
+            if (m_pScoreUI1) m_pScoreUI1->SetLocalPosition(500, 13);
+            if (m_p2Label) m_p2Label->SetLocalPosition(-1000, -1000); // Hide P2 Label
+            if (m_p2Lives) m_p2Lives->SetLocalPosition(-1000, -1000); // Hide P2 Lives
+        }
+        else if (mode == GameMode::Versus)
+        {
+            if (m_pScoreUI1) m_pScoreUI1->SetLocalPosition(-1000, -1000); // Hide Score
+            if (m_p2Label) m_p2Label->SetLocalPosition(905, 15);          // Restore P2 Label
+            if (m_p2Lives) m_p2Lives->SetLocalPosition(850, 15);          // Restore P2 Lives
+            if (m_p2LivesUI) m_p2LivesUI->SetTexture("PNG/Enemy/VNOB1.png");
+        }
+        else // CoOp
+        {
+            if (m_pScoreUI1) m_pScoreUI1->SetLocalPosition(500, 13);      // Restore Score
+            if (m_p2Label) m_p2Label->SetLocalPosition(905, 15);          // Restore P2 Label
+            if (m_p2Lives) m_p2Lives->SetLocalPosition(850, 15);          // Restore P2 Lives
+            if (m_p2LivesUI) m_p2LivesUI->SetTexture("PNG/Digger/VRDIG1X.png"); 
         }
 
         // Parse tile layout

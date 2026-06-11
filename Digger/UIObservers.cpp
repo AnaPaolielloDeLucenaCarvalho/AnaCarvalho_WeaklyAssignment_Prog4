@@ -171,6 +171,11 @@ namespace dae
             m_score += value;
             m_Subject.Notify(make_sdbm_hash("ScoreChanged"), m_score);
         }
+        else if (eventId == make_sdbm_hash("ScoreReset"))
+        {
+            m_score = value;
+            m_Subject.Notify(make_sdbm_hash("ScoreChanged"), m_score);
+        }
     }
 
     // UIPanelComponent
