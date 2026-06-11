@@ -71,6 +71,7 @@ namespace dae
                 }
                 else if (m_SelectedIndex == 1)
                 {
+                    if (m_pHighScoreMgr) m_pHighScoreMgr->ClearSessionName(); // Forget the name!
                     SceneManager::GetInstance().SetActiveScene(m_pMenuScene);
                 }
                 

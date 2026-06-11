@@ -79,21 +79,27 @@ namespace dae
 
         if (pStates[SDL_SCANCODE_RETURN] && m_InputCooldown <= 0.0f)
         {
-            m_InputCooldown = 0.3f;
-            if (m_SelectedIndex == 2) { 
+            m_InputCooldown = 0.5f;
+
+            // Force a hard reset for EVERY new game started from the menu!
+            LevelManager::GetInstance().SetNeedsGameReset(true);
+
+            if (m_SelectedIndex == 2)
+            {
                 LevelManager::GetInstance().SetGameMode(GameMode::Versus);
                 SceneManager::GetInstance().SetActiveScene(m_pGameScene);
-            } else {
-                if (m_SelectedIndex == 0) LevelManager::GetInstance().SetGameMode(GameMode::SinglePlayer);
-                else if (m_SelectedIndex == 1) LevelManager::GetInstance().SetGameMode(GameMode::CoOp);
+            }
+            else
+            {
+                LevelManager::GetInstance().SetGameMode(m_SelectedIndex == 0 ? GameMode::SinglePlayer : GameMode::CoOp);
 
-                if (m_pMgr && m_pMgr->HasSessionName())
+                if (m_pMgr && !m_pMgr->HasSessionName())
                 {
-                    SceneManager::GetInstance().SetActiveScene(m_pGameScene);
+                    SceneManager::GetInstance().SetActiveScene(m_pScoreScene);
                 }
                 else
                 {
-                    SceneManager::GetInstance().SetActiveScene(m_pScoreScene);
+                    SceneManager::GetInstance().SetActiveScene(m_pGameScene);
                 }
             }
         }

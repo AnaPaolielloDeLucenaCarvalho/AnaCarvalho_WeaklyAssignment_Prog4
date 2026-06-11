@@ -27,6 +27,7 @@ namespace dae
         bool HasSessionName() const;
 
         void SetSessionName(const std::string& initials);
+        void ClearSessionName();
 
         const std::string& GetSessionName() const;
 

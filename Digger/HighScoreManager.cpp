@@ -35,6 +35,13 @@ namespace dae
         m_nameIsSet   = true;
     }
 
+    void HighScoreManager::ClearSessionName()
+    {
+        m_nameIsSet = false;
+        m_sessionName = "AAA";
+        m_hasSaved = false; // Extremely important so the next score saves!
+    }
+
     const std::string& HighScoreManager::GetSessionName() const
     {
         return m_sessionName;
