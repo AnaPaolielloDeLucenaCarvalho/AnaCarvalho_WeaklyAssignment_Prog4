@@ -40,6 +40,7 @@ namespace dae
             LoadLevel(0);
         }
 
+        if (LevelManager::GetInstance().NeedsGameReset() && SceneManager::GetInstance().GetActiveScene() == m_pScene)
         {
             LevelManager::GetInstance().SetNeedsGameReset(false);
 
