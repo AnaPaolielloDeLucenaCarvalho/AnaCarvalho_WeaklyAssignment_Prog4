@@ -38,6 +38,7 @@
 #include "CycleLetterCommand.h"
 #include "AdvanceIndexCommand.h"
 #include "ConfirmNameCommand.h"
+#include "SystemCommands.h"
 
 #if USE_STEAMWORKS
 #pragma warning (push)
@@ -93,6 +94,7 @@ static void load()
 	auto& scoreScene = dae::SceneManager::GetInstance().CreateScene();
 	auto& gameScene  = dae::SceneManager::GetInstance().CreateScene();
 	auto& gameOverScene = dae::SceneManager::GetInstance().CreateScene();
+	auto& instructionsScene = dae::SceneManager::GetInstance().CreateScene();
 
 	// Create the HighScoreManager — no global, no static allocation before main().
 	g_HighScoreMgr = std::make_unique<dae::HighScoreManager>();
@@ -348,32 +350,39 @@ static void load()
 	auto skipLevelCommand1 = std::make_unique<dae::SkipLevelCommand>(diggerComp1);
 	input.BindCommand(SDL_SCANCODE_F1, dae::KeyState::Pressed, std::move(skipLevelCommand1));
 
+	auto returnCmd = std::make_unique<dae::ReturnToMenuCommand>(&menuScene, pMgr);
+	input.BindCommand(SDL_SCANCODE_F10, dae::KeyState::Pressed, std::move(returnCmd));
+
+	auto toggleInstCmd = std::make_unique<dae::ToggleInstructionsCommand>(&instructionsScene);
+	input.BindCommand(SDL_SCANCODE_F3, dae::KeyState::Pressed, std::move(toggleInstCmd));
+
 	g_AchievementMgr = std::make_shared<dae::AchievementManager>();
 	scoreObs1->AddObserver(g_AchievementMgr.get());
 
-	auto instructions1 = std::make_unique<dae::GameObject>();
-	instructions1->SetLocalPosition(10, 520);
-	instructions1->AddComponent<dae::TextComponent>("P1: WASD | P2: D-Pad", fontSmall, SDL_Color{ 255, 255, 0, 255 });
-	instructions1->SetZIndex(10);
-	gameScene.Add(std::move(instructions1));
+	auto instTitle = std::make_unique<dae::GameObject>();
+	instTitle->AddComponent<dae::TextComponent>("HOW TO PLAY", fontLarge, SDL_Color{ 255, 255, 0, 255 });
+	instTitle->SetLocalPosition(380, 100);
+	instructionsScene.Add(std::move(instTitle));
 
-	auto instructions2 = std::make_unique<dae::GameObject>();
-	instructions2->SetLocalPosition(10, 550);
-	instructions2->AddComponent<dae::TextComponent>("POINTS: Diamonds and Gold | LIVES: Getting squashed by a gold bag", fontSmall, SDL_Color{ 255, 255, 0, 255 });
-	instructions2->SetZIndex(10);
-	gameScene.Add(std::move(instructions2));
+	auto inst1 = std::make_unique<dae::GameObject>();
+	inst1->AddComponent<dae::TextComponent>("P1: WASD  |  P2: IJKL", fontSmall, SDL_Color{ 255, 255, 255, 255 });
+	inst1->SetLocalPosition(350, 250);
+	instructionsScene.Add(std::move(inst1));
 
-	auto instructions3 = std::make_unique<dae::GameObject>();
-	instructions3->SetLocalPosition(10, 580);
-	instructions3->AddComponent<dae::TextComponent>("F2 to mute/unmute sound", fontSmall, SDL_Color{ 255, 255, 0, 255 });
-	instructions3->SetZIndex(10);
-	gameScene.Add(std::move(instructions3));
+	auto inst2 = std::make_unique<dae::GameObject>();
+	inst2->AddComponent<dae::TextComponent>("SHOOT: Space (P1) / RShift (P2)", fontSmall, SDL_Color{ 255, 255, 255, 255 });
+	inst2->SetLocalPosition(350, 300);
+	instructionsScene.Add(std::move(inst2));
 
-	auto instructions4 = std::make_unique<dae::GameObject>();
-	instructions4->SetLocalPosition(10, 490);
-	instructions4->AddComponent<dae::TextComponent>("SPACE to shoot", fontSmall, SDL_Color{ 255, 255, 0, 255 });
-	instructions4->SetZIndex(10);
-	gameScene.Add(std::move(instructions4));
+	auto inst3 = std::make_unique<dae::GameObject>();
+	inst3->AddComponent<dae::TextComponent>("POINTS: Diamonds and Gold", fontSmall, SDL_Color{ 255, 255, 255, 255 });
+	inst3->SetLocalPosition(350, 350);
+	instructionsScene.Add(std::move(inst3));
+
+	auto inst4 = std::make_unique<dae::GameObject>();
+	inst4->AddComponent<dae::TextComponent>("PRESS F3 TO RETURN", fontSmall, SDL_Color{ 255, 0, 0, 255 });
+	inst4->SetLocalPosition(400, 500);
+	instructionsScene.Add(std::move(inst4));
 
 	soundSystem.PlayMusic(DiggerSounds::MUSIC, 0.5f, true);
 
