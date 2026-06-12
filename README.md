@@ -23,12 +23,12 @@ The game is fully navigable with either a Keyboard or an Xbox-compatible Control
 
 ### Menus & UI (Main Menu, Game Over, Name Entry)
 | Action | Keyboard | All Gamepads |
-| :--- | :--- | :--- | :--- |
+| :--- | :--- | :--- |
 | **Navigate Up** | `W` / `Up Arrow` | D-Pad Up |
 | **Navigate Down** | `S` / `Down Arrow` | D-Pad Down |
 | **Next Letter** (Name) | `D` / `Right Arrow` | D-Pad Right |
 | **Previus Letter** (Name) | `A` / `Left Arrow` | D-Pad Left |
-| **Select / Confirm** | `Space` / `Enter` | Button A |
+| **Select / Confirm** | `Space` / `Enter` | Left Shoulder / Right Shoulder |
 
 ### Gameplay (Player 1)
 | Action | Keyboard | Gamepad 0 |
