@@ -49,8 +49,8 @@ The game is fully navigable with either a Keyboard or an Xbox-compatible Control
 | **Shoot** | `Right Shift` | Left Trigger / Right Trigger |
 
 ### System Commands (Global Hotkeys)
-| Action | Keyboard | Gamepad 0 / 1 | Description |
-| :--- | :--- | :--- | :--- |
+| Action | Keyboard | Gamepad 0 / 1 |
+| :--- | :--- | :--- |
 | **Skip Level** | `F1` | Button B |
 | **Mute Audio** | `F2` | Button Y |
 | **Instructions** | `F3` | Button X |
