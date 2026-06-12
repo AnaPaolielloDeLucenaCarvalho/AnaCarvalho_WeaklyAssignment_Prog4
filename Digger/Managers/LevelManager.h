@@ -5,6 +5,9 @@
 #include <vector>
 #include "Singleton.h"
 
+// DESIGN PATTERN: Singleton
+// The LevelManager is a globally accessible Singleton because virtually every sub-system  (AI Pathfinding, Player Collisions, UI Renderers) requires instantaneous access to the underlying collision grid arrays without passing pointers endlessly.
+
 namespace dae
 {
     enum class GameMode { SinglePlayer, CoOp, Versus };
@@ -52,10 +55,10 @@ namespace dae
         std::vector<std::vector<GameObject*>> m_HoleObjects;
 
         std::vector<std::vector<std::string>> m_AllLevelLayouts;
-        
+
         GameMode m_CurrentGameMode{ GameMode::SinglePlayer };
-        std::string m_WinnerText{""};
-        bool m_NeedsGameReset{false};
+        std::string m_WinnerText{ "" };
+        bool m_NeedsGameReset{ false };
     };
 }
 

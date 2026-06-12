@@ -3,6 +3,10 @@
 
 #include "Command.h"
 
+// DESIGN PATTERN - Command Pattern
+// Used the Command pattern here to decouple the inputs from the Name Entry logic, the Input Manager calls Execute() on the Command objects, which then calls the appropriate functions on the NameEntryComponent.
+// Why - Prevents the code from becoming a massive switch statement in Update and makes controller rebinding trivial
+
 namespace dae
 {
     class NameEntryComponent;

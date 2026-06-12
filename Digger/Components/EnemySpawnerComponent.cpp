@@ -28,19 +28,22 @@ namespace dae
 
     void EnemySpawnerComponent::Update(float deltaTime)
     {
+        // Stop spawning entirely if we have exhausted the level's total enemy quota
         if (m_TotalSpawned >= m_MaxTotalEnemies) return;
 
-        // Remove dead / destroyed enemies from the tracking list
+        // Clean up the tracking array. Erase-remove idiom safely removes dangling pointers to dead enemies.
         m_SpawnedEnemies.erase
         (
             std::remove_if(m_SpawnedEnemies.begin(), m_SpawnedEnemies.end(), [](GameObject* e) { return e == nullptr || e->IsMarkedForDestroy(); }), m_SpawnedEnemies.end()
         );
 
+        // Reset the timer instantly if the board is completely empty so the player isn't waiting around
         if (m_SpawnedEnemies.empty() && m_TotalSpawned < m_MaxTotalEnemies)
         {
             m_SpawnTimer = 0.0f;
         }
 
+        // Only spawn a new enemy if we haven't hit the screen-concurrency cap
         if (static_cast<int>(m_SpawnedEnemies.size()) < m_MaxConcurrent)
         {
             m_SpawnTimer -= deltaTime;
@@ -60,12 +63,14 @@ namespace dae
 
                 m_SpawnedEnemies.push_back(enemy.get());
 
-                // Register with the player so fireballs can target this enemy
+                // Register with the player so fireballs can successfully calculate collision targets
                 m_p1->AddEnemy(enemy.get());
                 if (m_p2) m_p2->AddEnemy(enemy.get());
 
                 SceneManager::GetInstance().GetActiveScene()->Add(std::move(enemy));
 
+                // DESIGN PATTERN - Observer (Broadcast)
+                // Fire the trigger for the bonus Cherry when 75% of the total enemies have spawned
                 if (!m_ThresholdNotified)
                 {
                     const int threshold = (m_MaxTotalEnemies * 3) / 4; // integer 75%

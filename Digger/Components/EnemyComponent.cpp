@@ -13,6 +13,7 @@ namespace dae
         , m_p1(p1)
         , m_p2(p2)
     {
+        // Enemies always spawn in the Nobbin phase (limited to dug tunnels)
         m_pCurrentState = std::make_unique<NobbinState>();
         m_pCurrentState->OnEnter(this);
     }
@@ -24,10 +25,12 @@ namespace dae
 
     void EnemyComponent::Update(float deltaTime)
     {
+        // Dynamic targeting evaluation: The enemy decides who to chase every frame.
         m_pTarget = nullptr;
         float minDist = 999999.f;
         auto myPos = GetOwner()->GetTransform().GetPosition();
 
+        // Check distance to Player 1
         if (m_p1 && !m_p1->IsDead() && !m_p1->IsLevelComplete())
         {
             auto p1Pos = m_p1->GetOwner()->GetTransform().GetPosition();
@@ -36,6 +39,7 @@ namespace dae
             minDist = d;
         }
 
+        // In Co-Op, check distance to Player 2. The AI is ruthless and aggressively hunts the closest player!
         if (LevelManager::GetInstance().GetGameMode() != GameMode::Versus) {
             if (m_p2 && !m_p2->IsDead() && !m_p2->IsLevelComplete())
             {
@@ -50,6 +54,7 @@ namespace dae
 
         if (!m_pTarget) return;
 
+        // Delegate logic execution down to the active State (Nobbin or Hobbin)
         if (m_pCurrentState)
         {
             EnemyState* newState = m_pCurrentState->Update(this, deltaTime);
@@ -85,10 +90,11 @@ namespace dae
         float gridSize = LevelManager::GetInstance().GetGridSize();
         float offsetY = LevelManager::GetInstance().GetOffsetY();
 
+        // Snap to nearest mathematical grid intersection to evaluate pathing options
         float centerX = std::round(myPos.x / gridSize) * gridSize;
         float centerY = std::round((myPos.y - offsetY) / gridSize) * gridSize + offsetY;
 
-		// pathfinding enemies
+        // pathfinding enemies (only calculates when perfectly centered on a tile intersection)
         if (glm::distance(glm::vec2(myPos.x, myPos.y), glm::vec2(centerX, centerY)) < 2.0f)
         {
             glm::vec2 bestDir = m_CurrentDirection;
@@ -98,14 +104,16 @@ namespace dae
             glm::vec2 dirs[4] = { {1,0}, {-1,0}, {0,1}, {0,-1} };
             for (auto& dir : dirs)
             {
+                // Penalize reversing direction heavily so AI doesn't stutter back and forth rapidly
                 bool isReverse = (dir.x == -m_CurrentDirection.x && dir.y == -m_CurrentDirection.y);
 
                 float checkX = centerX + (dir.x * gridSize);
                 float checkY = centerY + (dir.y * gridSize);
 
+                // Prevent AI from pathing out of bounds
                 if (checkX < 0 || checkX > 1000 || checkY < offsetY || checkY > 600) continue;
 
-                // nobbins cant dig
+                // nobbins cant dig, so they ignore dirt paths completely
                 if (!m_CanDig && LevelManager::GetInstance().IsDirtAt(checkX, checkY)) continue;
 
                 float penalty = isReverse ? 10000.f : 0.f;
@@ -120,20 +128,22 @@ namespace dae
             }
 
             if (foundPath) m_CurrentDirection = bestDir;
-			else m_CurrentDirection = { 0,0 }; // if trapped wiat to become a hobbin and dig
+            else m_CurrentDirection = { 0,0 }; // if trapped wait to become a hobbin and dig
 
             GetOwner()->SetLocalPosition(centerX, centerY);
         }
 
-		// movement
+        // movement
+        // Hobbins move slower because they have to push through solid dirt
         float speed = (m_CanDig ? 60.0f : 85.0f) * deltaTime;
         float newX = myPos.x + (m_CurrentDirection.x * speed);
         float newY = myPos.y + (m_CurrentDirection.y * speed);
 
+        // Hobbins destroy the world geometry as they move!
         if (m_CanDig && glm::length(m_CurrentDirection) > 0) LevelManager::GetInstance().Dig(newX, newY);
         GetOwner()->SetLocalPosition(newX, newY);
 
-		// animation
+        // animation
         m_AnimTimer += deltaTime;
         if (m_AnimTimer > 0.15f)
         {
@@ -167,6 +177,7 @@ namespace dae
     EnemyState* NobbinState::Update(EnemyComponent* enemy, float deltaTime)
     {
         m_HobbinTimer -= deltaTime;
+        // Trigger the metamorphosis into a Hobbin when the timer runs out!
         if (m_HobbinTimer <= 0.0f) return new HobbinState();
 
         enemy->MoveAI(deltaTime);

@@ -4,12 +4,15 @@
 #include <string>
 #include <vector>
 
+// DESIGN PATTERN: Architectural Separation
+// The HighScoreManager is completely isolated from GameObjects. It is a pure data manager  responsible for disk I/O (saving to text files) and sorting arrays. It is passed via  dependency injection rather than acting as a rigid global Singleton.
+
 namespace dae
 {
-    //  high-score entry (name + points).
+    // High-score entry structure to rigidly lock a 3-character name string to an integer point value.
     struct ScoreEntry
     {
-		std::string initials; // always exactly 3 char - "ANA", "BOB", "AAA"
+        std::string initials; // always exactly 3 char - "ANA", "BOB", "AAA"
         int score;
     };
 
@@ -44,8 +47,8 @@ namespace dae
 
         std::string m_sessionName; // 3-char; empty = not set yet
         bool m_nameIsSet; // avoids empty-string ambiguity
-        int m_currentScore{0};
-        bool m_hasSaved{false};
+        int m_currentScore{ 0 };
+        bool m_hasSaved{ false };
     };
 
 }

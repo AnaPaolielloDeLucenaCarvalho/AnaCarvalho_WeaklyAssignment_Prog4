@@ -2,12 +2,14 @@
 #define FIREBALLCOMPONENT_H
 
 #include "Component.h"
-
 #include <glm/vec2.hpp>
+
+// DESIGN PATTERN - Component Pattern (Composition over Inheritance)
+// Instead of creating a messy inheritance tree (e.g., class Fireball : public Projectile),  we snap this isolated behaviour onto a hollow GameObject case.
 
 namespace dae
 {
-    class DiggerComponent; // forward declaration — full type only needed in .cpp
+    class DiggerComponent; // Forward declaration prevents cascading compile times
 
     class FireballComponent final : public Component
     {
@@ -25,6 +27,8 @@ namespace dae
         float m_ExplodeTimer{ 0.0f };
         int m_ExplodeFrame{ 1 };
 
+        // DESIGN DECISION - Pointer referencing
+        // The fireball stores a pointer to the specific player who shot it so it knows who to award points to!
         DiggerComponent* m_pDigger;
     };
 }

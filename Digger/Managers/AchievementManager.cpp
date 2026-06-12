@@ -10,6 +10,7 @@ namespace dae
 #endif
     {
 #if USE_STEAMWORKS
+        // Validate that the Steam client is actively running before requesting user statistics
         if (SteamUserStats() && SteamUser())
         {
             SteamUserStats()->RequestUserStats(SteamUser()->GetSteamID());
@@ -21,6 +22,7 @@ namespace dae
     {
         if (eventId == make_sdbm_hash("ScoreChanged"))
         {
+            // Gate condition: Once the player exceeds 500 points, unlock the achievement if not already awarded
             if (value >= 500 && !m_WinnerUnlocked)
             {
 #if USE_STEAMWORKS
@@ -35,6 +37,7 @@ namespace dae
                     m_WinnerUnlocked = true;
                 }
 #else
+                // Safe fallback logic for Web Builds so the console proves the event fired correctly
                 m_WinnerUnlocked = true;
                 std::cout << "Local Achievement Unlocked! (Steam disabled)\n";
 #endif
@@ -47,6 +50,7 @@ namespace dae
 #if USE_STEAMWORKS
         if (SteamUserStats())
         {
+            // Clear the achievement locally and push the updated state securely to the Steam backend
             SteamUserStats()->ClearAchievement("ACH_WIN_ONE_GAME");
             SteamUserStats()->StoreStats();
             m_WinnerUnlocked = false;
@@ -60,6 +64,7 @@ namespace dae
 #if USE_STEAMWORKS
         if (m_bInitialized && SteamUserStats())
         {
+            // Register the achievement locally and push the updated state securely to the Steam backend
             SteamUserStats()->SetAchievement(id);
             SteamUserStats()->StoreStats();
         }
@@ -69,12 +74,14 @@ namespace dae
     }
 
 #if USE_STEAMWORKS
+    // Callback function fired asynchronously when the Steam backend replies with the user's data
     void AchievementManager::OnUserStatsReceived(UserStatsReceived_t* pCallback)
     {
         if (pCallback->m_eResult == k_EResultOK)
         {
             m_bInitialized = true;
-            bool achieved  = false;
+            bool achieved = false;
+            // Pre-load the achievement state to ensure we don't spam the unlock API unnecessarily
             if (SteamUserStats()->GetAchievement("ACH_WIN_ONE_GAME", &achieved))
             {
                 m_WinnerUnlocked = achieved;

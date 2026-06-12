@@ -22,6 +22,7 @@ namespace dae
 
     void GameOverManager::Update(float /*deltaTime*/)
     {
+        // One-time initialization block that dynamically alters the UI text based on the active game mode. Doing this here rather than the constructor guarantees we pull the most recent score string.
         if (!m_IsSetup)
         {
             m_IsSetup = true;
@@ -39,45 +40,51 @@ namespace dae
             }
         }
 
+        // Iterate through all menu options and visually highlight the currently selected index in yellow
         for (size_t i = 0; i < m_Options.size(); ++i)
         {
             if (static_cast<int>(i) == m_SelectedIndex)
             {
-                m_Options[i]->SetColor(SDL_Color{255, 255, 0, 255}); // Yellow
+                m_Options[i]->SetColor(SDL_Color{ 255, 255, 0, 255 }); // Yellow
             }
             else
             {
-                m_Options[i]->SetColor(SDL_Color{255, 255, 255, 255}); // White
+                m_Options[i]->SetColor(SDL_Color{ 255, 255, 255, 255 }); // White
             }
         }
     }
 
     void GameOverManager::NavigateUp()
     {
+        // Wrap index backward to allow infinite looping navigation
         m_SelectedIndex--;
         if (m_SelectedIndex < 0) m_SelectedIndex = static_cast<int>(m_Options.size()) - 1;
     }
 
     void GameOverManager::NavigateDown()
     {
+        // Wrap index forward to allow infinite looping navigation
         m_SelectedIndex++;
         if (m_SelectedIndex >= static_cast<int>(m_Options.size())) m_SelectedIndex = 0;
     }
 
     void GameOverManager::Select()
     {
+        // Flag the level manager to perform a hard data reset so the player doesn't spawn dead
         LevelManager::GetInstance().SetNeedsGameReset(true);
-        
-        if (m_SelectedIndex == 0)
+
+        if (m_SelectedIndex == 0) // "TRY AGAIN"
         {
             SceneManager::GetInstance().SetActiveScene(m_pGameScene);
         }
-        else if (m_SelectedIndex == 1)
+        else if (m_SelectedIndex == 1) // "MAIN MENU"
         {
-            if (m_pHighScoreMgr) m_pHighScoreMgr->ClearSessionName(); // Forget the name!
+            // Crucial - Wipe the active player initials from memory so the next game prompts for a new name!
+            if (m_pHighScoreMgr) m_pHighScoreMgr->ClearSessionName();
             SceneManager::GetInstance().SetActiveScene(m_pMenuScene);
         }
-        
+
+        // Reset the setup flag so it correctly updates the text strings next time this scene is loaded
         m_IsSetup = false;
     }
 }

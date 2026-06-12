@@ -9,7 +9,7 @@ namespace dae
 {
     struct Transform
     {
-        float matrix[16] = 
+        float matrix[16] =
         {
             1,0,0,0,
             0,1,0,0,
@@ -26,14 +26,19 @@ namespace dae
 
     struct GameObject3DAlt
     {
+        // DESIGN DECISION - Pointer Chasing Hazard
+        // Storing a raw pointer here forces the CPU to drive across town (RAM) to find the Transform. This will purposely cause a Cache Miss and demonstrate memory thrashing.
         Transform* transform{};
         int ID{};
     };
 
-    // template to not repeat code
+    // DESIGN PATTERN - Template Metaprogramming
+    // Using a template here raises the level of abstraction. Instead of writing three nearly identical  loops for Int, GameObject3D, and GameObject3DAlt, the compiler generates them for us safely.
     template <typename T>
     void BenchmarkTrashCache(size_t bufferSize, int samples, std::vector<float>& outputTimings)
     {
+        // DESIGN DECISION - RAII and Heap Allocation
+        // We use std::make_unique to allocate the massive buffer on the heap. RAII guarantees this memory is automatically freed when the function ends, preventing leaks.
         auto arr = std::make_unique<T[]>(bufferSize);
         outputTimings.clear();
 
@@ -46,8 +51,12 @@ namespace dae
             {
                 auto start = std::chrono::high_resolution_clock::now();
 
+                // DESIGN DECISION - Data Locality & The Step Size Trap
+                // When step == 1, we pull a full Cache Line (64 bytes) and process it instantly.
+                // When step == 16, we throw the Cache Line away after 1 read, forcing a slow trip to RAM.
                 for (size_t i = 0; i < bufferSize; i += step)
                 {
+                    // Compile-time branch (constexpr) so there is zero runtime penalty for checking types
                     if constexpr (std::is_same_v<T, int>) arr[i] *= 2;
                     else arr[i].ID *= 2;
                 }
@@ -57,15 +66,15 @@ namespace dae
                 currentTimings.push_back(elapsed);
             }
 
-            // outliers without sorting (feedback)
+            // Remove the highest and lowest outliers to clean up the graph data
             auto [minIt, maxIt] = std::minmax_element(currentTimings.begin(), currentTimings.end());
             float minVal = *minIt;
             float maxVal = *maxIt;
 
-            // std::accumulate (feedback)
+            // DESIGN DECISION - Standard Algorithms
+            // Using std::accumulate is much safer and cleaner than writing a raw for-loop to sum the array.
             float totalSum = std::accumulate(currentTimings.begin(), currentTimings.end(), 0.0f);
 
-            // min and max, then average
             float avg = (totalSum - minVal - maxVal) / (samples - 2);
             outputTimings.push_back(avg / 1000.f);
         }

@@ -12,9 +12,13 @@
 #include <memory>
 #include <SDL3/SDL.h>
 
+// DESIGN PATTERN - Observer Pattern & Component Pattern
+// Used the Observer pattern here so the UI components don't have to constantly ask the player  "did your score change?" or "are you dead yet?" every single frame in the Update loop. Instead, the UI just sits and waits for Player to shout that an event happened. 
+// Why - Prevents tight coupling between the UI and the gameplay logic!
+
 namespace dae
 {
-    // LivesDisplayComponent — text-based lives counter
+// LivesDisplayComponent — text-based lives counter
     class LivesDisplayComponent : public Component, public Observer
     {
     public:
@@ -28,7 +32,7 @@ namespace dae
         int m_lives;
     };
 
-    // LivesSpriteDisplayComponent — sprite-based lives display
+// LivesSpriteDisplayComponent — sprite-based lives display
     class LivesSpriteDisplayComponent : public Component, public Observer
     {
     public:
@@ -46,7 +50,7 @@ namespace dae
         bool m_DrawLeft;
     };
 
-    // ScoreDisplayComponent — text-based score display
+// ScoreDisplayComponent — text-based score display
     class ScoreDisplayComponent : public Component, public Observer
     {
     public:
@@ -62,11 +66,11 @@ namespace dae
         Subject m_Subject;
     };
 
-    // SpriteScoreDisplayComponent — digit-sprite score display
+// SpriteScoreDisplayComponent — digit-sprite score display
     class SpriteScoreDisplayComponent : public Component, public Observer
     {
     public:
-        SpriteScoreDisplayComponent(GameObject* pOwner, const std::string& digitPrefix = "VNUM", const std::string& extension   = ".png", float spacing = 24.f);
+        SpriteScoreDisplayComponent(GameObject* pOwner, const std::string& digitPrefix = "VNUM", const std::string& extension = ".png", float spacing = 24.f);
 
         void AddObserver(Observer* obs);
         void Update(float deltaTime) override;
@@ -80,7 +84,7 @@ namespace dae
         Subject m_Subject;
     };
 
-    // UIPanelComponent — filled-rectangle UI panel
+// UIPanelComponent — filled-rectangle UI panel
     class UIPanelComponent : public Component
     {
     public:

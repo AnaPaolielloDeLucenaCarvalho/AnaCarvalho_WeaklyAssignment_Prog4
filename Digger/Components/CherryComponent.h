@@ -4,12 +4,14 @@
 #include "Component.h"
 #include "GameObject.h"
 
+// DESIGN PATTERN - Component Pattern
+// By keeping the Cherry logic encapsulated in its own component, it doesn't clutter the LevelManager. It independently handles its own lifespan timer and collision checks, making it a true plug-and-play entity.
+
 namespace dae
 {
     class DiggerComponent;
 
-	// Cherry pickup — spawned by LevelTransitionManager after delay at 'B' (bonus) position
-    // When Digger walks over it, Bonus Mode is activated (15s) - cherry auto-destroys itself after m_Lifetime seconds if not collected.
+    // Cherry pickup — spawned by LevelTransitionManager after delay at 'B' (bonus) position. When Digger walks over it, Bonus Mode is activated (15s) - cherry auto-destroys itself after m_Lifetime seconds if not collected.
     class CherryComponent final : public Component
     {
     public:

@@ -18,8 +18,10 @@ namespace dae
 
     bool CherryComponent::CheckPickup(DiggerComponent* pDigger, float myX, float myY) const
     {
+        // Safe pointer check and early-out if the player is already dead or already has the bonus active
         if (!pDigger || pDigger->IsDead() || pDigger->IsInBonusMode()) return false;
 
+        // Simple radius-based collision detection using Pythagorean distance
         const auto pos = pDigger->GetOwner()->GetTransform().GetPosition();
         if (glm::distance(glm::vec2(myX, myY), glm::vec2(pos.x, pos.y)) < 30.f)
         {
@@ -32,6 +34,7 @@ namespace dae
 
     void CherryComponent::Update(float deltaTime)
     {
+        // Tick down the cherry's lifespan so it despawns if the player ignores it
         m_Lifetime -= deltaTime;
         if (m_Lifetime <= 0.0f)
         {
@@ -43,7 +46,7 @@ namespace dae
         const float myX = myPos.x;
         const float myY = myPos.y;
 
-        // Check both players — first player to reach it activates bonus mode
+        // Check both players — first player to reach it activates bonus mode and consumes the cherry
         if (CheckPickup(m_p1, myX, myY) || CheckPickup(m_p2, myX, myY))
         {
             GetOwner()->MarkForDestroy();

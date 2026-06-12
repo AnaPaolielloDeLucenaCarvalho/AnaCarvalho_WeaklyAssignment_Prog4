@@ -16,6 +16,7 @@
 
 namespace dae
 {
+    // Share movement logic between Normal and Bonus states.
     static glm::vec2 ApplyDiggerMovement(DiggerComponent* digger, float deltaTime)
     {
         // Stop hidden/dead players from clamping back onto the screen!
@@ -33,10 +34,13 @@ namespace dae
 
         float distToCenter = glm::distance(glm::vec2(myPos.x, myPos.y), glm::vec2(centerX, centerY));
 
-    // MOVEMENT
+// MOVEMENT
+        // Snap to the exact center of a grid tile before allowing the player to turn or dig a new tunnel.
         if (distToCenter < 2.0f)
         {
-            if (digger->IsPlayerOne() || LevelManager::GetInstance().GetGameMode() != GameMode::Versus) {
+            // Only carve through dirt if playing natively or as Player 1 in versus
+            if (digger->IsPlayerOne() || LevelManager::GetInstance().GetGameMode() != GameMode::Versus) 
+            {
                 LevelManager::GetInstance().Dig(centerX, centerY);
             }
 
@@ -54,18 +58,20 @@ namespace dae
         float maxX = 25.0f * gridSize;
         float maxY = offsetY + (13.0f * gridSize);
 
+        // Clamp the player strictly inside the outer walls of the level array
         if (newX < 0) newX = 0;
         if (newX > maxX) newX = maxX;
         if (newY < offsetY) newY = offsetY;
         if (newY > maxY) newY = maxY;
 
-        if (!digger->IsPlayerOne() && LevelManager::GetInstance().GetGameMode() == GameMode::Versus) 
+        // In Versus Mode, Player 2 is not allowed to dig through solid dirt. They bounce off it.
+        if (!digger->IsPlayerOne() && LevelManager::GetInstance().GetGameMode() == GameMode::Versus)
         {
             if (!LevelManager::GetInstance().IsDug(newX, newY)) 
             {
                 newX = centerX; // Snap back to the valid grid intersection!
                 newY = centerY;
-                digger->SetCurrentDirection({0, 0}); // Freezes momentum so they can turn around!
+                digger->SetCurrentDirection({ 0, 0 }); // Freezes momentum so they can turn around!
             }
         }
 
@@ -73,7 +79,6 @@ namespace dae
 
         if (glm::length(currentDir) > 0) digger->SetLastFacedDirection(currentDir);
 
-		// Cannon, Mouth, and Walking animation for digger
         glm::vec2 facing = digger->GetLastFacedDirection();
         std::string prefix = "VR"; // right
         if (facing.x < 0) prefix = "VL"; // left
@@ -82,27 +87,31 @@ namespace dae
 
         std::string frame = "1";
 
-        // 1 -> 2 -> 3 for animation
-        if (glm::length(currentDir) > 0) 
+        // Cycle animation frames (1 -> 2 -> 3) based on absolute engine time
+        if (glm::length(currentDir) > 0)
         {
             frame = std::to_string((SDL_GetTicks() / 100) % 3 + 1);
         }
 
-        // mouth open
-        if (digger->GetShootAnimTimer() > 0.0f) 
+        // Override normal animation with the open mouth frame if currently shooting
+        if (digger->GetShootAnimTimer() > 0.0f)
         {
             frame = "3";
         }
 
-        // "X" = fireball is on cooldown
+        // "X" suffix appended to the texture path visually indicates the fireball is on cooldown
         std::string suffix = (digger->GetFireballCooldown() > 0.0f) ? "X" : "";
 
-        if (auto render = digger->GetOwner()->GetComponent<RenderComponent>()) 
+        if (auto render = digger->GetOwner()->GetComponent<RenderComponent>())
         {
-            if (!digger->IsPlayerOne() && LevelManager::GetInstance().GetGameMode() == GameMode::Versus) {
+            // Use completely different texture logic if this is the enemy player in Versus mode
+            if (!digger->IsPlayerOne() && LevelManager::GetInstance().GetGameMode() == GameMode::Versus) 
+            {
                 std::string nobFrame = std::to_string((SDL_GetTicks() / 150) % 3 + 1);
                 render->SetTexture("PNG/Enemy/VNOB" + nobFrame + ".png");
-            } else {
+            }
+            else 
+            {
                 render->SetTexture("PNG/Digger/" + prefix + "DIG" + frame + suffix + ".png");
             }
             render->SetFlip(false); // disable flip
@@ -111,10 +120,10 @@ namespace dae
         return glm::vec2{ newX, newY }; // return new position for collision checks
     }
 
-	// normal state
+    // normal state
     void DiggerNormalState::OnEnter(DiggerComponent* digger)
     {
-        digger->SetDead(false); // Fix: Wake up the enemies!
+        digger->SetDead(false); // Wake up the enemies!
         digger->SetLevelComplete(false);
 
         if (auto render = digger->GetOwner()->GetComponent<RenderComponent>())
@@ -131,7 +140,8 @@ namespace dae
         const float newX = newPos.x;
         const float newY = newPos.y;
 
-    // COLLISIONS
+// COLLISIONS
+        // Player 1 handles diamond pickups. Player 2 (enemy) ignores them.
         if (digger->IsPlayerOne() || LevelManager::GetInstance().GetGameMode() != GameMode::Versus)
         {
             for (auto& diamond : digger->GetDiamonds())
@@ -150,6 +160,7 @@ namespace dae
             }
         }
 
+        // Gold Bag pushing logic
         for (auto& bag : digger->GetGoldBags())
         {
             if (!bag || bag->IsMarkedForDestroy()) continue;
@@ -161,6 +172,8 @@ namespace dae
             if (touchingX && touchingY)
             {
                 auto bagComp = bag->GetComponent<GoldBagComponent>();
+                
+                // If it is broken gold, pick it up for a massive score boost
                 if (bagComp && bagComp->IsBroken())
                 {
                     bag->MarkForDestroy();
@@ -170,6 +183,7 @@ namespace dae
                 }
                 else
                 {
+                    // If it is unbroken, push it forward relative to Digger's movement vector
                     glm::vec2 currentDir = digger->GetCurrentDirection();
                     float oldDist = glm::distance(glm::vec2(myPos.x, myPos.y), glm::vec2(bagPos.x, bagPos.y));
                     float newDist = glm::distance(glm::vec2(newX, newY), glm::vec2(bagPos.x, bagPos.y));
@@ -181,6 +195,7 @@ namespace dae
 
                         bag->SetLocalPosition(bagPos.x + deltaX, bagPos.y + deltaY);
 
+                        // Chain pushing: if we push a bag into another bag, shift the second bag forward too!
                         for (int chain = 0; chain < 3; ++chain)
                         {
                             for (auto& b1 : digger->GetGoldBags())
@@ -207,10 +222,11 @@ namespace dae
                 }
             }
         }
-        
-	// DEATH
-        if (digger->IsPlayerOne() || LevelManager::GetInstance().GetGameMode() != GameMode::Versus) 
+
+// DEATH
+        if (digger->IsPlayerOne() || LevelManager::GetInstance().GetGameMode() != GameMode::Versus)
         {
+            // Check collisions with all AI enemies
             for (auto& enemy : digger->GetEnemies())
             {
                 if (!enemy || enemy->IsMarkedForDestroy()) continue;
@@ -218,25 +234,28 @@ namespace dae
 
                 if (glm::distance(glm::vec2{ newX, newY }, glm::vec2{ ePos.x, ePos.y }) < 20.f)
                 {
+                    // Transition - Switch to Dead state immediately upon collision
                     return new DiggerDeadState();
                 }
             }
         }
 
-        if (digger->IsPlayerOne() && LevelManager::GetInstance().GetGameMode() == GameMode::Versus) 
+        if (digger->IsPlayerOne() && LevelManager::GetInstance().GetGameMode() == GameMode::Versus)
         {
+            // Check collision with the physical Player 2 in Versus Mode
             auto p2 = digger->GetOtherPlayer();
-            if (p2) 
+            if (p2)
             {
                 auto p2Pos = p2->GetTransform().GetPosition();
-                if (glm::distance(glm::vec2(newX, newY), glm::vec2(p2Pos.x, p2Pos.y)) < 20.f) 
+                if (glm::distance(glm::vec2(newX, newY), glm::vec2(p2Pos.x, p2Pos.y)) < 20.f)
                 {
                     return new DiggerDeadState();
                 }
             }
         }
 
-    // WIN (Collected all the Emeralds OR All Enemies)
+// WIN (Collected all the Emeralds OR All Enemies)
+        // Check win conditions.
         if (!digger->GetDiamonds().empty())
         {
             bool allDiamondsCollected = true;
@@ -257,6 +276,7 @@ namespace dae
             const bool allSpawned = totalForLevel > 0 && static_cast<int>(digger->GetEnemies().size()) >= totalForLevel;
             const bool allEnemiesDead = allSpawned && (deadCount == static_cast<int>(digger->GetEnemies().size()));
 
+            // Transition: Progress to the next level if either win condition is satisfied
             if (allDiamondsCollected || allEnemiesDead)
             {
                 return new DiggerLevelCompleteState();
@@ -266,13 +286,13 @@ namespace dae
         return nullptr;
     }
 
-	// bonus state
+    // bonus state
     void DiggerBonusState::OnEnter(DiggerComponent* digger)
     {
-		// pause other music
+        // pause other music
         ServiceLocator::GetSoundSystem().PauseMusic();
 
-		// sound 1 = bonus.wav (Rossini / William Tell)
+        // sound 1 = bonus.wav (Rossini / William Tell)
         ServiceLocator::GetSoundSystem().PlaySfx(AudioDefinitions::BONUS, 1.0f);
 
         if (auto render = digger->GetOwner()->GetComponent<RenderComponent>())
@@ -280,18 +300,19 @@ namespace dae
             render->SetTexture("PNG/Digger/VRDIG1X.png");
         }
 
-		// fire the event — the map manager owns the visual response
+        // DESIGN PATTERN - Observer Pattern
+        // Fire an event alerting listeners that Bonus mode began. The Map Manager listens to this to dynamically change the level palette without Digger needing a direct reference to it.
         digger->GetSubject().Notify(make_sdbm_hash("BonusModeStart"), 15);
     }
 
     void DiggerBonusState::OnExit(DiggerComponent* digger)
     {
-		// stop bonus music
+        // stop bonus music
         ServiceLocator::GetSoundSystem().StopSfx();
-		// resume main music
+        // resume main music
         ServiceLocator::GetSoundSystem().ResumeMusic();
 
-		// tell the map manager to restore the normal palette
+        // tell the map manager to restore the normal palette
         digger->GetSubject().Notify(make_sdbm_hash("BonusModeEnd"), 0);
     }
 
@@ -304,7 +325,7 @@ namespace dae
         const float newX = newPos.x;
         const float newY = newPos.y;
 
-    // COLLISIONS
+// COLLISIONS
         if (digger->IsPlayerOne() || LevelManager::GetInstance().GetGameMode() != GameMode::Versus)
         {
             for (auto& diamond : digger->GetDiamonds())
@@ -381,7 +402,7 @@ namespace dae
             }
         }
 
-        // in bonus mode, touching an enemy eats it (250 pts) instead of dying
+// ALTERED RULE: In bonus mode, touching an enemy eats it for massive points instead of dying
         for (auto& enemy : digger->GetEnemies())
         {
             if (!enemy || enemy->IsMarkedForDestroy()) continue;
@@ -394,17 +415,18 @@ namespace dae
             }
         }
 
-        if (digger->IsPlayerOne() && LevelManager::GetInstance().GetGameMode() == GameMode::Versus) 
+        if (digger->IsPlayerOne() && LevelManager::GetInstance().GetGameMode() == GameMode::Versus)
         {
             auto p2 = digger->GetOtherPlayer();
-            if (p2 && !p2->IsMarkedForDestroy()) 
+            if (p2 && !p2->IsMarkedForDestroy())
             {
                 auto p2Digger = p2->GetComponent<DiggerComponent>();
-                if (p2Digger && !p2Digger->IsDead()) 
+                if (p2Digger && !p2Digger->IsDead())
                 {
                     auto p2Pos = p2->GetTransform().GetPosition();
-                    if (glm::distance(glm::vec2(newX, newY), glm::vec2(p2Pos.x, p2Pos.y)) < 25.f) 
+                    if (glm::distance(glm::vec2(newX, newY), glm::vec2(p2Pos.x, p2Pos.y)) < 25.f)
                     {
+                        // In bonus mode, Player 1 eats Player 2
                         p2Digger->ChangeState(new DiggerDeadState()); // Trigger death state!
                         digger->AwardPoints(250);
                         ServiceLocator::GetSoundSystem().Play(AudioDefinitions::KILL_ENEMY, 0.5f);
@@ -413,7 +435,7 @@ namespace dae
             }
         }
 
-    // WIN (Collected all the Emeralds OR All Enemies)
+// WIN (Collected all the Emeralds OR All Enemies)
         if (!digger->GetDiamonds().empty())
         {
             bool allDiamondsCollected = true;
@@ -440,6 +462,7 @@ namespace dae
             }
         }
 
+        // Transition - Revert to Normal state when the timer expires
         m_BonusTimer -= deltaTime;
         if (m_BonusTimer <= 0.0f)
         {
@@ -449,13 +472,13 @@ namespace dae
         return nullptr;
     }
 
-	// death state
+    // death state
     void DiggerDeadState::OnEnter(DiggerComponent* digger)
     {
         digger->SetDead(true);
         digger->Die();
 
-		// pause music so death sound plays exclusively
+        // pause music so death sound plays exclusively
         ServiceLocator::GetSoundSystem().PauseMusic();
         ServiceLocator::GetSoundSystem().PlaySfx(AudioDefinitions::DEATH, 1.0f);
 
@@ -467,6 +490,7 @@ namespace dae
 
     DiggerState* DiggerDeadState::Update(DiggerComponent* digger, float deltaTime)
     {
+        // Play out the grave fading animation frames sequentially
         m_AnimTimer += deltaTime;
         if (m_AnimTimer > 0.4f && m_CurrentFrame < 5)
         {
@@ -481,6 +505,7 @@ namespace dae
         m_RespawnTimer -= deltaTime;
         if (m_RespawnTimer <= 0.0f)
         {
+            // Transition - If lives remain, safely respawn at the origin. Otherwise, Game Over.
             if (digger->GetLives() > 0)
             {
                 digger->SetDead(false);
@@ -488,7 +513,7 @@ namespace dae
                 digger->SetCurrentDirection(glm::vec2{ 0,0 });
                 digger->GetOwner()->SetLocalPosition(digger->GetSpawnPos().x, digger->GetSpawnPos().y);
 
-				// cut the death sound and resume looping main music after respawn
+                // cut the death sound and resume looping main music after respawn
                 ServiceLocator::GetSoundSystem().StopSfx();
                 ServiceLocator::GetSoundSystem().ResumeMusic();
 
@@ -503,9 +528,10 @@ namespace dae
         return nullptr;
     }
 
-	// game over state
+    // game over state
     void DiggerGameOverState::OnEnter(DiggerComponent* digger)
     {
+        // Intercept Game Over logic to securely transmit the final score to the HighScoreManager
         if (digger)
         {
             HighScoreManager* mgr = digger->GetHighScoreManager();
@@ -517,6 +543,7 @@ namespace dae
                     std::cout << "Score saved: " << digger->GetTotalScore() << "\n";
                 }
             }
+            // Move Digger off-screen so they don't linger while the UI resolves
             digger->GetOwner()->SetLocalPosition(-1000.f, -1000.f);
         }
     }
@@ -534,12 +561,14 @@ namespace dae
 
             auto mode = LevelManager::GetInstance().GetGameMode();
 
+            // Evaluate end-game rules based on current GameMode
             if (mode == GameMode::SinglePlayer)
             {
                 if (gameOverScene) scenes.SetActiveScene(gameOverScene);
             }
             else if (mode == GameMode::CoOp)
             {
+                // In Co-Op, game over only triggers when BOTH players are fully dead
                 auto other = digger->GetOtherPlayer();
                 if (!other || other->IsMarkedForDestroy())
                 {
@@ -556,6 +585,7 @@ namespace dae
             }
             else if (mode == GameMode::Versus)
             {
+                // Assign explicit winner text to the UI system
                 if (digger->IsPlayerOne())
                 {
                     LevelManager::GetInstance().SetWinnerText("PLAYER 2 WINS!");
@@ -570,17 +600,18 @@ namespace dae
         return nullptr;
     }
 
-	// level complete state
+    // level complete state
     void DiggerLevelCompleteState::OnEnter(DiggerComponent* digger)
     {
         digger->SetLevelComplete(true);
+        // Halt physical movement completely during the fade out
         digger->SetDesiredDirection(glm::vec2{ 0,0 });
         digger->SetCurrentDirection(glm::vec2{ 0,0 });
 
         ServiceLocator::GetSoundSystem().PauseMusic();
         ServiceLocator::GetSoundSystem().PlaySfx(AudioDefinitions::NEXT_LEVEL, 0.5f);
 
-		// fade 4s to black
+        // Dynamically spawn a pure UI component to overlay the active screen and fade it 4s to black
         auto fadeObj = std::make_unique<GameObject>();
         fadeObj->AddComponent<FadeComponent>(4.0f);
         fadeObj->SetZIndex(20);
@@ -591,7 +622,8 @@ namespace dae
     {
         m_TransitionTimer -= deltaTime;
 
-        if(m_TransitionTimer <= 0.0f)
+        // Transition - After the visual fade finishes, notify the level manager to rebuild the grid
+        if (m_TransitionTimer <= 0.0f)
         {
             digger->GetSubject().Notify(make_sdbm_hash("LoadNextLevel"), 0);
             return new DiggerNormalState();

@@ -1,6 +1,9 @@
 #ifndef DIGGERSTATE_H
 #define DIGGERSTATE_H
 
+// DESIGN PATTERN - State Pattern (Finite State Machine)
+// Used the State pattern to decouple the player's behaviors. Instead of the main Update loop checking things every single frame, Digger just delegates its logic to the active state class. It makes transitioning between gameplay phases incredibly safe and predictable.
+
 namespace dae
 {
     class DiggerComponent;
@@ -36,7 +39,7 @@ namespace dae
         void OnExit(DiggerComponent* digger) override;
         DiggerState* Update(DiggerComponent* digger, float deltaTime) override;
     private:
-        float m_BonusTimer{ 15.0f }; // 15 seconds of bonus mode
+        float m_BonusTimer{ 15.0f }; // 15s of bonus mode
     };
 
     class DiggerDeadState : public DiggerState
@@ -56,7 +59,7 @@ namespace dae
         void OnEnter(DiggerComponent* digger) override;
         DiggerState* Update(DiggerComponent* digger, float deltaTime) override;
     private:
-        float m_Timer{0.0f};
+        float m_Timer{ 0.0f };
     };
 
     class DiggerLevelCompleteState : public DiggerState

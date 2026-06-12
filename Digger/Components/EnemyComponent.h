@@ -6,6 +6,9 @@
 #include <glm/vec2.hpp>
 #include <memory>
 
+// DESIGN PATTERN - State Pattern
+// The Enemy AI uses the State pattern to seamlessly switch from a Nobbin (follows the path, can't dig)  to a Hobbin (eats straight through the dirt walls). Instead of checking timers and throwing messy  if/else statements in the Update loop, the component just delegates to the active State class.
+
 namespace dae
 {
     class DiggerComponent;
@@ -22,10 +25,19 @@ namespace dae
 
         void MoveAI(float deltaTime);
 
-        void SetCanDig(bool canDig) { m_CanDig = canDig; }
-        bool CanDig() const { return m_CanDig; }
+        void SetCanDig(bool canDig) 
+        { 
+            m_CanDig = canDig; 
+        }
+        bool CanDig() const 
+        { 
+            return m_CanDig; 
+        }
 
-        DiggerComponent* GetTarget() const { return m_pTarget; }
+        DiggerComponent* GetTarget() const 
+        { 
+            return m_pTarget; 
+        }
 
     private:
         std::unique_ptr<EnemyState> m_pCurrentState{ nullptr };

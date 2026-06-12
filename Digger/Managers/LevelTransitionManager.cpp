@@ -40,16 +40,28 @@ namespace dae
             LoadLevel(0);
         }
 
+        // Hard Reset - Called when returning to the Main Menu or restarting after a Game Over
         if (LevelManager::GetInstance().NeedsGameReset() && SceneManager::GetInstance().GetActiveScene() == m_pScene)
         {
             LevelManager::GetInstance().SetNeedsGameReset(false);
 
             GameMode mode = LevelManager::GetInstance().GetGameMode();
 
-            if (m_p1) { m_p1->SetLives(4); m_p1->SetTotalScore(0); }
-            if (m_p2) { 
-                if (mode == GameMode::SinglePlayer) m_p2->SetLives(0);
-                else { m_p2->SetLives(4); m_p2->SetTotalScore(0); }
+            // Re-initialize players to factory defaults
+            if (m_p1) 
+            { 
+                m_p1->SetLives(4); m_p1->SetTotalScore(0); 
+            }
+            if (m_p2) 
+            {
+                if (mode == GameMode::SinglePlayer)
+                {
+                    m_p2->SetLives(0);
+                }
+                else 
+                { 
+                    m_p2->SetLives(4); m_p2->SetTotalScore(0); 
+                }
             }
 
             // Update score in the HighScoreManager to 0
@@ -59,8 +71,10 @@ namespace dae
             LoadLevel(0);
         }
 
+        // Fast escape if no bonus mode visual effects are required right now
         if (!m_BonusMapActive) return;
 
+        // Visual Flicker Effect - Makes the dirt blocks rapidly switch brightness to simulate an arcade panic state
         if (m_BonusFlickerPhase)
         {
             m_BonusFlickerTimer += deltaTime;
@@ -87,10 +101,12 @@ namespace dae
     {
         if (eventId == make_sdbm_hash("LoadNextLevel"))
         {
+            // Enforce a 1-second cooldown using an absolute timestamp so we don't accidentally load 2 levels instantly
             const uint64_t currentTime = SDL_GetTicks();
-            if (currentTime - m_LastLoadTime < 1000) return; // 1-second cooldown
+            if (currentTime - m_LastLoadTime < 1000) return;
             m_LastLoadTime = currentTime;
 
+            // Increment and wrap around to the beginning if we run out of level files
             m_CurrentLevelIndex++;
             if (m_CurrentLevelIndex >= LevelManager::GetInstance().GetTotalLevels()) m_CurrentLevelIndex = 0;
 
@@ -130,21 +146,38 @@ namespace dae
         ServiceLocator::GetSoundSystem().ResumeMusic();
 
         // Enforce a strict state reset to destroy any active Bonus Mode and its timer
-        if (m_p1) {
+        if (m_p1) 
+        {
             if (m_p1->GetLives() > 0) m_p1->ChangeState(new DiggerNormalState());
             else m_p1->GetOwner()->SetLocalPosition(-1000.f, -1000.f); // Keep them hidden
         }
-        if (m_p2) {
+        if (m_p2) 
+        {
             if (m_p2->GetLives() > 0) m_p2->ChangeState(new DiggerNormalState());
             else m_p2->GetOwner()->SetLocalPosition(-1000.f, -1000.f); // Keep them hidden
         }
 
-        // Destroy old entities
-        for (auto* bag : m_p1->GetGoldBags()) { if (bag) bag->MarkForDestroy(); }
-        for (auto* dia : m_p1->GetDiamonds()) { if (dia) dia->MarkForDestroy(); }
-        for (auto* enemy : m_p1->GetEnemies()) { if (enemy) enemy->MarkForDestroy(); }
-        for (auto* dirt : m_VisualDirt) { if (dirt) dirt->MarkForDestroy(); }
-        for (auto* entity : m_MiscEntities) { if (entity) entity->MarkForDestroy(); }
+        // Destroy all physical entities from the previous map iteration
+        for (auto* bag : m_p1->GetGoldBags()) 
+        { 
+            if (bag) bag->MarkForDestroy(); 
+        }
+        for (auto* dia : m_p1->GetDiamonds()) 
+        { 
+            if (dia) dia->MarkForDestroy(); 
+        }
+        for (auto* enemy : m_p1->GetEnemies()) 
+        { 
+            if (enemy) enemy->MarkForDestroy(); 
+        }
+        for (auto* dirt : m_VisualDirt) 
+        { 
+            if (dirt) dirt->MarkForDestroy(); 
+        }
+        for (auto* entity : m_MiscEntities) 
+        { 
+            if (entity) entity->MarkForDestroy(); 
+        }
 
         m_MiscEntities.clear();
         m_p1->SetGoldBags({});
@@ -158,7 +191,7 @@ namespace dae
         }
         m_VisualDirt.clear();
 
-        // Reset and re-initialise the grid
+        // Reset and re-initialise the grid data structures
         m_CherrySpawnX = 0.0f;
         m_CherrySpawnY = 0.0f;
         m_CherrySpawned = false;
@@ -174,7 +207,7 @@ namespace dae
         LevelManager::GetInstance().InitLevel(14, 26);
 
         GameMode mode = LevelManager::GetInstance().GetGameMode();
-        
+
         // 1. Handle Player 2 Physics/Visuals
         if (mode == GameMode::SinglePlayer && m_p2)
         {
@@ -183,6 +216,7 @@ namespace dae
         }
         else if (mode == GameMode::Versus && m_p2)
         {
+            // Swap Player 2's visual component to use the enemy Nob texture
             if (auto p2Render = m_p2->GetOwner()->GetComponent<RenderComponent>())
             {
                 p2Render->SetTexture("PNG/Enemy/VNOB1.png");
@@ -190,6 +224,7 @@ namespace dae
         }
 
         // 2. Safely toggle HUD visibility via coordinates (Never Destroy!)
+        // Doing this avoids dangling pointers and reallocation overhead on a scene reset
         if (mode == GameMode::SinglePlayer)
         {
             if (m_pScoreUI1) m_pScoreUI1->SetLocalPosition(500, 13);
@@ -199,23 +234,24 @@ namespace dae
         else if (mode == GameMode::Versus)
         {
             if (m_pScoreUI1) m_pScoreUI1->SetLocalPosition(-1000, -1000); // Hide Score
-            if (m_p2Label) m_p2Label->SetLocalPosition(905, 15);          // Restore P2 Label
-            if (m_p2Lives) m_p2Lives->SetLocalPosition(850, 15);          // Restore P2 Lives
+            if (m_p2Label) m_p2Label->SetLocalPosition(905, 15); // Restore P2 Label
+            if (m_p2Lives) m_p2Lives->SetLocalPosition(850, 15); // Restore P2 Lives
             if (m_p2LivesUI) m_p2LivesUI->SetTexture("PNG/Enemy/VNOB1.png");
         }
         else // CoOp
         {
-            if (m_pScoreUI1) m_pScoreUI1->SetLocalPosition(500, 13);      // Restore Score
-            if (m_p2Label) m_p2Label->SetLocalPosition(905, 15);          // Restore P2 Label
-            if (m_p2Lives) m_p2Lives->SetLocalPosition(850, 15);          // Restore P2 Lives
-            if (m_p2LivesUI) m_p2LivesUI->SetTexture("PNG/Digger/VRDIG1X.png"); 
+            if (m_pScoreUI1) m_pScoreUI1->SetLocalPosition(500, 13); // Restore Score
+            if (m_p2Label) m_p2Label->SetLocalPosition(905, 15); // Restore P2 Label
+            if (m_p2Lives) m_p2Lives->SetLocalPosition(850, 15); // Restore P2 Lives
+            if (m_p2LivesUI) m_p2LivesUI->SetTexture("PNG/Digger/VRDIG1X.png");
         }
 
-        // Parse tile layout
+        // Parse tile layout based on the string arrays stored in memory
         const auto layout = LevelManager::GetInstance().GetLevelLayout(levelIndex);
         constexpr float tileWidth = 40.0f;
         constexpr float startY = 52.0f;
 
+        // Alternate the color palette of the dirt based on the level count
         const int textureNumber = (levelIndex % 3) + 1;
         const std::string normalTexture = "PNG/Map/VBACK" + std::to_string(textureNumber) + ".png";
 
@@ -223,7 +259,7 @@ namespace dae
         std::vector<GameObject*> newDiamonds;
         std::vector<GameObject*> newEnemies;
 
-        // Pass 1: background dirt tiles and hole objects
+        // Pass 1 - Construct the static background dirt tiles and empty tunnel hole objects
         for (int row = 0; row < static_cast<int>(layout.size()); ++row)
         {
             for (int col = 0; col < static_cast<int>(layout[row].size()); ++col)
@@ -235,6 +271,8 @@ namespace dae
                 {
                     LevelManager::GetInstance().AddDirtTile(col, row);
 
+                    // Stack 5 horizontal strips visually to create a dense 40x40 block 
+                    // This allows Digger to partially eat into tiles visually.
                     for (int strip = 0; strip < 5; ++strip)
                     {
                         auto tile = std::make_unique<GameObject>();
@@ -246,6 +284,7 @@ namespace dae
                     }
                 }
 
+                // Register an invisible "hole" object that turns black when dug through
                 auto holeObj = std::make_unique<GameObject>();
                 holeObj->SetLocalPosition(bx, by);
                 holeObj->SetZIndex(2);
@@ -254,7 +293,7 @@ namespace dae
             }
         }
 
-        // Pass 2: entities and player spawn points
+        // Pass 2 - Spawn dynamic gameplay entities and assign player start positions
         for (int row = 0; row < static_cast<int>(layout.size()); ++row)
         {
             for (int col = 0; col < static_cast<int>(layout[row].size()); ++col)
@@ -263,6 +302,7 @@ namespace dae
                 const float bx = static_cast<float>(col) * tileWidth;
                 const float by = startY + (static_cast<float>(row) * tileWidth);
 
+                // Auto-clear dirt underneath any spawn point so entities don't get stuck in walls
                 if (c == ' ' || c == 'P' || c == 'S' || c == 'E' || c == 'B') LevelManager::GetInstance().Dig(bx, by);
 
                 if (c == 'P')
@@ -277,6 +317,7 @@ namespace dae
                 }
                 else if (c == 'E')
                 {
+                    // Cap the AI processing by ensuring a spawner limits concurrent enemies
                     constexpr int k_MaxTotal = 4;
                     constexpr int k_MaxConcurrent = 2;
 
@@ -314,7 +355,10 @@ namespace dae
                     render->SetScale(2.f);
                     goldBag->SetLocalPosition(bx, by);
                     auto* bagComp = goldBag->AddComponent<GoldBagComponent>();
+
+                    // The bag needs to know who the players are to crush them!
                     bagComp->SetPlayers(m_p1->GetOwner(), m_p2 ? m_p2->GetOwner() : nullptr);
+
                     goldBag->SetZIndex(4);
                     newBags.push_back(goldBag.get());
                     m_pScene->Add(std::move(goldBag));
@@ -322,7 +366,7 @@ namespace dae
             }
         }
 
-        // Register new entities with the digger components
+        // Register new arrays back with the player components so they can calculate collisions
         m_p1->SetGoldBags(newBags);
         m_p1->SetDiamonds(newDiamonds);
         m_p1->SetEnemies(newEnemies);
@@ -352,7 +396,12 @@ namespace dae
         for (auto* tile : m_VisualDirt)
         {
             if (!tile || tile->IsMarkedForDestroy()) continue;
-            if (auto* render = tile->GetComponent<RenderComponent>()) render->SetAdditiveBoost(enable); // default boostAlpha=120 (~47% brighter)
+
+            // Alters the blending additive of the texture rendering to simulate a glowing effect
+            if (auto* render = tile->GetComponent<RenderComponent>())
+            {
+                render->SetAdditiveBoost(enable); // default boostAlpha=120 (~47% brighter)
+            }
         }
     }
 }

@@ -3,6 +3,9 @@
 
 #include <string>
 
+// DESIGN PATTERN - Interface (Service Locator Target)
+// This is a pure abstract interface. By programming against this interface rather than a concrete  class (like Miniaudio), the rest of the game engine is completely decoupled from the audio backend.  We could swap out Miniaudio for FMOD or SDL_Mixer tomorrow, and the Digger component wouldn't need a single line of code changed.
+
 namespace dae
 {
     using sound_id = unsigned short;

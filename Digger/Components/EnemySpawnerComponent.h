@@ -7,6 +7,9 @@
 
 #include <vector>
 
+// DESIGN PATTERN - Observer Pattern
+// The spawner contains a Subject so it can broadcast an "EnemyThresholdReached" event into the wild. When the spawner reaches 75% capacity, it shouts the event, and the completely decoupled LevelManager hears it and spawns the Cherry power-up. No tight coupling required!
+
 namespace dae
 {
     class DiggerComponent;

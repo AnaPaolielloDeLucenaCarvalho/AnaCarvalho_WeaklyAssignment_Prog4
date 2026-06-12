@@ -16,12 +16,15 @@ namespace dae
 
     void MenuNavigateCommand::Execute(float /*deltaTime*/)
     {
+        // Cooldown Logic - We use SDL_GetTicks to prevent the user from accidentally jumping  past multiple menu options in a single keystroke.
         uint64_t currentTime = SDL_GetTicks();
         if (currentTime - m_LastPressTime < 200) return;
         m_LastPressTime = currentTime;
 
+        // Scene Guard - Prevents inputs from bleeding into menus that are currently hidden
         if (dae::SceneManager::GetInstance().GetActiveScene() != m_pTargetScene) return;
 
+        // We check which manager pointer is valid and route the navigation to the correct screen
         if (m_pMenuMgr)
         {
             if (m_Direction < 0) m_pMenuMgr->NavigateUp();
@@ -43,15 +46,22 @@ namespace dae
 
     void MenuSelectCommand::Execute(float /*deltaTime*/)
     {
+        // Cooldown Logic - Prevent double-triggering a menu action by enforcing a 200ms cooldown.
         uint64_t currentTime = SDL_GetTicks();
         if (currentTime - m_LastPressTime < 200) return;
         m_LastPressTime = currentTime;
 
+        // Scene Guard
         if (dae::SceneManager::GetInstance().GetActiveScene() != m_pTargetScene) return;
 
+        // Route the select confirmation to whichever UI manager is actively loaded
         if (m_pMenuMgr)
+        {
             m_pMenuMgr->Select();
+        }
         else if (m_pGameOverMgr)
+        {
             m_pGameOverMgr->Select();
+        }
     }
 }

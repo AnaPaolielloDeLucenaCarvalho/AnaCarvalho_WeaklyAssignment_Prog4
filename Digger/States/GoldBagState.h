@@ -1,6 +1,9 @@
 #ifndef GOLDBAGSTATE_H
 #define GOLDBAGSTATE_H
 
+// DESIGN PATTERN - State Pattern (Finite State Machine)
+// Used the State pattern here because the Gold Bag has distinct phases (Idle, Wobbling, Falling, Broken). Instead of a massive list of if/else booleans, the logic is separated so the bag can only execute one behavior at a time.
+
 namespace dae
 {
     class GoldBagComponent;

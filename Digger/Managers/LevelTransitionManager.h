@@ -8,6 +8,9 @@
 #include <vector>
 #include <cstdint>
 
+// DESIGN PATTERN - Observer Pattern & Component Pattern
+// The central director for building and clearing the grid. Uses the Observer pattern to listen for "LoadNextLevel" or "EnemyThresholdReached" events, allowing to spawn the cherry or change level without the player or enemies needing to know about each other
+
 namespace dae
 {
     class Scene;

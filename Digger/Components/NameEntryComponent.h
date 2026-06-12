@@ -4,6 +4,9 @@
 #include "Component.h"
 #include <string>
 
+// DESIGN PATTERN - Component Pattern
+// This encapsulates the arcade-style name entry logic (A-Z scrolling). By keeping it separate  from the Scene itself, the Scene just passes UI commands to this component, maintaining strict data separation.
+
 namespace dae
 {
     class TextComponent;
@@ -18,9 +21,7 @@ namespace dae
         void Update(float deltaTime) override;
 
         void CycleLetter(int direction);
-
         void AdvanceIndex(int direction);
-
         void ConfirmName();
 
     private:
@@ -32,7 +33,7 @@ namespace dae
 
         char m_Initials[3];
         int m_CurrentIndex;
-        float m_InputCooldown{0.0f};
+        float m_InputCooldown{ 0.0f };
     };
 
 }

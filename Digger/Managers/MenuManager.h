@@ -5,21 +5,24 @@
 #include "TextComponent.h"
 #include <vector>
 
+// DESIGN PATTERN - Component Pattern
+// Built the MenuManager as a Component attached to GameObject. This keeps the Scene clean and purely data-driven. Instead of hardcoding menu navigation directly into the Main method or Scene loop, this component acts as the "brain" for the Main Menu
+
 namespace dae
 {
-    class Scene; // forward declaration — full type only needed in .cpp
-    class HighScoreManager; // forward declaration — full type only needed in .cpp
+    // ARCHITECTURAL DECISION - Forward Declarations
+    // By forward-declaring these classes instead of using #include "Scene.h", I prevent the compiler from rebuilding every single file in the game if I make a tiny change to the Scene class. It significantly speeds up compile times!
+    class Scene;
+    class HighScoreManager;
 
     class MenuManager final : public Component
     {
     public:
-        MenuManager(GameObject* owner, HighScoreManager* pMgr, Scene* pScoreScene, Scene* pGameScene, 
-                    const std::vector<TextComponent*>& options,
-                    const std::vector<TextComponent*>& scoreTexts,
-                    const std::vector<TextComponent*>& nameTexts);
+        MenuManager(GameObject* owner, HighScoreManager* pMgr, Scene* pScoreScene, Scene* pGameScene, const std::vector<TextComponent*>& options, const std::vector<TextComponent*>& scoreTexts, const std::vector<TextComponent*>& nameTexts);
 
         void Update(float deltaTime) override;
 
+        // Exposed public methods so the external UICommands can control the menu without the MenuManager needing to poll hardware inputs directly.
         void NavigateUp();
         void NavigateDown();
         void Select();

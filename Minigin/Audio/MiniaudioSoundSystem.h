@@ -5,6 +5,9 @@
 #include <memory>
 #include <string>
 
+// DESIGN PATTERN - Pimpl Idiom (Pointer to Implementation)
+// This is a crucial architectural optimization. By hiding the actual Miniaudio data structures inside an opaque 'pImpl' pointer, we avoid putting `#include "miniaudio.h"` in this header file.  If it was in the header, every single file that included SoundSystem.h would be forced to compile the massive Miniaudio library, which would completely destroy our C++ compilation times!
+
 namespace dae
 {
     class MiniaudioSoundSystem final : public SoundSystem
@@ -30,6 +33,8 @@ namespace dae
         MiniaudioSoundSystem& operator=(MiniaudioSoundSystem&& other) = delete;
 
     private:
+        // DESIGN DECISION - RAII
+        // Using a unique_ptr guarantees the internal audio engine is safely destroyed when the game closes.
         class MiniaudioSoundSystemImpl; // Pimpl
         std::unique_ptr<MiniaudioSoundSystemImpl> pImpl;
     };

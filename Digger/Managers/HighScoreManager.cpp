@@ -12,12 +12,13 @@ namespace dae
 
     HighScoreManager::HighScoreManager()
         : m_sessionName{ "AAA" }
-        , m_nameIsSet  { false  }
+        , m_nameIsSet{ false }
     {
     }
 
     HighScoreManager::~HighScoreManager()
     {
+        // Failsafe - Ensures that if the window is forcefully closed before the Game Over screen is reached, the player's active session score is still safely dumped to the text file.
         if (m_nameIsSet && !m_hasSaved)
         {
             SaveScore(m_currentScore);
@@ -32,7 +33,7 @@ namespace dae
     void HighScoreManager::SetSessionName(const std::string& initials)
     {
         m_sessionName = NormaliseInitials(initials);
-        m_nameIsSet   = true;
+        m_nameIsSet = true;
     }
 
     void HighScoreManager::ClearSessionName()
@@ -51,6 +52,7 @@ namespace dae
     {
         namespace fs = std::filesystem;
 
+        // Conditional logic guarantees that the file path resolves correctly whether  running natively on Windows/Mac or packaged in a Web Browser via Emscripten.
 #ifdef __EMSCRIPTEN__
         const fs::path filePath = "highscores.txt";
 #else
@@ -66,6 +68,7 @@ namespace dae
         std::ifstream ifs(filePath);
         if (ifs.is_open())
         {
+            // Parse the text file line by line, mapping strings to integers into the struct
             std::string line;
             while (std::getline(ifs, line))
             {
@@ -80,15 +83,18 @@ namespace dae
             }
         }
 
+        // Sort descending using a lambda function to order the struct by integer value
         std::sort(entries.begin(), entries.end(), [](const ScoreEntry& a, const ScoreEntry& b) {
             return a.score > b.score;
-        });
+            });
 
+        // Truncate the list to the requested display amount (e.g., Top 10)
         if (entries.size() > static_cast<size_t>(count))
         {
             entries.resize(count);
         }
 
+        // Fill empty slots with dummy variables so the UI never attempts to render a null position
         char dummyChar = 'A';
         while (entries.size() < static_cast<size_t>(count))
         {
@@ -126,6 +132,7 @@ namespace dae
         const fs::path filePath = dataDir / "highscores.txt";
 #endif
 
+        // Open the file string in append mode (ios::app) so we don't accidentally overwrite historical scores
         std::ofstream ofs(filePath, std::ios::app);
         if (ofs.is_open())
         {
@@ -146,8 +153,10 @@ namespace dae
     {
         std::string result = raw;
 
+        // Force all lowercase letters to uppercase to standardize visual rendering
         std::transform(result.begin(), result.end(), result.begin(), [](unsigned char c) { return static_cast<char>(std::toupper(c)); });
 
+        // Pad the string with 'A's to ensure it meets the rigid 3-character format
         while (result.size() < 3) result += 'A';
 
         result.resize(3);

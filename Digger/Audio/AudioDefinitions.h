@@ -1,6 +1,10 @@
 #ifndef AUDIO_DEFINITIONS_H
 #define AUDIO_DEFINITIONS_H
 
+// ARCHITECTURAL DECISION - Centralized Enum for Audio
+// Separated this into its own file so different components (Player or UI) can trigger sounds without needing to pass hardcoded strings
+// Why - Because it prevents typos and makes it faster for the CPU to look up sounds
+
 // Digger Sounds
 enum AudioDefinitions
 {

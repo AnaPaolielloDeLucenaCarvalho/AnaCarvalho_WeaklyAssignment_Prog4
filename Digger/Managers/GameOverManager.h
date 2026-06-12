@@ -5,6 +5,9 @@
 #include <vector>
 #include <string>
 
+// DESIGN PATTERN: Component Pattern
+// Rather than hardcoding the Game Over menu logic directly into the Scene, this Manager is attached to an empty GameObject. It dictates UI flow, handles user selection, and bridges communication between the text elements and the HighScoreManager.
+
 namespace dae
 {
     class Scene;
@@ -32,13 +35,13 @@ namespace dae
         Scene* m_pMenuScene;
         Scene* m_pGameScene;
         HighScoreManager* m_pHighScoreMgr;
-        
+
         TextComponent* m_pTitleText;
         TextComponent* m_pScoreText;
         std::vector<TextComponent*> m_Options;
 
-        bool m_IsSetup{false};
-        int m_SelectedIndex{0};
+        bool m_IsSetup{ false };
+        int m_SelectedIndex{ 0 };
     };
 }
 #endif

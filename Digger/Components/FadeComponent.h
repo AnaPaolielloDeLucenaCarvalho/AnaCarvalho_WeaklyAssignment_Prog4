@@ -5,6 +5,9 @@
 
 #include <cstdint>
 
+// DESIGN PATTERN - Component Pattern
+// By making the screen fade an independent Component, it becomes completely reusable.  Instead of hardcoding a massive fade timer into the LevelManager or Scene classes, I can just spawn an empty GameObject, attach this component, and it will automatically  handle its own drawing, timing, and self-destruction.
+
 namespace dae
 {
     // Fades the screen to black over the specified duration, then destroys itself.

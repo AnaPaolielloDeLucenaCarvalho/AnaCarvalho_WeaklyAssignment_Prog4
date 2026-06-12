@@ -4,6 +4,9 @@
 #include <vector>
 #include "Observer.h"
 
+// DESIGN PATTERN - Observer Pattern (The Broadcaster)
+// The Subject acts as a radio tower. Any component (like Digger) can own a Subject and use it  to broadcast events. It keeps a list of listeners but doesn't actually know or care what they are.
+
 namespace dae
 {
     class Subject
@@ -16,6 +19,8 @@ namespace dae
         void Notify(EventId eventId, int value);
 
     private:
+        // DESIGN DECISION - Pointer Chasing Hazard
+        // We have to store pointers here because Observers are polymorphic. I know from my Theory notes that iterating through a vector of pointers causes Cache Misses because the CPU has to "drive across town" (RAM) to fetch each object, but it is a necessary trade-off for the extreme flexibility of the Observer pattern.
         std::vector<Observer*> m_observers;
     };
 }

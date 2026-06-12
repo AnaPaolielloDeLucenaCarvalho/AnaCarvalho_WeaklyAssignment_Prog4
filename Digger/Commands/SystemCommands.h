@@ -4,6 +4,9 @@
 #include "Command.h"
 #include <cstdint>
 
+// DESIGN PATTERN - Command Pattern
+// By encapsulating these as objects, we avoid hardcoding raw SDL_SCANCODE checks deep inside the engine's core update loop. It keeps the architecture modular so hotkeys can be safely assigned to either the keyboard or a gamepad.
+
 namespace dae
 {
     class Scene;
@@ -31,6 +34,7 @@ namespace dae
         Scene* m_pPreviousScene{ nullptr };
         uint64_t m_LastPressTime{ 0 };
     };
+
     class MuteCommand final : public Command
     {
     public:
