@@ -455,6 +455,7 @@ namespace dae
             }
             // Move Digger off-screen so they don't linger while the UI resolves
             digger->GetOwner()->SetLocalPosition(-1000.f, -1000.f);
+            digger->SetDead(false);
         }
     }
 

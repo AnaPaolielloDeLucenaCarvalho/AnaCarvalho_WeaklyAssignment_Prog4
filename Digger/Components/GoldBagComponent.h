@@ -19,6 +19,8 @@ namespace dae
         ~GoldBagComponent() override;
 
         GoldBagComponent(const GoldBagComponent&) = delete;
+        GoldBagComponent& operator=(const GoldBagComponent&) = delete;
+        GoldBagComponent(GoldBagComponent&&) = delete;
         GoldBagComponent& operator=(GoldBagComponent&&) = delete;
 
         void Render() const override {}
