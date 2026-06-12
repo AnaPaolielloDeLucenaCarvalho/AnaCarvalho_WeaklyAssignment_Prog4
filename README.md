@@ -33,19 +33,19 @@ The game is fully navigable with either a Keyboard or an Xbox-compatible Control
 ### Gameplay (Player 1)
 | Action | Keyboard | Gamepad 0 |
 | :--- | :--- | :--- |
-| **Move Up** | `W` | D-Pad Up / Joystick |
-| **Move Down** | `S` | D-Pad Down / Joystick |
-| **Move Left** | `A` | D-Pad Left / Joystick |
-| **Move Right** | `D` | D-Pad Right / Joystick |
+| **Move Up** | `W` | D-Pad Up |
+| **Move Down** | `S` | D-Pad Down |
+| **Move Left** | `A` | D-Pad Left |
+| **Move Right** | `D` | D-Pad Right |
 | **Shoot** | `Space` | Left Trigger / Right Trigger |
 
 ### Gameplay (Player 2)
 | Action | Keyboard | Gamepad 1 |
 | :--- | :--- | :--- |
-| **Move Up** | `I` | D-Pad Up / Joystick |
-| **Move Down** | `K` | D-Pad Down / Joystick |
-| **Move Left** | `J` | D-Pad Left / Joystick |
-| **Move Right** | `L` | D-Pad Right / Joystick  |
+| **Move Up** | `I` | D-Pad Up |
+| **Move Down** | `K` | D-Pad Down |
+| **Move Left** | `J` | D-Pad Left |
+| **Move Right** | `L` | D-Pad Right  |
 | **Shoot** | `Right Shift` | Left Trigger / Right Trigger |
 
 ### System Commands (Global Hotkeys)
