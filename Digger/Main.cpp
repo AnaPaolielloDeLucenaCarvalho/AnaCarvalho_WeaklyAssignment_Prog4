@@ -278,6 +278,11 @@ static void load()
 // ----------------- GAME OVER SCENE SETUP -----------------
 
 	{
+		auto overBg = std::make_unique<dae::GameObject>();
+		overBg->AddComponent<dae::UIPanelComponent>(1040.f, 612.f, SDL_Color{ 0, 0, 0, 255 });
+		overBg->SetZIndex(-1);
+		gameOverScene.Add(std::move(overBg));
+
 		auto goTitleObj = std::make_unique<dae::GameObject>();
 		auto pTitleText = goTitleObj->AddComponent<dae::TextComponent>("GAME OVER", fontLarge, SDL_Color{ 255, 0, 0, 255 });
 		goTitleObj->SetLocalPosition(380, 150);
