@@ -22,38 +22,39 @@ This project aims to recreate the 1983 arcade game **Digger** from scratch using
 The game is fully navigable with either a Keyboard or an Xbox-compatible Controller. Player 1 is permanently mapped to Gamepad 0, and Player 2 is permanently mapped to Gamepad 1.
 
 ### Menus & UI (Main Menu, Game Over, Name Entry)
-| Action | Keyboard | Gamepad 0 | Gamepad 1 |
+| Action | Keyboard | All Gamepads |
 | :--- | :--- | :--- | :--- |
-| **Navigate Up** | `W` / `Up Arrow` | D-Pad Up | D-Pad Up |
-| **Navigate Down** | `S` / `Down Arrow` | D-Pad Down | D-Pad Down |
-| **Next Letter** (Name) | `Right Arrow` | D-Pad Right | D-Pad Right |
-| **Select / Confirm** | `Space` / `Enter` | Button A | Button A |
+| **Navigate Up** | `W` / `Up Arrow` | D-Pad Up |
+| **Navigate Down** | `S` / `Down Arrow` | D-Pad Down |
+| **Next Letter** (Name) | `D` / `Right Arrow` | D-Pad Right |
+| **Previus Letter** (Name) | `A` / `Left Arrow` | D-Pad Left |
+| **Select / Confirm** | `Space` / `Enter` | Button A |
 
 ### Gameplay (Player 1)
 | Action | Keyboard | Gamepad 0 |
 | :--- | :--- | :--- |
-| **Move Up** | `W` | D-Pad Up |
-| **Move Down** | `S` | D-Pad Down |
-| **Move Left** | `A` | D-Pad Left |
-| **Move Right** | `D` | D-Pad Right |
-| **Shoot** | `Space` | Button A / Right Trigger |
+| **Move Up** | `W` | D-Pad Up / Joystick |
+| **Move Down** | `S` | D-Pad Down / Joystick |
+| **Move Left** | `A` | D-Pad Left / Joystick |
+| **Move Right** | `D` | D-Pad Right / Joystick |
+| **Shoot** | `Space` | Left Trigger / Right Trigger |
 
 ### Gameplay (Player 2)
 | Action | Keyboard | Gamepad 1 |
 | :--- | :--- | :--- |
-| **Move Up** | `I` | D-Pad Up |
-| **Move Down** | `K` | D-Pad Down |
-| **Move Left** | `J` | D-Pad Left |
-| **Move Right** | `L` | D-Pad Right |
-| **Shoot** | `Right Shift` | Button A / Right Trigger |
+| **Move Up** | `I` | D-Pad Up / Joystick |
+| **Move Down** | `K` | D-Pad Down / Joystick |
+| **Move Left** | `J` | D-Pad Left / Joystick |
+| **Move Right** | `L` | D-Pad Right / Joystick  |
+| **Shoot** | `Right Shift` | Left Trigger / Right Trigger |
 
 ### System Commands (Global Hotkeys)
 | Action | Keyboard | Gamepad 0 / 1 | Description |
 | :--- | :--- | :--- | :--- |
-| **Skip Level** | `F1` | Right Shoulder | Instantly advances to the next level. |
-| **Mute Audio** | `F2` | Left Shoulder | Toggles all game audio on/off. |
-| **Instructions** | `F3` | Button Y | Pauses the game and shows the How-To-Play screen. |
-| **Main Menu** | `F10` | Button Start | Hard-resets the session and returns to the Title Screen. |
+| **Skip Level** | `F1` | Button B |
+| **Mute Audio** | `F2` | Button Y |
+| **Instructions** | `F3` | Button X |
+| **Main Menu** | `F10` | Button A |
 
 ---
 
