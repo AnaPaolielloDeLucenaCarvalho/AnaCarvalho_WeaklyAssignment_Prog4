@@ -32,11 +32,13 @@ namespace dae
     void ToggleInstructionsCommand::Execute(float /*deltaTime*/)
     {
         uint64_t currentTime = SDL_GetTicks();
+        if (currentTime - m_LastPressTime < 300) return;
         m_LastPressTime = currentTime;
 
         auto& sm = SceneManager::GetInstance();
         Scene* currentScene = sm.GetActiveScene();
 
+        if (currentScene == m_pInstructionsScene)
         {
             // Close instructions, go back to saved scene, unpause audio
             if (m_pPreviousScene) sm.SetActiveScene(m_pPreviousScene);
