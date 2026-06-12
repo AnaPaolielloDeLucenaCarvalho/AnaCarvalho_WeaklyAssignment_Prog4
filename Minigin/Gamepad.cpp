@@ -24,11 +24,16 @@ namespace dae
             XInputGetState(m_ControllerIndex, &m_CurrentState);
 
             unsigned int currentButtons = m_CurrentState.Gamepad.wButtons;
-            if (m_CurrentState.Gamepad.bRightTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD)
-                currentButtons |= 0x40000;
+            if (m_CurrentState.Gamepad.bRightTrigger > 153)
+                currentButtons |= static_cast<unsigned int>(ControllerButton::RightTrigger);
+            if (m_CurrentState.Gamepad.bLeftTrigger > 153)
+                currentButtons |= static_cast<unsigned int>(ControllerButton::LeftTrigger);
+
             unsigned int previousButtons = m_PreviousState.Gamepad.wButtons;
-            if (m_PreviousState.Gamepad.bRightTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD)
-                previousButtons |= 0x40000;
+            if (m_PreviousState.Gamepad.bRightTrigger > 153)
+                previousButtons |= static_cast<unsigned int>(ControllerButton::RightTrigger);
+            if (m_PreviousState.Gamepad.bLeftTrigger > 153)
+                previousButtons |= static_cast<unsigned int>(ControllerButton::LeftTrigger);
 
             auto buttonChanges = currentButtons ^ previousButtons;
             m_ButtonsPressedThisFrame = buttonChanges & currentButtons;
@@ -108,8 +113,10 @@ namespace dae
             Map(ControllerButton::ButtonB, SDL_GAMEPAD_BUTTON_EAST);
             Map(ControllerButton::ButtonY, SDL_GAMEPAD_BUTTON_NORTH);
 
-            if (SDL_GetGamepadAxis(m_pGamepad, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER) > 16000)
+            if (SDL_GetGamepadAxis(m_pGamepad, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER) > 19660)
                 m_CurrentButtons |= static_cast<unsigned int>(ControllerButton::RightTrigger);
+            if (SDL_GetGamepadAxis(m_pGamepad, SDL_GAMEPAD_AXIS_LEFT_TRIGGER) > 19660)
+                m_CurrentButtons |= static_cast<unsigned int>(ControllerButton::LeftTrigger);
         }
 
         bool IsDown(ControllerButton b) const {
