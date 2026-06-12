@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <cstddef>
+#include <vector>
 
 // DESIGN PATTERN - Observer Pattern
 // I used the Observer pattern here to completely decouple gameplay systems. Instead of the Player  needing an #include reference to the UI or Audio system, it just blindly broadcasts an EventId. Any system that cares can inherit from this Observer class and listen in!
@@ -42,11 +43,17 @@ namespace dae
 
     using EventId = unsigned int;
 
+    class Subject; // Forward declaration
+
     class Observer
     {
     public:
-        virtual ~Observer() = default;
+        virtual ~Observer();
         virtual void OnNotify(EventId eventId, int value = 0) = 0;
+
+        // Internal methods used by Subject for bidirectional tracking
+        void AddSubjectInternal(Subject* subject);
+        void RemoveSubjectInternal(Subject* subject);
 
         Observer(const Observer& other) = delete;
         Observer(Observer&& other) = delete;
@@ -55,6 +62,9 @@ namespace dae
 
     protected:
         Observer() = default;
+
+    private:
+        std::vector<Subject*> m_subjects;
     };
 }
 #endif

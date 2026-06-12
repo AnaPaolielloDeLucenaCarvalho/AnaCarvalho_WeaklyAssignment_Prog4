@@ -12,7 +12,7 @@ namespace dae
     class Subject
     {
     public:
-        virtual ~Subject() = default;
+        virtual ~Subject();
 
         Subject() = default;
         Subject(const Subject& other) = delete;
@@ -22,6 +22,7 @@ namespace dae
 
         void AddObserver(Observer* observer);
         void RemoveObserver(Observer* observer);
+        void RemoveObserverInternal(Observer* observer);
         void Notify(EventId eventId, int value);
 
     private:
