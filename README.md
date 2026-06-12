@@ -14,7 +14,7 @@ This project is trying to recreate the 1983 arcade game **Digger**, from scratch
   * **Versus:** Player 1 controls Digger, while Player 2 controls a Nobbin.
 * **Persistent High Scores:** Arcade-style leaderboard that saves scores locally.
 * **3 Custom Levels:** Loaded from data files.
-* **Audio & Music:** Features the original music: "Popcorn" and Chopin's "Funeral March".
+* **Audio & Music:** Has the original music and sound effects (from the internet)
 
 ---
 
@@ -22,17 +22,17 @@ This project is trying to recreate the 1983 arcade game **Digger**, from scratch
 The game supports both **Keyboard** and **Gamepads** for gameplay and menu navigation.
 
 ### Player 1 (Default)
-* **Move:** Arrow Keys (or D-Pad/Joystick on Controller 1)
-* **Fire Fireball:** `F1` (or Controller 1 Button A/Cross)
+* **Move:** `W`, `A`, `S`, `D` (or D-Pad/Joystick on Controller 1)
+* **Fire Fireball:** `Space` (or Controller 1 Button A/Cross)
 
 ### Player 2 (Co-op / Versus)
-* **Move:** `W`, `A`, `S`, `D` (or D-Pad/Joystick on Controller 2)
-* **Fire Fireball:** `Tab` (or Controller 2 Button A/Cross)
+* **Move:** `I`, `J`, `K`, `L` (or D-Pad/Joystick on Controller 2)
+* **Fire Fireball:** `Right Shift` (or Controller 2 Button A/Cross)
 
 ### Global / Engine Controls
 * **Skip Level:** `F1`
 * **Mute/Unmute Audio:** `F2`
-* **Pause Game:** `Space`
+* **How to play/Controls:** `F3`
 * **Return to Title:** `F10`
 
 ---
