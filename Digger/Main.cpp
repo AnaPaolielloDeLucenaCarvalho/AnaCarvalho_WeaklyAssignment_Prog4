@@ -191,6 +191,11 @@ static void load()
 // ----------------- SCORE SCENE (NAME ENTRY) SETUP -----------------
 
 	{
+		auto scoreBg = std::make_unique<dae::GameObject>();
+		scoreBg->AddComponent<dae::UIPanelComponent>(1040.f, 612.f, SDL_Color{ 0, 0, 0, 255 });
+		scoreBg->SetZIndex(-1);
+		scoreScene.Add(std::move(scoreBg));
+
 		auto promptObj = std::make_unique<dae::GameObject>();
 		promptObj->AddComponent<dae::TextComponent>("ENTER YOUR INITIALS", fontLarge, SDL_Color{ 255, 255, 0, 255 });
 		promptObj->SetLocalPosition(330, 200);
@@ -358,6 +363,11 @@ static void load()
 
 	g_AchievementMgr = std::make_shared<dae::AchievementManager>();
 	scoreObs1->AddObserver(g_AchievementMgr.get());
+
+	auto instBg = std::make_unique<dae::GameObject>();
+	instBg->AddComponent<dae::UIPanelComponent>(1040.f, 612.f, SDL_Color{ 0, 0, 0, 255 });
+	instBg->SetZIndex(-1);
+	instructionsScene.Add(std::move(instBg));
 
 	auto instTitle = std::make_unique<dae::GameObject>();
 	instTitle->AddComponent<dae::TextComponent>("HOW TO PLAY", fontLarge, SDL_Color{ 255, 255, 0, 255 });
