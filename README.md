@@ -61,6 +61,14 @@ The game is fully navigable with either a Keyboard or an Xbox-compatible Control
 ## Engine Architecture
 This game runs on **Minigin**. The architecture heavily applies principles from Robert Nystrom's *Game Programming Patterns* and Gregory Davidson's *Beautiful C++*.
 
+### Key Design Choices
+* **Entity-Component-System (ECS):** The game revolves around `GameObject`s holding custom `Component`s via `std::unique_ptr` for strict memory ownership. Raw pointers are strictly avoided for ownership (RAII).
+* **Observer Pattern (Events):** Gameplay systems are entirely decoupled using a Bidirectional Observer Pattern. The game logic broadcasts an `EventId` (using compile-time string hashing via `make_sdbm_hash` for maximum performance). If a UI element is destroyed mid-game, its destructor safely unregisters itself to prevent dangling pointers.
+* **State Pattern:** Complex object behaviors rely on State Machines to prevent spaghetti code. The Enemy AI swaps cleanly between `NobbinState` and `HobbinState`, and the `GoldBagComponent` manages falling/breaking physics via dedicated states.
+* **Command Pattern:** Input is abstracted via the Command pattern (`PlayerCommands`, `SystemCommands`), allowing seamless, plug-and-play mapping for both Keyboard and Gamepads.
+* **Multithreading:** Audio processing (`MiniaudioSoundSystem`) is offloaded to a background `std::jthread` to prevent audio decoding from blocking the main game loop, utilizing `std::unique_lock` to ensure thread-safe queueing.
+* **PIMPL Idiom:** Third-party libraries (like `miniaudio.h`) are completely hidden behind the Pointer to Implementation (PIMPL) idiom to reduce compile times and ensure strict dependency isolation.
+
 ---
 
 ## Build Instructions
