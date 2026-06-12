@@ -39,6 +39,7 @@
 #include "AdvanceIndexCommand.h"
 #include "ConfirmNameCommand.h"
 #include "SystemCommands.h"
+#include "UICommands.h"
 
 #if USE_STEAMWORKS
 #pragma warning (push)
@@ -181,8 +182,27 @@ static void load()
 	std::vector<dae::TextComponent*> menuOptions = { opt1Text, opt2Text, opt3Text };
 
 	auto menuManagerObj = std::make_unique<dae::GameObject>();
-	menuManagerObj->AddComponent<dae::MenuManager>(pMgr, &scoreScene, &gameScene, menuOptions, menuScoreTexts, menuNameTexts);
+	auto pMenuMgr = menuManagerObj->AddComponent<dae::MenuManager>(pMgr, &scoreScene, &gameScene, menuOptions, menuScoreTexts, menuNameTexts);
 	menuScene.Add(std::move(menuManagerObj));
+
+	input.BindCommand(SDL_SCANCODE_W, dae::KeyState::Pressed, std::make_unique<dae::MenuNavigateCommand>(-1, pMenuMgr, nullptr, &menuScene));
+	input.BindCommand(SDL_SCANCODE_UP, dae::KeyState::Pressed, std::make_unique<dae::MenuNavigateCommand>(-1, pMenuMgr, nullptr, &menuScene));
+	input.BindCommand(0, dae::Gamepad::ControllerButton::DPadUp, dae::KeyState::Pressed, std::make_unique<dae::MenuNavigateCommand>(-1, pMenuMgr, nullptr, &menuScene));
+	input.BindCommand(1, dae::Gamepad::ControllerButton::DPadUp, dae::KeyState::Pressed, std::make_unique<dae::MenuNavigateCommand>(-1, pMenuMgr, nullptr, &menuScene));
+
+	input.BindCommand(SDL_SCANCODE_S, dae::KeyState::Pressed, std::make_unique<dae::MenuNavigateCommand>(1, pMenuMgr, nullptr, &menuScene));
+	input.BindCommand(SDL_SCANCODE_DOWN, dae::KeyState::Pressed, std::make_unique<dae::MenuNavigateCommand>(1, pMenuMgr, nullptr, &menuScene));
+	input.BindCommand(0, dae::Gamepad::ControllerButton::DPadDown, dae::KeyState::Pressed, std::make_unique<dae::MenuNavigateCommand>(1, pMenuMgr, nullptr, &menuScene));
+	input.BindCommand(1, dae::Gamepad::ControllerButton::DPadDown, dae::KeyState::Pressed, std::make_unique<dae::MenuNavigateCommand>(1, pMenuMgr, nullptr, &menuScene));
+
+	input.BindCommand(SDL_SCANCODE_SPACE, dae::KeyState::Pressed, std::make_unique<dae::MenuSelectCommand>(pMenuMgr, nullptr, &menuScene));
+	input.BindCommand(SDL_SCANCODE_RETURN, dae::KeyState::Pressed, std::make_unique<dae::MenuSelectCommand>(pMenuMgr, nullptr, &menuScene));
+	input.BindCommand(0, dae::Gamepad::ControllerButton::ButtonA, dae::KeyState::Pressed, std::make_unique<dae::MenuSelectCommand>(pMenuMgr, nullptr, &menuScene));
+	input.BindCommand(1, dae::Gamepad::ControllerButton::ButtonA, dae::KeyState::Pressed, std::make_unique<dae::MenuSelectCommand>(pMenuMgr, nullptr, &menuScene));
+	input.BindCommand(0, dae::Gamepad::ControllerButton::LeftShoulder, dae::KeyState::Pressed, std::make_unique<dae::MenuSelectCommand>(pMenuMgr, nullptr, &menuScene));
+	input.BindCommand(1, dae::Gamepad::ControllerButton::LeftShoulder, dae::KeyState::Pressed, std::make_unique<dae::MenuSelectCommand>(pMenuMgr, nullptr, &menuScene));
+	input.BindCommand(0, dae::Gamepad::ControllerButton::RightShoulder, dae::KeyState::Pressed, std::make_unique<dae::MenuSelectCommand>(pMenuMgr, nullptr, &menuScene));
+	input.BindCommand(1, dae::Gamepad::ControllerButton::RightShoulder, dae::KeyState::Pressed, std::make_unique<dae::MenuSelectCommand>(pMenuMgr, nullptr, &menuScene));
 
 	// Start on the menu scene
 	dae::SceneManager::GetInstance().SetActiveScene(&menuScene);
@@ -214,10 +234,39 @@ static void load()
 		scoreScene.Add(std::move(initialsObj));
 
 		// Bind name-entry keys — these live on top of any game bindings.
-		input.BindCommand(SDL_SCANCODE_UP, dae::KeyState::Pressed, std::make_unique<dae::CycleLetterCommand>(pEntryComp, -1));
-		input.BindCommand(SDL_SCANCODE_DOWN, dae::KeyState::Pressed, std::make_unique<dae::CycleLetterCommand>(pEntryComp, +1));
-		input.BindCommand(SDL_SCANCODE_RIGHT, dae::KeyState::Pressed, std::make_unique<dae::AdvanceIndexCommand>(pEntryComp));
-		input.BindCommand(SDL_SCANCODE_RETURN,dae::KeyState::Pressed, std::make_unique<dae::ConfirmNameCommand>(pEntryComp));
+		// W / Up to cycle letter UP (-1)
+		input.BindCommand(SDL_SCANCODE_W, dae::KeyState::Pressed, std::make_unique<dae::CycleLetterCommand>(pEntryComp, -1, &scoreScene));
+		input.BindCommand(SDL_SCANCODE_UP, dae::KeyState::Pressed, std::make_unique<dae::CycleLetterCommand>(pEntryComp, -1, &scoreScene));
+		input.BindCommand(0, dae::Gamepad::ControllerButton::DPadUp, dae::KeyState::Pressed, std::make_unique<dae::CycleLetterCommand>(pEntryComp, -1, &scoreScene));
+		input.BindCommand(1, dae::Gamepad::ControllerButton::DPadUp, dae::KeyState::Pressed, std::make_unique<dae::CycleLetterCommand>(pEntryComp, -1, &scoreScene));
+
+		// S / Down to cycle letter DOWN (+1)
+		input.BindCommand(SDL_SCANCODE_S, dae::KeyState::Pressed, std::make_unique<dae::CycleLetterCommand>(pEntryComp, +1, &scoreScene));
+		input.BindCommand(SDL_SCANCODE_DOWN, dae::KeyState::Pressed, std::make_unique<dae::CycleLetterCommand>(pEntryComp, +1, &scoreScene));
+		input.BindCommand(0, dae::Gamepad::ControllerButton::DPadDown, dae::KeyState::Pressed, std::make_unique<dae::CycleLetterCommand>(pEntryComp, +1, &scoreScene));
+		input.BindCommand(1, dae::Gamepad::ControllerButton::DPadDown, dae::KeyState::Pressed, std::make_unique<dae::CycleLetterCommand>(pEntryComp, +1, &scoreScene));
+
+		// Next Letter / Index
+		input.BindCommand(SDL_SCANCODE_D, dae::KeyState::Pressed, std::make_unique<dae::AdvanceIndexCommand>(pEntryComp, 1, &scoreScene));
+		input.BindCommand(SDL_SCANCODE_RIGHT, dae::KeyState::Pressed, std::make_unique<dae::AdvanceIndexCommand>(pEntryComp, 1, &scoreScene));
+		input.BindCommand(0, dae::Gamepad::ControllerButton::DPadRight, dae::KeyState::Pressed, std::make_unique<dae::AdvanceIndexCommand>(pEntryComp, 1, &scoreScene));
+		input.BindCommand(1, dae::Gamepad::ControllerButton::DPadRight, dae::KeyState::Pressed, std::make_unique<dae::AdvanceIndexCommand>(pEntryComp, 1, &scoreScene));
+
+		// Previous Letter / Index
+		input.BindCommand(SDL_SCANCODE_A, dae::KeyState::Pressed, std::make_unique<dae::AdvanceIndexCommand>(pEntryComp, -1, &scoreScene));
+		input.BindCommand(SDL_SCANCODE_LEFT, dae::KeyState::Pressed, std::make_unique<dae::AdvanceIndexCommand>(pEntryComp, -1, &scoreScene));
+		input.BindCommand(0, dae::Gamepad::ControllerButton::DPadLeft, dae::KeyState::Pressed, std::make_unique<dae::AdvanceIndexCommand>(pEntryComp, -1, &scoreScene));
+		input.BindCommand(1, dae::Gamepad::ControllerButton::DPadLeft, dae::KeyState::Pressed, std::make_unique<dae::AdvanceIndexCommand>(pEntryComp, -1, &scoreScene));
+
+		// Confirm
+		input.BindCommand(SDL_SCANCODE_SPACE, dae::KeyState::Pressed, std::make_unique<dae::ConfirmNameCommand>(pEntryComp, &scoreScene));
+		input.BindCommand(SDL_SCANCODE_RETURN,dae::KeyState::Pressed, std::make_unique<dae::ConfirmNameCommand>(pEntryComp, &scoreScene));
+		input.BindCommand(0, dae::Gamepad::ControllerButton::ButtonA, dae::KeyState::Pressed, std::make_unique<dae::ConfirmNameCommand>(pEntryComp, &scoreScene));
+		input.BindCommand(1, dae::Gamepad::ControllerButton::ButtonA, dae::KeyState::Pressed, std::make_unique<dae::ConfirmNameCommand>(pEntryComp, &scoreScene));
+		input.BindCommand(0, dae::Gamepad::ControllerButton::LeftShoulder, dae::KeyState::Pressed, std::make_unique<dae::ConfirmNameCommand>(pEntryComp, &scoreScene));
+		input.BindCommand(1, dae::Gamepad::ControllerButton::LeftShoulder, dae::KeyState::Pressed, std::make_unique<dae::ConfirmNameCommand>(pEntryComp, &scoreScene));
+		input.BindCommand(0, dae::Gamepad::ControllerButton::RightShoulder, dae::KeyState::Pressed, std::make_unique<dae::ConfirmNameCommand>(pEntryComp, &scoreScene));
+		input.BindCommand(1, dae::Gamepad::ControllerButton::RightShoulder, dae::KeyState::Pressed, std::make_unique<dae::ConfirmNameCommand>(pEntryComp, &scoreScene));
 	}
 
 
@@ -247,8 +296,27 @@ static void load()
 		std::vector<dae::TextComponent*> options = { pOpt1Text, pOpt2Text };
 
 		auto managerObj = std::make_unique<dae::GameObject>();
-		managerObj->AddComponent<dae::GameOverManager>(&menuScene, &gameScene, pMgr, pTitleText, pScoreText, options);
+		auto pGoMgr = managerObj->AddComponent<dae::GameOverManager>(&menuScene, &gameScene, pMgr, pTitleText, pScoreText, options);
 		gameOverScene.Add(std::move(managerObj));
+
+		input.BindCommand(SDL_SCANCODE_W, dae::KeyState::Pressed, std::make_unique<dae::MenuNavigateCommand>(-1, nullptr, pGoMgr, &gameOverScene));
+		input.BindCommand(SDL_SCANCODE_UP, dae::KeyState::Pressed, std::make_unique<dae::MenuNavigateCommand>(-1, nullptr, pGoMgr, &gameOverScene));
+		input.BindCommand(0, dae::Gamepad::ControllerButton::DPadUp, dae::KeyState::Pressed, std::make_unique<dae::MenuNavigateCommand>(-1, nullptr, pGoMgr, &gameOverScene));
+		input.BindCommand(1, dae::Gamepad::ControllerButton::DPadUp, dae::KeyState::Pressed, std::make_unique<dae::MenuNavigateCommand>(-1, nullptr, pGoMgr, &gameOverScene));
+
+		input.BindCommand(SDL_SCANCODE_S, dae::KeyState::Pressed, std::make_unique<dae::MenuNavigateCommand>(1, nullptr, pGoMgr, &gameOverScene));
+		input.BindCommand(SDL_SCANCODE_DOWN, dae::KeyState::Pressed, std::make_unique<dae::MenuNavigateCommand>(1, nullptr, pGoMgr, &gameOverScene));
+		input.BindCommand(0, dae::Gamepad::ControllerButton::DPadDown, dae::KeyState::Pressed, std::make_unique<dae::MenuNavigateCommand>(1, nullptr, pGoMgr, &gameOverScene));
+		input.BindCommand(1, dae::Gamepad::ControllerButton::DPadDown, dae::KeyState::Pressed, std::make_unique<dae::MenuNavigateCommand>(1, nullptr, pGoMgr, &gameOverScene));
+
+		input.BindCommand(SDL_SCANCODE_SPACE, dae::KeyState::Pressed, std::make_unique<dae::MenuSelectCommand>(nullptr, pGoMgr, &gameOverScene));
+		input.BindCommand(SDL_SCANCODE_RETURN, dae::KeyState::Pressed, std::make_unique<dae::MenuSelectCommand>(nullptr, pGoMgr, &gameOverScene));
+		input.BindCommand(0, dae::Gamepad::ControllerButton::ButtonA, dae::KeyState::Pressed, std::make_unique<dae::MenuSelectCommand>(nullptr, pGoMgr, &gameOverScene));
+		input.BindCommand(1, dae::Gamepad::ControllerButton::ButtonA, dae::KeyState::Pressed, std::make_unique<dae::MenuSelectCommand>(nullptr, pGoMgr, &gameOverScene));
+		input.BindCommand(0, dae::Gamepad::ControllerButton::LeftShoulder, dae::KeyState::Pressed, std::make_unique<dae::MenuSelectCommand>(nullptr, pGoMgr, &gameOverScene));
+		input.BindCommand(1, dae::Gamepad::ControllerButton::LeftShoulder, dae::KeyState::Pressed, std::make_unique<dae::MenuSelectCommand>(nullptr, pGoMgr, &gameOverScene));
+		input.BindCommand(0, dae::Gamepad::ControllerButton::RightShoulder, dae::KeyState::Pressed, std::make_unique<dae::MenuSelectCommand>(nullptr, pGoMgr, &gameOverScene));
+		input.BindCommand(1, dae::Gamepad::ControllerButton::RightShoulder, dae::KeyState::Pressed, std::make_unique<dae::MenuSelectCommand>(nullptr, pGoMgr, &gameOverScene));
 	}
 
 // ----------------- GAME SCENE SETUP -----------------
@@ -312,6 +380,7 @@ static void load()
 	scoreUI1->SetLocalPosition(500, 13);
 	auto scoreObs1 = scoreUI1->AddComponent<dae::SpriteScoreDisplayComponent>("PNG/UI/VNUM", ".png", 24.f);
 	scoreUI1->SetZIndex(10);
+	auto scoreUI1Ptr = scoreUI1.get();
 	gameScene.Add(std::move(scoreUI1));
 
 	auto livesUI1 = std::make_unique<dae::GameObject>();
@@ -337,29 +406,41 @@ static void load()
 	input.BindCommand(SDL_SCANCODE_D, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(diggerComp1, glm::vec2{ 1, 0 }));
 	input.BindCommand(SDL_SCANCODE_SPACE, dae::KeyState::Pressed, std::make_unique<dae::ShootCommand>(diggerComp1));
 
-	input.BindCommand(SDL_SCANCODE_RSHIFT, dae::KeyState::Pressed, std::make_unique<dae::ShootCommand>(diggerComp2));
+	input.BindCommand(0, dae::Gamepad::ControllerButton::DPadUp, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(diggerComp1, glm::vec2{ 0, -1 }));
+	input.BindCommand(0, dae::Gamepad::ControllerButton::DPadDown, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(diggerComp1, glm::vec2{ 0, 1 }));
+	input.BindCommand(0, dae::Gamepad::ControllerButton::DPadLeft, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(diggerComp1, glm::vec2{ -1, 0 }));
+	input.BindCommand(0, dae::Gamepad::ControllerButton::DPadRight, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(diggerComp1, glm::vec2{ 1, 0 }));
+	input.BindCommand(0, dae::Gamepad::ControllerButton::LeftTrigger, dae::KeyState::Pressed, std::make_unique<dae::ShootCommand>(diggerComp1));
+	input.BindCommand(0, dae::Gamepad::ControllerButton::RightTrigger, dae::KeyState::Pressed, std::make_unique<dae::ShootCommand>(diggerComp1));
 
+	input.BindCommand(SDL_SCANCODE_RSHIFT, dae::KeyState::Pressed, std::make_unique<dae::ShootCommand>(diggerComp2));
 	input.BindCommand(SDL_SCANCODE_I, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(diggerComp2, glm::vec2{ 0, -1 }));
 	input.BindCommand(SDL_SCANCODE_K, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(diggerComp2, glm::vec2{ 0, 1 }));
 	input.BindCommand(SDL_SCANCODE_J, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(diggerComp2, glm::vec2{ -1, 0 }));
 	input.BindCommand(SDL_SCANCODE_L, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(diggerComp2, glm::vec2{ 1, 0 }));
 
-	input.BindCommand(0, dae::Gamepad::ControllerButton::DPadUp, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(diggerComp2, glm::vec2{ 0, -1 }));
-	input.BindCommand(0, dae::Gamepad::ControllerButton::DPadDown, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(diggerComp2, glm::vec2{ 0, 1 }));
-	input.BindCommand(0, dae::Gamepad::ControllerButton::DPadLeft, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(diggerComp2, glm::vec2{ -1, 0 }));
-	input.BindCommand(0, dae::Gamepad::ControllerButton::DPadRight, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(diggerComp2, glm::vec2{ 1, 0 }));
+	input.BindCommand(1, dae::Gamepad::ControllerButton::DPadUp, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(diggerComp2, glm::vec2{ 0, -1 }));
+	input.BindCommand(1, dae::Gamepad::ControllerButton::DPadDown, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(diggerComp2, glm::vec2{ 0, 1 }));
+	input.BindCommand(1, dae::Gamepad::ControllerButton::DPadLeft, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(diggerComp2, glm::vec2{ -1, 0 }));
+	input.BindCommand(1, dae::Gamepad::ControllerButton::DPadRight, dae::KeyState::Pressed, std::make_unique<dae::MoveCommand>(diggerComp2, glm::vec2{ 1, 0 }));
+	input.BindCommand(1, dae::Gamepad::ControllerButton::LeftTrigger, dae::KeyState::Pressed, std::make_unique<dae::ShootCommand>(diggerComp2));
+	input.BindCommand(1, dae::Gamepad::ControllerButton::RightTrigger, dae::KeyState::Pressed, std::make_unique<dae::ShootCommand>(diggerComp2));
 
-	auto muteCommand = std::make_unique<dae::MuteCommand>();
-	input.BindCommand(SDL_SCANCODE_F2, dae::KeyState::Pressed, std::move(muteCommand));
+	input.BindCommand(SDL_SCANCODE_F2, dae::KeyState::Pressed, std::make_unique<dae::MuteCommand>());
+	input.BindCommand(0, dae::Gamepad::ControllerButton::ButtonY, dae::KeyState::Pressed, std::make_unique<dae::MuteCommand>());
+	input.BindCommand(1, dae::Gamepad::ControllerButton::ButtonY, dae::KeyState::Pressed, std::make_unique<dae::MuteCommand>());
 
-	auto skipLevelCommand1 = std::make_unique<dae::SkipLevelCommand>(diggerComp1);
-	input.BindCommand(SDL_SCANCODE_F1, dae::KeyState::Pressed, std::move(skipLevelCommand1));
+	input.BindCommand(SDL_SCANCODE_F1, dae::KeyState::Pressed, std::make_unique<dae::SkipLevelCommand>(diggerComp1));
+	input.BindCommand(0, dae::Gamepad::ControllerButton::ButtonB, dae::KeyState::Pressed, std::make_unique<dae::SkipLevelCommand>(diggerComp1));
+	input.BindCommand(1, dae::Gamepad::ControllerButton::ButtonB, dae::KeyState::Pressed, std::make_unique<dae::SkipLevelCommand>(diggerComp1));
 
-	auto returnCmd = std::make_unique<dae::ReturnToMenuCommand>(&menuScene, pMgr);
-	input.BindCommand(SDL_SCANCODE_F10, dae::KeyState::Pressed, std::move(returnCmd));
+	input.BindCommand(SDL_SCANCODE_F10, dae::KeyState::Pressed, std::make_unique<dae::ReturnToMenuCommand>(&menuScene, pMgr));
+	input.BindCommand(0, dae::Gamepad::ControllerButton::ButtonA, dae::KeyState::Pressed, std::make_unique<dae::ReturnToMenuCommand>(&menuScene, pMgr));
+	input.BindCommand(1, dae::Gamepad::ControllerButton::ButtonA, dae::KeyState::Pressed, std::make_unique<dae::ReturnToMenuCommand>(&menuScene, pMgr));
 
-	auto toggleInstCmd = std::make_unique<dae::ToggleInstructionsCommand>(&instructionsScene);
-	input.BindCommand(SDL_SCANCODE_F3, dae::KeyState::Pressed, std::move(toggleInstCmd));
+	input.BindCommand(SDL_SCANCODE_F3, dae::KeyState::Pressed, std::make_unique<dae::ToggleInstructionsCommand>(&instructionsScene));
+	input.BindCommand(0, dae::Gamepad::ControllerButton::ButtonX, dae::KeyState::Pressed, std::make_unique<dae::ToggleInstructionsCommand>(&instructionsScene));
+	input.BindCommand(1, dae::Gamepad::ControllerButton::ButtonX, dae::KeyState::Pressed, std::make_unique<dae::ToggleInstructionsCommand>(&instructionsScene));
 
 	g_AchievementMgr = std::make_shared<dae::AchievementManager>();
 	scoreObs1->AddObserver(g_AchievementMgr.get());
@@ -409,11 +490,10 @@ static void load()
 	dae::LevelManager::GetInstance().LoadAllLevelsFromFile(levelPath);
 
 	auto transMgrObj = std::make_unique<dae::GameObject>();
-	auto transComp = transMgrObj->AddComponent<dae::LevelTransitionManager>(&gameScene, diggerComp1, diggerComp2, p2LabelPtr, livesUI2Ptr, scoreUI1.get(), livesObs2);
-
+	auto transComp = transMgrObj->AddComponent<dae::LevelTransitionManager>(&gameScene, diggerComp1, diggerComp2, p2LabelPtr, livesUI2Ptr, scoreUI1Ptr, livesObs2);
+	gameScene.Add(std::move(transMgrObj));
 	diggerComp1->AddObserver(transComp);
 	diggerComp2->AddObserver(transComp);
-	gameScene.Add(std::move(transMgrObj));
 }
 
 int main(int, char* [])

@@ -19,7 +19,7 @@ namespace dae
 
         void CycleLetter(int direction);
 
-        void AdvanceIndex();
+        void AdvanceIndex(int direction);
 
         void ConfirmName();
 

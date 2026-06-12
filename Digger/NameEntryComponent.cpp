@@ -44,12 +44,13 @@ namespace dae
         RefreshDisplay();
     }
 
-    void NameEntryComponent::AdvanceIndex()
+    void NameEntryComponent::AdvanceIndex(int direction)
     {
         if (m_InputCooldown > 0.0f) return;
         m_InputCooldown = 0.15f;
 
-        m_CurrentIndex = (m_CurrentIndex + 1) % 3;
+        m_CurrentIndex = (m_CurrentIndex + direction) % 3;
+        if (m_CurrentIndex < 0) m_CurrentIndex += 3;
         RefreshDisplay();
     }
 

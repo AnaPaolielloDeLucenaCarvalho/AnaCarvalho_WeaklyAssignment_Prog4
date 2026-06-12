@@ -7,17 +7,19 @@
 namespace dae
 {
     class NameEntryComponent;
+    class Scene;
 
     class CycleLetterCommand final : public Command
     {
     public:
-        CycleLetterCommand(NameEntryComponent* pEntry, int direction);
+        CycleLetterCommand(NameEntryComponent* pEntry, int direction, Scene* targetScene);
 
         void Execute(float deltaTime) override;
 
     private:
         NameEntryComponent* m_pEntry;
-        int m_Direction; // +1 or -1
+        int m_Direction;
+        Scene* m_pTargetScene;
     };
 
 }

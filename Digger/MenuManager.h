@@ -20,6 +20,10 @@ namespace dae
 
         void Update(float deltaTime) override;
 
+        void NavigateUp();
+        void NavigateDown();
+        void Select();
+
     private:
         HighScoreManager* m_pMgr;
         Scene* m_pScoreScene;
@@ -28,7 +32,6 @@ namespace dae
         std::vector<TextComponent*> m_ScoreTexts;
         std::vector<TextComponent*> m_NameTexts;
         int m_SelectedIndex{ 0 };
-        float m_InputCooldown{ 0.0f };
         float m_RefreshTimer{ 0.0f };
     };
 }

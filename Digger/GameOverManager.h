@@ -24,6 +24,10 @@ namespace dae
 
         void Update(float deltaTime) override;
 
+        void NavigateUp();
+        void NavigateDown();
+        void Select();
+
     private:
         Scene* m_pMenuScene;
         Scene* m_pGameScene;
@@ -34,7 +38,6 @@ namespace dae
         std::vector<TextComponent*> m_Options;
 
         bool m_IsSetup{false};
-        float m_InputCooldown{0.5f};
         int m_SelectedIndex{0};
     };
 }

@@ -32,7 +32,7 @@ namespace dae
         void UnbindAll();
 
     private:
-        std::map<std::pair<SDL_Scancode, KeyState>, std::unique_ptr<Command>> m_keyboardCommands;
+        std::multimap<std::pair<SDL_Scancode, KeyState>, std::unique_ptr<Command>> m_keyboardCommands;
 		std::vector<std::unique_ptr<Gamepad>> m_pGamepads; // so it supports multiple gamepads
 
         struct GamepadBinding
@@ -46,7 +46,7 @@ namespace dae
                 return std::tie(controllerIndex, button, state) < std::tie(other.controllerIndex, other.button, other.state);
             }
         };
-        std::map<GamepadBinding, std::unique_ptr<Command>> m_GamepadCommands;
+        std::multimap<GamepadBinding, std::unique_ptr<Command>> m_GamepadCommands;
     };
 }
 

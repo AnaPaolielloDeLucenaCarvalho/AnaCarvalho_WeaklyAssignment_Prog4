@@ -2,6 +2,7 @@
 #define SKIP_LEVEL_COMMAND_H
 
 #include "Command.h"
+#include <cstdint>
 
 namespace dae
 {
@@ -16,6 +17,7 @@ namespace dae
 
     private:
         DiggerComponent* m_pDigger;
+        uint64_t m_LastPressTime{ 0 };
     };
 }
 

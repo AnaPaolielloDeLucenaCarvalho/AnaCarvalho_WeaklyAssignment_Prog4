@@ -20,13 +20,8 @@ namespace dae
     {
     }
 
-    void GameOverManager::Update(float deltaTime)
+    void GameOverManager::Update(float /*deltaTime*/)
     {
-        if (m_InputCooldown > 0.0f)
-        {
-            m_InputCooldown -= deltaTime;
-        }
-
         if (!m_IsSetup)
         {
             m_IsSetup = true;
@@ -44,42 +39,6 @@ namespace dae
             }
         }
 
-        const bool* state = SDL_GetKeyboardState(nullptr);
-        
-        if (m_InputCooldown <= 0.0f)
-        {
-            if (state[SDL_SCANCODE_UP])
-            {
-                m_SelectedIndex--;
-                if (m_SelectedIndex < 0) m_SelectedIndex = static_cast<int>(m_Options.size()) - 1;
-                m_InputCooldown = 0.2f;
-            }
-            else if (state[SDL_SCANCODE_DOWN])
-            {
-                m_SelectedIndex++;
-                if (m_SelectedIndex >= static_cast<int>(m_Options.size())) m_SelectedIndex = 0;
-                m_InputCooldown = 0.2f;
-            }
-            else if (state[SDL_SCANCODE_RETURN])
-            {
-                m_InputCooldown = 0.5f;
-                LevelManager::GetInstance().SetNeedsGameReset(true);
-                
-                if (m_SelectedIndex == 0)
-                {
-                    SceneManager::GetInstance().SetActiveScene(m_pGameScene);
-                }
-                else if (m_SelectedIndex == 1)
-                {
-                    if (m_pHighScoreMgr) m_pHighScoreMgr->ClearSessionName(); // Forget the name!
-                    SceneManager::GetInstance().SetActiveScene(m_pMenuScene);
-                }
-                
-                m_IsSetup = false;
-                return;
-            }
-        }
-
         for (size_t i = 0; i < m_Options.size(); ++i)
         {
             if (static_cast<int>(i) == m_SelectedIndex)
@@ -91,5 +50,34 @@ namespace dae
                 m_Options[i]->SetColor(SDL_Color{255, 255, 255, 255}); // White
             }
         }
+    }
+
+    void GameOverManager::NavigateUp()
+    {
+        m_SelectedIndex--;
+        if (m_SelectedIndex < 0) m_SelectedIndex = static_cast<int>(m_Options.size()) - 1;
+    }
+
+    void GameOverManager::NavigateDown()
+    {
+        m_SelectedIndex++;
+        if (m_SelectedIndex >= static_cast<int>(m_Options.size())) m_SelectedIndex = 0;
+    }
+
+    void GameOverManager::Select()
+    {
+        LevelManager::GetInstance().SetNeedsGameReset(true);
+        
+        if (m_SelectedIndex == 0)
+        {
+            SceneManager::GetInstance().SetActiveScene(m_pGameScene);
+        }
+        else if (m_SelectedIndex == 1)
+        {
+            if (m_pHighScoreMgr) m_pHighScoreMgr->ClearSessionName(); // Forget the name!
+            SceneManager::GetInstance().SetActiveScene(m_pMenuScene);
+        }
+        
+        m_IsSetup = false;
     }
 }

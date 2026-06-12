@@ -42,29 +42,6 @@ namespace dae
             }
         }
 
-        if (m_InputCooldown > 0.0f)
-        {
-            m_InputCooldown -= deltaTime;
-        }
-
-        const bool* pStates = SDL_GetKeyboardState(nullptr);
-
-        if (m_InputCooldown <= 0.0f)
-        {
-            if (pStates[SDL_SCANCODE_DOWN])
-            {
-                m_SelectedIndex++;
-                if (m_SelectedIndex > 2) m_SelectedIndex = 0;
-                m_InputCooldown = 0.2f;
-            }
-            else if (pStates[SDL_SCANCODE_UP])
-            {
-                m_SelectedIndex--;
-                if (m_SelectedIndex < 0) m_SelectedIndex = 2;
-                m_InputCooldown = 0.2f;
-            }
-        }
-
         for (int i = 0; i < static_cast<int>(m_Options.size()); ++i)
         {
             if (i == m_SelectedIndex)
@@ -76,31 +53,41 @@ namespace dae
                 m_Options[i]->SetColor(SDL_Color{ 255, 255, 255, 255 }); // White
             }
         }
+    }
 
-        if (pStates[SDL_SCANCODE_RETURN] && m_InputCooldown <= 0.0f)
+    void MenuManager::NavigateUp()
+    {
+        m_SelectedIndex--;
+        if (m_SelectedIndex < 0) m_SelectedIndex = 2;
+    }
+
+    void MenuManager::NavigateDown()
+    {
+        m_SelectedIndex++;
+        if (m_SelectedIndex > 2) m_SelectedIndex = 0;
+    }
+
+    void MenuManager::Select()
+    {
+        // Force a hard reset for EVERY new game started from the menu!
+        LevelManager::GetInstance().SetNeedsGameReset(true);
+
+        if (m_SelectedIndex == 2)
         {
-            m_InputCooldown = 0.5f;
+            LevelManager::GetInstance().SetGameMode(GameMode::Versus);
+            SceneManager::GetInstance().SetActiveScene(m_pGameScene);
+        }
+        else
+        {
+            LevelManager::GetInstance().SetGameMode(m_SelectedIndex == 0 ? GameMode::SinglePlayer : GameMode::CoOp);
 
-            // Force a hard reset for EVERY new game started from the menu!
-            LevelManager::GetInstance().SetNeedsGameReset(true);
-
-            if (m_SelectedIndex == 2)
+            if (m_pMgr && !m_pMgr->HasSessionName())
             {
-                LevelManager::GetInstance().SetGameMode(GameMode::Versus);
-                SceneManager::GetInstance().SetActiveScene(m_pGameScene);
+                SceneManager::GetInstance().SetActiveScene(m_pScoreScene);
             }
             else
             {
-                LevelManager::GetInstance().SetGameMode(m_SelectedIndex == 0 ? GameMode::SinglePlayer : GameMode::CoOp);
-
-                if (m_pMgr && !m_pMgr->HasSessionName())
-                {
-                    SceneManager::GetInstance().SetActiveScene(m_pScoreScene);
-                }
-                else
-                {
-                    SceneManager::GetInstance().SetActiveScene(m_pGameScene);
-                }
+                SceneManager::GetInstance().SetActiveScene(m_pGameScene);
             }
         }
     }

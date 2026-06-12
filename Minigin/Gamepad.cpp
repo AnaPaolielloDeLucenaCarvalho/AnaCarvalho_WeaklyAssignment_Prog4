@@ -23,21 +23,30 @@ namespace dae
             ZeroMemory(&m_CurrentState, sizeof(XINPUT_STATE));
             XInputGetState(m_ControllerIndex, &m_CurrentState);
 
-            auto buttonChanges = m_CurrentState.Gamepad.wButtons ^ m_PreviousState.Gamepad.wButtons;
-            m_ButtonsPressedThisFrame = buttonChanges & m_CurrentState.Gamepad.wButtons;
-            m_ButtonsReleasedThisFrame = buttonChanges & (~m_CurrentState.Gamepad.wButtons);
+            unsigned int currentButtons = m_CurrentState.Gamepad.wButtons;
+            if (m_CurrentState.Gamepad.bRightTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD)
+                currentButtons |= 0x40000;
+            unsigned int previousButtons = m_PreviousState.Gamepad.wButtons;
+            if (m_PreviousState.Gamepad.bRightTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD)
+                previousButtons |= 0x40000;
+
+            auto buttonChanges = currentButtons ^ previousButtons;
+            m_ButtonsPressedThisFrame = buttonChanges & currentButtons;
+            m_ButtonsReleasedThisFrame = buttonChanges & (~currentButtons);
+            m_CurrentButtons = currentButtons;
         }
 
         bool IsDown(ControllerButton button) const { return m_ButtonsPressedThisFrame & static_cast<unsigned int>(button); }
         bool IsUp(ControllerButton button) const { return m_ButtonsReleasedThisFrame & static_cast<unsigned int>(button); }
-        bool IsPressed(ControllerButton button) const { return m_CurrentState.Gamepad.wButtons & static_cast<unsigned int>(button); }
+        bool IsPressed(ControllerButton button) const { return m_CurrentButtons & static_cast<unsigned int>(button); }
 
     private:
         unsigned int m_ControllerIndex;
         XINPUT_STATE m_PreviousState;
         XINPUT_STATE m_CurrentState;
-        int m_ButtonsPressedThisFrame{ 0 };
-        int m_ButtonsReleasedThisFrame{ 0 };
+        unsigned int m_CurrentButtons{ 0 };
+        unsigned int m_ButtonsPressedThisFrame{ 0 };
+        unsigned int m_ButtonsReleasedThisFrame{ 0 };
     };
 }
 
@@ -92,8 +101,15 @@ namespace dae
             Map(ControllerButton::DPadDown, SDL_GAMEPAD_BUTTON_DPAD_DOWN);
             Map(ControllerButton::DPadLeft, SDL_GAMEPAD_BUTTON_DPAD_LEFT);
             Map(ControllerButton::DPadRight, SDL_GAMEPAD_BUTTON_DPAD_RIGHT);
+            Map(ControllerButton::ButtonStart, SDL_GAMEPAD_BUTTON_START);
+            Map(ControllerButton::LeftShoulder, SDL_GAMEPAD_BUTTON_LEFT_SHOULDER);
+            Map(ControllerButton::RightShoulder, SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER);
             Map(ControllerButton::ButtonA, SDL_GAMEPAD_BUTTON_SOUTH);
             Map(ControllerButton::ButtonB, SDL_GAMEPAD_BUTTON_EAST);
+            Map(ControllerButton::ButtonY, SDL_GAMEPAD_BUTTON_NORTH);
+
+            if (SDL_GetGamepadAxis(m_pGamepad, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER) > 16000)
+                m_CurrentButtons |= static_cast<unsigned int>(ControllerButton::RightTrigger);
         }
 
         bool IsDown(ControllerButton b) const {

@@ -14,12 +14,12 @@ namespace dae
 
     void InputManager::BindCommand(SDL_Scancode key, KeyState state, std::unique_ptr<Command> command)
     {
-        m_keyboardCommands[std::make_pair(key, state)] = std::move(command);
+        m_keyboardCommands.insert({std::make_pair(key, state), std::move(command)});
     }
 
     void InputManager::BindCommand(unsigned int controllerIndex, Gamepad::ControllerButton button, KeyState state, std::unique_ptr<Command> command)
     {
-        m_GamepadCommands[GamepadBinding{ controllerIndex, button, state }] = std::move(command);
+        m_GamepadCommands.insert({GamepadBinding{ controllerIndex, button, state }, std::move(command)});
     }
 
     void InputManager::UnbindAll()

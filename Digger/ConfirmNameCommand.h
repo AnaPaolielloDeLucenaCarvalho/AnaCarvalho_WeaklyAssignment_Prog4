@@ -8,15 +8,18 @@ namespace dae
 {
     class NameEntryComponent;
 
+    class Scene;
+
     class ConfirmNameCommand final : public Command
     {
     public:
-        explicit ConfirmNameCommand(NameEntryComponent* pEntry);
+        explicit ConfirmNameCommand(NameEntryComponent* pEntry, Scene* targetScene);
 
         void Execute(float deltaTime) override;
 
     private:
         NameEntryComponent* m_pEntry;
+        Scene* m_pTargetScene;
     };
 }
 
