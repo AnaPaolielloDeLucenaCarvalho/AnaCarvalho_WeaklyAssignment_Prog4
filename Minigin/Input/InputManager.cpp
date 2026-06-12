@@ -19,19 +19,19 @@ namespace dae
 
     void InputManager::BindCommand(unsigned int controllerIndex, Gamepad::ControllerButton button, KeyState state, std::unique_ptr<Command> command)
     {
-        m_GamepadCommands.insert({GamepadBinding{ controllerIndex, button, state }, std::move(command)});
+        m_gamepadCommands.insert({GamepadBinding{ controllerIndex, button, state }, std::move(command)});
     }
 
     void InputManager::UnbindAll()
     {
         m_keyboardCommands.clear();
-        m_GamepadCommands.clear();
+        m_gamepadCommands.clear();
     }
 
     bool InputManager::ProcessInput(float deltaTime)
     {
 		// now it supports multiple gamepads
-        for (auto& gamepad : m_pGamepads)
+        for (const auto& gamepad : m_pGamepads)
         {
             gamepad->Update();
         }
@@ -49,7 +49,7 @@ namespace dae
 
         // Keyboard Commands
         const bool* state = SDL_GetKeyboardState(nullptr);
-        for (auto& [keyBinding, command] : m_keyboardCommands)
+        for (const auto& [keyBinding, command] : m_keyboardCommands)
         {
             const auto& [key, keyState] = keyBinding;
             if (keyState == KeyState::Pressed && state[key])
@@ -59,7 +59,7 @@ namespace dae
         }
 
         // Gamepad Commands
-        for (auto& [binding, command] : m_GamepadCommands)
+        for (const auto& [binding, command] : m_gamepadCommands)
         {
             if (binding.controllerIndex < m_pGamepads.size())
             {

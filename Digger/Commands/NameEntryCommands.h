@@ -20,7 +20,7 @@ namespace dae
 
     private:
         NameEntryComponent* m_pEntry;
-        int m_Direction;
+        int m_direction;
         Scene* m_pTargetScene;
     };
 
@@ -43,7 +43,7 @@ namespace dae
 
     private:
         NameEntryComponent* m_pEntry;
-        int m_Direction;
+        int m_direction;
         Scene* m_pTargetScene;
     };
 }

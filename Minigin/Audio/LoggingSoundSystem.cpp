@@ -4,61 +4,61 @@
 namespace dae
 {
     LoggingSoundSystem::LoggingSoundSystem(std::unique_ptr<SoundSystem>&& ss)
-        : _realSS(std::move(ss))
+        : m_pRealSS(std::move(ss))
     {
     }
 
     void LoggingSoundSystem::Play(const sound_id id, const float volume)
     {
         std::cout << "[Sound Logger] Playing sound ID: " << id << " at volume: " << volume << "\n";
-        _realSS->Play(id, volume);
+        m_pRealSS->Play(id, volume);
     }
 
     void LoggingSoundSystem::PlayMusic(const sound_id id, const float volume, const bool loop)
     {
         std::cout << "[Sound Logger] Playing music ID: " << id << " at volume: " << volume << " loop: " << loop << "\n";
-        _realSS->PlayMusic(id, volume, loop);
+        m_pRealSS->PlayMusic(id, volume, loop);
     }
 
     void LoggingSoundSystem::PauseMusic()
     {
         std::cout << "[Sound Logger] Pausing music\n";
-        _realSS->PauseMusic();
+        m_pRealSS->PauseMusic();
     }
 
     void LoggingSoundSystem::ResumeMusic()
     {
         std::cout << "[Sound Logger] Resuming music\n";
-        _realSS->ResumeMusic();
+        m_pRealSS->ResumeMusic();
     }
 
     void LoggingSoundSystem::StopMusic()
     {
         std::cout << "[Sound Logger] Stopping music\n";
-        _realSS->StopMusic();
+        m_pRealSS->StopMusic();
     }
 
     void LoggingSoundSystem::PlaySfx(const sound_id id, const float volume)
     {
         std::cout << "[Sound Logger] Playing sfx ID: " << id << " at volume: " << volume << "\n";
-        _realSS->PlaySfx(id, volume);
+        m_pRealSS->PlaySfx(id, volume);
     }
 
     void LoggingSoundSystem::StopSfx()
     {
         std::cout << "[Sound Logger] Stopping sfx\n";
-        _realSS->StopSfx();
+        m_pRealSS->StopSfx();
     }
 
     void LoggingSoundSystem::LoadSound(const sound_id id, const std::string& filePath)
     {
         std::cout << "[Sound Logger] Loading sound ID: " << id << " from " << filePath << "\n";
-        _realSS->LoadSound(id, filePath);
+        m_pRealSS->LoadSound(id, filePath);
     }
 
     void LoggingSoundSystem::ToggleMute()
     {
         std::cout << "[Sound Logger] Toggling Audio Mute State\n";
-        _realSS->ToggleMute();
+        m_pRealSS->ToggleMute();
     }
 }

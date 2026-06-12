@@ -1,4 +1,6 @@
-#pragma once
+#ifndef SCENE_H
+#define SCENE_H
+
 #include <vector>
 #include <memory>
 #include <string>
@@ -17,6 +19,7 @@ namespace dae
 		friend class SceneManager;
 
 	public:
+		explicit Scene() = default;
 		void Add(std::unique_ptr<GameObject> object);
 		void Remove(GameObject* object);
 		void RemoveAll();
@@ -35,11 +38,10 @@ namespace dae
 		Scene& operator=(Scene&& other) = delete;
 
 	private:
-		explicit Scene() = default;
-
 		std::vector<std::unique_ptr<GameObject>> m_objects{};
 		std::vector<std::unique_ptr<GameObject>> m_pendingObjects{};
 
 		bool m_levelNeedsCleanup{ false };
 	};
 }
+#endif // SCENE_H

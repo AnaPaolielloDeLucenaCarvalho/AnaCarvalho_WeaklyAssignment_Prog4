@@ -25,6 +25,9 @@ namespace dae
 
     void EnemyComponent::Update(float deltaTime)
     {
+        if (m_p1 && m_p1->IsDead()) return;
+        if (LevelManager::GetInstance().GetGameMode() != GameMode::SinglePlayer && m_p2 && m_p2->IsDead()) return;
+
         // Dynamic targeting evaluation: The enemy decides who to chase every frame.
         m_pTarget = nullptr;
         float minDist = 999999.f;
@@ -57,22 +60,22 @@ namespace dae
         // Delegate logic execution down to the active State (Nobbin or Hobbin)
         if (m_pCurrentState)
         {
-            EnemyState* newState = m_pCurrentState->Update(this, deltaTime);
+            std::unique_ptr<EnemyState> newState = m_pCurrentState->Update(this, deltaTime);
             if (newState)
             {
-                ChangeState(newState);
+                ChangeState(std::move(newState));
             }
         }
     }
 
-    void EnemyComponent::ChangeState(EnemyState* newState)
+    void EnemyComponent::ChangeState(std::unique_ptr<EnemyState> newState)
     {
         if (m_pCurrentState)
         {
             m_pCurrentState->OnExit(this);
         }
 
-        m_pCurrentState.reset(newState);
+        m_pCurrentState = std::move(newState);
 
         if (m_pCurrentState)
         {
@@ -97,15 +100,15 @@ namespace dae
         // pathfinding enemies (only calculates when perfectly centered on a tile intersection)
         if (glm::distance(glm::vec2(myPos.x, myPos.y), glm::vec2(centerX, centerY)) < 2.0f)
         {
-            glm::vec2 bestDir = m_CurrentDirection;
+            glm::vec2 bestDir = m_currentDirection;
             float minTargetDist = 999999.f;
             bool foundPath = false;
 
             glm::vec2 dirs[4] = { {1,0}, {-1,0}, {0,1}, {0,-1} };
-            for (auto& dir : dirs)
+            for (const auto& dir : dirs)
             {
                 // Penalize reversing direction heavily so AI doesn't stutter back and forth rapidly
-                bool isReverse = (dir.x == -m_CurrentDirection.x && dir.y == -m_CurrentDirection.y);
+                bool isReverse = (dir.x == -m_currentDirection.x && dir.y == -m_currentDirection.y);
 
                 float checkX = centerX + (dir.x * gridSize);
                 float checkY = centerY + (dir.y * gridSize);
@@ -114,7 +117,7 @@ namespace dae
                 if (checkX < 0 || checkX > 1000 || checkY < offsetY || checkY > 600) continue;
 
                 // nobbins cant dig, so they ignore dirt paths completely
-                if (!m_CanDig && LevelManager::GetInstance().IsDirtAt(checkX, checkY)) continue;
+                if (!m_canDig && LevelManager::GetInstance().IsDirtAt(checkX, checkY)) continue;
 
                 float penalty = isReverse ? 10000.f : 0.f;
                 float d = glm::distance(glm::vec2(checkX, checkY), glm::vec2(targetPos.x, targetPos.y)) + penalty;
@@ -127,39 +130,39 @@ namespace dae
                 }
             }
 
-            if (foundPath) m_CurrentDirection = bestDir;
-            else m_CurrentDirection = { 0,0 }; // if trapped wait to become a hobbin and dig
+            if (foundPath) m_currentDirection = bestDir;
+            else m_currentDirection = { 0,0 }; // if trapped wait to become a hobbin and dig
 
             GetOwner()->SetLocalPosition(centerX, centerY);
         }
 
         // movement
         // Hobbins move slower because they have to push through solid dirt
-        float speed = (m_CanDig ? 60.0f : 85.0f) * deltaTime;
-        float newX = myPos.x + (m_CurrentDirection.x * speed);
-        float newY = myPos.y + (m_CurrentDirection.y * speed);
+        float speed = (m_canDig ? 60.0f : 85.0f) * deltaTime;
+        float newX = myPos.x + (m_currentDirection.x * speed);
+        float newY = myPos.y + (m_currentDirection.y * speed);
 
         // Hobbins destroy the world geometry as they move!
-        if (m_CanDig && glm::length(m_CurrentDirection) > 0) LevelManager::GetInstance().Dig(newX, newY);
+        if (m_canDig && glm::length(m_currentDirection) > 0) LevelManager::GetInstance().Dig(newX, newY);
         GetOwner()->SetLocalPosition(newX, newY);
 
         // animation
-        m_AnimTimer += deltaTime;
-        if (m_AnimTimer > 0.15f)
+        m_animTimer += deltaTime;
+        if (m_animTimer > 0.15f)
         {
-            m_AnimTimer -= 0.15f;
-            m_Frame++;
-            if (m_Frame > 3) m_Frame = 1;
+            m_animTimer -= 0.15f;
+            m_frame++;
+            if (m_frame > 3) m_frame = 1;
 
             std::string texturePath;
-            if (m_CanDig)
+            if (m_canDig)
             {
-                std::string prefix = (m_CurrentDirection.x < 0) ? "PNG/Enemy/VLHOB" : "PNG/Enemy/VRHOB";
-                texturePath = prefix + std::to_string(m_Frame) + ".png";
+                std::string prefix = (m_currentDirection.x < 0) ? "PNG/Enemy/VLHOB" : "PNG/Enemy/VRHOB";
+                texturePath = prefix + std::to_string(m_frame) + ".png";
             }
             else
             {
-                texturePath = "PNG/Enemy/VNOB" + std::to_string(m_Frame) + ".png";
+                texturePath = "PNG/Enemy/VNOB" + std::to_string(m_frame) + ".png";
             }
 
             if (auto render = GetOwner()->GetComponent<RenderComponent>())
@@ -174,11 +177,11 @@ namespace dae
         enemy->SetCanDig(false);
     }
 
-    EnemyState* NobbinState::Update(EnemyComponent* enemy, float deltaTime)
+    std::unique_ptr<EnemyState> NobbinState::Update(EnemyComponent* enemy, float deltaTime)
     {
-        m_HobbinTimer -= deltaTime;
+        m_hobbinTimer -= deltaTime;
         // Trigger the metamorphosis into a Hobbin when the timer runs out!
-        if (m_HobbinTimer <= 0.0f) return new HobbinState();
+        if (m_hobbinTimer <= 0.0f) return std::make_unique<HobbinState>();
 
         enemy->MoveAI(deltaTime);
         return nullptr;
@@ -189,7 +192,7 @@ namespace dae
         enemy->SetCanDig(true); // can now eat dirt!
     }
 
-    EnemyState* HobbinState::Update(EnemyComponent* enemy, float deltaTime)
+    std::unique_ptr<EnemyState> HobbinState::Update(EnemyComponent* enemy, float deltaTime)
     {
         enemy->MoveAI(deltaTime);
         return nullptr;

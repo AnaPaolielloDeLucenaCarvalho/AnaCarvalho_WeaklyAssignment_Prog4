@@ -1,4 +1,6 @@
-﻿#pragma once
+#ifndef RESOURCEMANAGER_H
+#define RESOURCEMANAGER_H
+
 #include <filesystem>
 #include <string>
 #include <memory>
@@ -31,3 +33,4 @@ namespace dae
 
 	};
 }
+#endif // RESOURCEMANAGER_H

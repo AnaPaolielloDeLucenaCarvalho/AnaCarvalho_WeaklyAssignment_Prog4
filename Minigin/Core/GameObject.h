@@ -49,16 +49,16 @@ namespace dae
         void SetPositionDirty();
 
         void SetParent(GameObject* parent, bool keepWorldPosition);
-        GameObject* GetParent() const { return m_pParent; }
-        size_t GetChildCount() const { return m_pChildren.size(); }
-        GameObject* GetChildAt(unsigned int index) const { return m_pChildren[index]; }
+        GameObject* GetParent() const;
+        size_t GetChildCount() const;
+        GameObject* GetChildAt(unsigned int index) const;
         bool IsChild(GameObject* child) const;
 
-        void MarkForDestroy() { m_isMarkedForDestroy = true; }
-        bool IsMarkedForDestroy() const { return m_isMarkedForDestroy; }
+        void MarkForDestroy();
+        bool IsMarkedForDestroy() const;
 
-        void SetZIndex(int z) { m_zIndex = z; }
-        int GetZIndex() const { return m_zIndex; }
+        void SetZIndex(int z);
+        int GetZIndex() const;
 
         // COMPONENT SYSTEM
 

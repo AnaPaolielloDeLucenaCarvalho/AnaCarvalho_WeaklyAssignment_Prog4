@@ -19,7 +19,7 @@ namespace dae
     void Subject::Notify(EventId eventId, int value)
     {
         // Iterate through every registered listener and forcefully call their OnNotify method. This is where the Pointer Chasing (Cache Miss) happens, but because events don't fire thousands of times per frame, the performance hit is totally negligible.
-        for (auto observer : m_observers)
+        for (const auto& observer : m_observers)
         {
             observer->OnNotify(eventId, value);
         }

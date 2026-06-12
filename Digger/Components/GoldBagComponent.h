@@ -12,12 +12,16 @@ namespace dae
 {
     class GoldBagState;
 
-    class GoldBagComponent : public dae::Component
+    class GoldBagComponent final : public dae::Component
     {
     public:
-        GoldBagComponent(dae::GameObject* owner);
+        explicit GoldBagComponent(dae::GameObject* owner);
         ~GoldBagComponent() override;
 
+        GoldBagComponent(const GoldBagComponent&) = delete;
+        GoldBagComponent& operator=(GoldBagComponent&&) = delete;
+
+        void Render() const override {}
         void Update(float deltaTime) override;
 
         bool IsDirtDirectlyUnderneath() const;
@@ -32,22 +36,22 @@ namespace dae
 
         bool IsBroken() const 
         { 
-            return m_IsBroken; 
+            return m_isBroken; 
         }
         void SetBroken(bool broken) 
         { 
-            m_IsBroken = broken; 
+            m_isBroken = broken; 
         }
 
     private:
-        void ChangeState(GoldBagState* newState);
+        void ChangeState(std::unique_ptr<dae::GoldBagState> newState);
 
         std::unique_ptr<GoldBagState> m_pCurrentState{ nullptr };
 
         GameObject* m_pPlayer1{ nullptr };
         GameObject* m_pPlayer2{ nullptr };
 
-        bool m_IsBroken{ false };
+        bool m_isBroken{ false };
     };
 }
 #endif

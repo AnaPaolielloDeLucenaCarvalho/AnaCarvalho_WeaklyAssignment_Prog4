@@ -36,7 +36,7 @@ namespace dae
         // DESIGN DECISION - RAII
         // Using a unique_ptr guarantees the internal audio engine is safely destroyed when the game closes.
         class MiniaudioSoundSystemImpl; // Pimpl
-        std::unique_ptr<MiniaudioSoundSystemImpl> pImpl;
+        std::unique_ptr<MiniaudioSoundSystemImpl> m_pImpl;
     };
 }
 

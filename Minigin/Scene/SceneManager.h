@@ -1,4 +1,6 @@
-#pragma once
+#ifndef SCENE_MANAGER_H
+#define SCENE_MANAGER_H
+
 #include <vector>
 #include <string>
 #include <memory>
@@ -32,3 +34,4 @@ namespace dae
 		Scene* m_pActiveScene{ nullptr };
 	};
 }
+#endif // SCENE_MANAGER_H

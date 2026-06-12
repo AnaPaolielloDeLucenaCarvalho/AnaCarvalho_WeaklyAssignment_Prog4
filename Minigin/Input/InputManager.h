@@ -50,7 +50,7 @@ namespace dae
                 return std::tie(controllerIndex, button, state) < std::tie(other.controllerIndex, other.button, other.state);
             }
         };
-        std::multimap<GamepadBinding, std::unique_ptr<Command>> m_GamepadCommands;
+        std::multimap<GamepadBinding, std::unique_ptr<Command>> m_gamepadCommands;
     };
 }
 

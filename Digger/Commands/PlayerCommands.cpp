@@ -6,7 +6,7 @@ namespace dae
 // MoveCommand - Makes Digger move in a specified direction. 
     MoveCommand::MoveCommand(DiggerComponent* pDigger, const glm::vec2& direction)
         : m_pDigger(pDigger)
-        , m_Direction(direction)
+        , m_direction(direction)
     {
     }
 
@@ -15,7 +15,7 @@ namespace dae
         // Safe pointer check before delegating the action to the Receiver (DiggerComponent)
         if (m_pDigger)
         {
-            m_pDigger->SetDesiredDirection(m_Direction);
+            m_pDigger->SetDesiredDirection(m_direction);
         }
     }
 

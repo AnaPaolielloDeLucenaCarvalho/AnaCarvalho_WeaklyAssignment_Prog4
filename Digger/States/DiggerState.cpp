@@ -13,6 +13,7 @@
 #include <SDL3/SDL_timer.h>
 #include "HighScoreManager.h"
 #include <iostream>
+#include <algorithm>
 
 namespace dae
 {
@@ -122,31 +123,11 @@ namespace dae
         return glm::vec2{ newX, newY }; // return new position for collision checks
     }
 
-    // normal state
-    void DiggerNormalState::OnEnter(DiggerComponent* digger)
+    static void HandleDiamondCollisions(DiggerComponent* digger, float newX, float newY)
     {
-        digger->SetDead(false); // Wake up the enemies!
-        digger->SetLevelComplete(false);
-
-        if (auto render = digger->GetOwner()->GetComponent<RenderComponent>())
-        {
-            render->SetTexture("PNG/Digger/VRDIG1X.png");
-        }
-    }
-
-    DiggerState* DiggerNormalState::Update(DiggerComponent* digger, float deltaTime)
-    {
-        auto myPos = digger->GetOwner()->GetTransform().GetPosition();
-
-        const glm::vec2 newPos = ApplyDiggerMovement(digger, deltaTime);
-        const float newX = newPos.x;
-        const float newY = newPos.y;
-
-// COLLISIONS
-        // Player 1 handles diamond pickups. Player 2 (enemy) ignores them.
         if (digger->IsPlayerOne() || LevelManager::GetInstance().GetGameMode() != GameMode::Versus)
         {
-            for (auto& diamond : digger->GetDiamonds())
+            for (const auto& diamond : digger->GetDiamonds())
             {
                 if (!diamond || diamond->IsMarkedForDestroy()) continue;
 
@@ -155,15 +136,17 @@ namespace dae
                 if (glm::distance(glm::vec2{ newX, newY }, glm::vec2{ diamondPos.x, diamondPos.y }) < 20.f)
                 {
                     diamond->MarkForDestroy();
-                    digger->AwardPoints(25);
+                    digger->AwardPoints(25, false); // getting an emerald doesn't break the combo!
                     digger->AddEmeraldToCombo();
-                    ServiceLocator::GetSoundSystem().Play(AudioDefinitions::PICK_UP, 0.5f);
+                    ServiceLocator::GetSoundSystem().Play(static_cast<unsigned short>(AudioDefinitions::PICK_UP), 0.5f);
                 }
             }
         }
+    }
 
-        // Gold Bag pushing logic
-        for (auto& bag : digger->GetGoldBags())
+    static void HandleGoldBagCollisions(DiggerComponent* digger, float newX, float newY, float myPosX, float myPosY)
+    {
+        for (const auto& bag : digger->GetGoldBags())
         {
             if (!bag || bag->IsMarkedForDestroy()) continue;
             auto bagPos = bag->GetTransform().GetPosition();
@@ -175,37 +158,33 @@ namespace dae
             {
                 auto bagComp = bag->GetComponent<GoldBagComponent>();
                 
-                // If it is broken gold, pick it up for a massive score boost
                 if (bagComp && bagComp->IsBroken())
                 {
                     bag->MarkForDestroy();
                     digger->AwardPoints(500);
-                    digger->ResetEmeraldCombo();
-                    ServiceLocator::GetSoundSystem().Play(AudioDefinitions::PICK_UP, 0.5f);
+                    ServiceLocator::GetSoundSystem().Play(static_cast<unsigned short>(AudioDefinitions::PICK_UP), 0.5f);
                 }
                 else
                 {
-                    // If it is unbroken, push it forward relative to Digger's movement vector
                     glm::vec2 currentDir = digger->GetCurrentDirection();
-                    float oldDist = glm::distance(glm::vec2(myPos.x, myPos.y), glm::vec2(bagPos.x, bagPos.y));
+                    float oldDist = glm::distance(glm::vec2(myPosX, myPosY), glm::vec2(bagPos.x, bagPos.y));
                     float newDist = glm::distance(glm::vec2(newX, newY), glm::vec2(bagPos.x, bagPos.y));
 
                     if (newDist < oldDist)
                     {
-                        float deltaX = newX - myPos.x;
-                        float deltaY = newY - myPos.y;
+                        float deltaX = newX - myPosX;
+                        float deltaY = newY - myPosY;
 
                         bag->SetLocalPosition(bagPos.x + deltaX, bagPos.y + deltaY);
 
-                        // Chain pushing: if we push a bag into another bag, shift the second bag forward too!
                         for (int chain = 0; chain < 3; ++chain)
                         {
-                            for (auto& b1 : digger->GetGoldBags())
+                            for (const auto& b1 : digger->GetGoldBags())
                             {
                                 if (!b1 || b1->IsMarkedForDestroy()) continue;
                                 auto p1 = b1->GetTransform().GetPosition();
 
-                                for (auto& b2 : digger->GetGoldBags())
+                                for (const auto& b2 : digger->GetGoldBags())
                                 {
                                     if (b1 == b2 || !b2 || b2->IsMarkedForDestroy()) continue;
                                     auto p2 = b2->GetTransform().GetPosition();
@@ -224,12 +203,57 @@ namespace dae
                 }
             }
         }
+    }
+
+    static bool CheckWinConditions(DiggerComponent* digger)
+    {
+        if (!digger->GetDiamonds().empty())
+        {
+            bool allDiamondsCollected = std::all_of(digger->GetDiamonds().begin(), digger->GetDiamonds().end(), 
+                [](GameObject* d) { return !d || d->IsMarkedForDestroy(); });
+
+            const int totalForLevel = digger->GetTotalEnemiesForLevel();
+            
+            int deadCount = static_cast<int>(std::count_if(digger->GetEnemies().begin(), digger->GetEnemies().end(), 
+                [](GameObject* e) { return !e || e->IsMarkedForDestroy(); }));
+
+            const bool allSpawned = totalForLevel > 0 && static_cast<int>(digger->GetEnemies().size()) >= totalForLevel;
+            const bool allEnemiesDead = allSpawned && (deadCount == static_cast<int>(digger->GetEnemies().size()));
+
+            return allDiamondsCollected || allEnemiesDead;
+        }
+        return false;
+    }
+
+    // normal state
+    void DiggerNormalState::OnEnter(DiggerComponent* digger)
+    {
+        digger->SetDead(false); // Wake up the enemies!
+        digger->SetLevelComplete(false);
+
+        if (auto render = digger->GetOwner()->GetComponent<RenderComponent>())
+        {
+            render->SetTexture("PNG/Digger/VRDIG1X.png");
+        }
+    }
+
+    std::unique_ptr<dae::DiggerState> DiggerNormalState::Update(DiggerComponent* digger, float deltaTime)
+    {
+        auto myPos = digger->GetOwner()->GetTransform().GetPosition();
+
+        const glm::vec2 newPos = ApplyDiggerMovement(digger, deltaTime);
+        const float newX = newPos.x;
+        const float newY = newPos.y;
+
+// COLLISIONS
+        HandleDiamondCollisions(digger, newX, newY);
+        HandleGoldBagCollisions(digger, newX, newY, myPos.x, myPos.y);
 
 // DEATH
         if (digger->IsPlayerOne() || LevelManager::GetInstance().GetGameMode() != GameMode::Versus)
         {
             // Check collisions with all AI enemies
-            for (auto& enemy : digger->GetEnemies())
+            for (const auto& enemy : digger->GetEnemies())
             {
                 if (!enemy || enemy->IsMarkedForDestroy()) continue;
                 auto ePos = enemy->GetTransform().GetPosition();
@@ -237,7 +261,7 @@ namespace dae
                 if (glm::distance(glm::vec2{ newX, newY }, glm::vec2{ ePos.x, ePos.y }) < 20.f)
                 {
                     // Transition - Switch to Dead state immediately upon collision
-                    return new DiggerDeadState();
+                    return std::make_unique<DiggerDeadState>();
                 }
             }
         }
@@ -251,38 +275,15 @@ namespace dae
                 auto p2Pos = p2->GetTransform().GetPosition();
                 if (glm::distance(glm::vec2(newX, newY), glm::vec2(p2Pos.x, p2Pos.y)) < 20.f)
                 {
-                    return new DiggerDeadState();
+                    return std::make_unique<DiggerDeadState>();
                 }
             }
         }
 
 // WIN (Collected all the Emeralds OR All Enemies)
-        // Check win conditions.
-        if (!digger->GetDiamonds().empty())
+        if (CheckWinConditions(digger))
         {
-            bool allDiamondsCollected = true;
-            for (auto& diamond : digger->GetDiamonds())
-            {
-                if (diamond && !diamond->IsMarkedForDestroy())
-                {
-                    allDiamondsCollected = false;
-                }
-            }
-
-            const int totalForLevel = digger->GetTotalEnemiesForLevel();
-            int deadCount = 0;
-            for (auto& enemy : digger->GetEnemies())
-            {
-                if (!enemy || enemy->IsMarkedForDestroy()) deadCount++;
-            }
-            const bool allSpawned = totalForLevel > 0 && static_cast<int>(digger->GetEnemies().size()) >= totalForLevel;
-            const bool allEnemiesDead = allSpawned && (deadCount == static_cast<int>(digger->GetEnemies().size()));
-
-            // Transition: Progress to the next level if either win condition is satisfied
-            if (allDiamondsCollected || allEnemiesDead)
-            {
-                return new DiggerLevelCompleteState();
-            }
+            return std::make_unique<DiggerLevelCompleteState>();
         }
 
         return nullptr;
@@ -295,7 +296,7 @@ namespace dae
         ServiceLocator::GetSoundSystem().PauseMusic();
 
         // sound 1 = bonus.wav (Rossini / William Tell)
-        ServiceLocator::GetSoundSystem().PlaySfx(AudioDefinitions::BONUS, 1.0f);
+        ServiceLocator::GetSoundSystem().PlaySfx(static_cast<unsigned short>(AudioDefinitions::BONUS), 1.0f);
 
         if (auto render = digger->GetOwner()->GetComponent<RenderComponent>())
         {
@@ -318,7 +319,7 @@ namespace dae
         digger->GetSubject().Notify(make_sdbm_hash("BonusModeEnd"), 0);
     }
 
-    DiggerState* DiggerBonusState::Update(DiggerComponent* digger, float deltaTime)
+    std::unique_ptr<dae::DiggerState> DiggerBonusState::Update(DiggerComponent* digger, float deltaTime)
     {
         auto myPos = digger->GetOwner()->GetTransform().GetPosition();
 
@@ -328,84 +329,11 @@ namespace dae
         const float newY = newPos.y;
 
 // COLLISIONS
-        if (digger->IsPlayerOne() || LevelManager::GetInstance().GetGameMode() != GameMode::Versus)
-        {
-            for (auto& diamond : digger->GetDiamonds())
-            {
-                if (!diamond || diamond->IsMarkedForDestroy()) continue;
-
-                auto diamondPos = diamond->GetTransform().GetPosition();
-
-                if (glm::distance(glm::vec2{ newX, newY }, glm::vec2{ diamondPos.x, diamondPos.y }) < 20.f)
-                {
-                    diamond->MarkForDestroy();
-                    digger->AwardPoints(25);
-                    digger->AddEmeraldToCombo();
-                    ServiceLocator::GetSoundSystem().Play(AudioDefinitions::PICK_UP, 0.5f);
-                }
-            }
-        }
-
-        for (auto& bag : digger->GetGoldBags())
-        {
-            if (!bag || bag->IsMarkedForDestroy()) continue;
-            auto bagPos = bag->GetTransform().GetPosition();
-
-            bool touchingX = std::abs(newX - bagPos.x) < 32.0f;
-            bool touchingY = std::abs(newY - bagPos.y) < 32.0f;
-
-            if (touchingX && touchingY)
-            {
-                auto bagComp = bag->GetComponent<GoldBagComponent>();
-                if (bagComp && bagComp->IsBroken())
-                {
-                    bag->MarkForDestroy();
-                    digger->AwardPoints(500);
-                    digger->ResetEmeraldCombo();
-                    ServiceLocator::GetSoundSystem().Play(AudioDefinitions::PICK_UP, 0.5f);
-                }
-                else
-                {
-                    glm::vec2 currentDir = digger->GetCurrentDirection();
-                    float oldDist = glm::distance(glm::vec2(myPos.x, myPos.y), glm::vec2(bagPos.x, bagPos.y));
-                    float newDist = glm::distance(glm::vec2(newX, newY), glm::vec2(bagPos.x, bagPos.y));
-
-                    if (newDist < oldDist)
-                    {
-                        float deltaX = newX - myPos.x;
-                        float deltaY = newY - myPos.y;
-
-                        bag->SetLocalPosition(bagPos.x + deltaX, bagPos.y + deltaY);
-
-                        for (int chain = 0; chain < 3; ++chain)
-                        {
-                            for (auto& b1 : digger->GetGoldBags())
-                            {
-                                if (!b1 || b1->IsMarkedForDestroy()) continue;
-                                auto p1 = b1->GetTransform().GetPosition();
-
-                                for (auto& b2 : digger->GetGoldBags())
-                                {
-                                    if (b1 == b2 || !b2 || b2->IsMarkedForDestroy()) continue;
-                                    auto p2 = b2->GetTransform().GetPosition();
-
-                                    if (std::abs(p1.x - p2.x) < 38.0f && std::abs(p1.y - p2.y) < 38.0f)
-                                    {
-                                        if (currentDir.x > 0 && p1.x < p2.x) b2->SetLocalPosition(p1.x + 38.0f, p2.y);
-                                        else if (currentDir.x < 0 && p1.x > p2.x) b2->SetLocalPosition(p1.x - 38.0f, p2.y);
-                                        else if (currentDir.y > 0 && p1.y < p2.y) b2->SetLocalPosition(p2.x, p1.y + 38.0f);
-                                        else if (currentDir.y < 0 && p1.y > p2.y) b2->SetLocalPosition(p2.x, p1.y - 38.0f);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        HandleDiamondCollisions(digger, newX, newY);
+        HandleGoldBagCollisions(digger, newX, newY, myPos.x, myPos.y);
 
 // ALTERED RULE: In bonus mode, touching an enemy eats it for massive points instead of dying
-        for (auto& enemy : digger->GetEnemies())
+        for (const auto& enemy : digger->GetEnemies())
         {
             if (!enemy || enemy->IsMarkedForDestroy()) continue;
             auto ePos = enemy->GetTransform().GetPosition();
@@ -413,7 +341,7 @@ namespace dae
             {
                 enemy->MarkForDestroy();
                 digger->AwardPoints(250);
-                ServiceLocator::GetSoundSystem().Play(AudioDefinitions::KILL_ENEMY, 0.5f);
+                ServiceLocator::GetSoundSystem().Play(static_cast<unsigned short>(AudioDefinitions::KILL_ENEMY), 0.5f);
             }
         }
 
@@ -429,46 +357,25 @@ namespace dae
                     if (glm::distance(glm::vec2(newX, newY), glm::vec2(p2Pos.x, p2Pos.y)) < 25.f)
                     {
                         // In bonus mode, Player 1 eats Player 2
-                        p2Digger->ChangeState(new DiggerDeadState()); // Trigger death state!
+                        p2Digger->ChangeState(std::make_unique<DiggerDeadState>()); // Trigger death state!
                         digger->AwardPoints(250);
-                        ServiceLocator::GetSoundSystem().Play(AudioDefinitions::KILL_ENEMY, 0.5f);
+                        ServiceLocator::GetSoundSystem().Play(static_cast<unsigned short>(AudioDefinitions::KILL_ENEMY), 0.5f);
                     }
                 }
             }
         }
 
 // WIN (Collected all the Emeralds OR All Enemies)
-        if (!digger->GetDiamonds().empty())
+        if (CheckWinConditions(digger))
         {
-            bool allDiamondsCollected = true;
-            for (auto& diamond : digger->GetDiamonds())
-            {
-                if (diamond && !diamond->IsMarkedForDestroy())
-                {
-                    allDiamondsCollected = false;
-                }
-            }
-
-            const int totalForLevel = digger->GetTotalEnemiesForLevel();
-            int deadCount = 0;
-            for (auto& enemy : digger->GetEnemies())
-            {
-                if (!enemy || enemy->IsMarkedForDestroy()) deadCount++;
-            }
-            const bool allSpawned = totalForLevel > 0 && static_cast<int>(digger->GetEnemies().size()) >= totalForLevel;
-            const bool allEnemiesDead = allSpawned && (deadCount == static_cast<int>(digger->GetEnemies().size()));
-
-            if (allDiamondsCollected || allEnemiesDead)
-            {
-                return new DiggerLevelCompleteState();
-            }
+            return std::make_unique<DiggerLevelCompleteState>();
         }
 
         // Transition - Revert to Normal state when the timer expires
-        m_BonusTimer -= deltaTime;
-        if (m_BonusTimer <= 0.0f)
+        m_bonusTimer -= deltaTime;
+        if (m_bonusTimer <= 0.0f)
         {
-            return new DiggerNormalState();
+            return std::make_unique<DiggerNormalState>();
         }
 
         return nullptr;
@@ -479,10 +386,11 @@ namespace dae
     {
         digger->SetDead(true);
         digger->Die();
+        digger->ResetEmeraldCombo();
 
         // pause music so death sound plays exclusively
         ServiceLocator::GetSoundSystem().PauseMusic();
-        ServiceLocator::GetSoundSystem().PlaySfx(AudioDefinitions::DEATH, 1.0f);
+        ServiceLocator::GetSoundSystem().PlaySfx(static_cast<unsigned short>(AudioDefinitions::DEATH), 1.0f);
 
         if (auto render = digger->GetOwner()->GetComponent<RenderComponent>())
         {
@@ -490,22 +398,22 @@ namespace dae
         }
     }
 
-    DiggerState* DiggerDeadState::Update(DiggerComponent* digger, float deltaTime)
+    std::unique_ptr<dae::DiggerState> DiggerDeadState::Update(DiggerComponent* digger, float deltaTime)
     {
         // Play out the grave fading animation frames sequentially
-        m_AnimTimer += deltaTime;
-        if (m_AnimTimer > 0.4f && m_CurrentFrame < 5)
+        m_animTimer += deltaTime;
+        if (m_animTimer > 0.4f && m_currentFrame < 5)
         {
-            m_AnimTimer -= 0.4f;
-            m_CurrentFrame++;
+            m_animTimer -= 0.4f;
+            m_currentFrame++;
             if (auto render = digger->GetOwner()->GetComponent<RenderComponent>())
             {
-                render->SetTexture("PNG/Grave/VGRAVE" + std::to_string(m_CurrentFrame) + ".png");
+                render->SetTexture("PNG/Grave/VGRAVE" + std::to_string(m_currentFrame) + ".png");
             }
         }
 
-        m_RespawnTimer -= deltaTime;
-        if (m_RespawnTimer <= 0.0f)
+        m_respawnTimer -= deltaTime;
+        if (m_respawnTimer <= 0.0f)
         {
             // Transition - If lives remain, safely respawn at the origin. Otherwise, Game Over.
             if (digger->GetLives() > 0)
@@ -519,11 +427,11 @@ namespace dae
                 ServiceLocator::GetSoundSystem().StopSfx();
                 ServiceLocator::GetSoundSystem().ResumeMusic();
 
-                return new DiggerNormalState();
+                return std::make_unique<DiggerNormalState>();
             }
             else
             {
-                return new DiggerGameOverState();
+                return std::make_unique<DiggerGameOverState>();
             }
         }
 
@@ -550,16 +458,17 @@ namespace dae
         }
     }
 
-    DiggerState* DiggerGameOverState::Update(DiggerComponent* digger, float deltaTime)
+    std::unique_ptr<dae::DiggerState> DiggerGameOverState::Update(DiggerComponent* digger, float deltaTime)
     {
         // Prevent the dead state from hijacking the scene if a reset is pending!
         if (LevelManager::GetInstance().NeedsGameReset()) return nullptr;
 
-        m_Timer += deltaTime;
-        if (m_Timer >= 2.0f)
+        m_timer += deltaTime;
+        if (m_timer >= 2.0f)
         {
+            constexpr int k_GameOverSceneIndex = 3;
             auto& scenes = SceneManager::GetInstance();
-            Scene* gameOverScene = scenes.GetScene(3); // Menu=0, Score=1, Game=2, GameOver=3
+            Scene* gameOverScene = scenes.GetScene(k_GameOverSceneIndex); // Menu=0, Score=1, Game=2, GameOver=3
 
             auto mode = LevelManager::GetInstance().GetGameMode();
 
@@ -611,7 +520,7 @@ namespace dae
         digger->SetCurrentDirection(glm::vec2{ 0,0 });
 
         ServiceLocator::GetSoundSystem().PauseMusic();
-        ServiceLocator::GetSoundSystem().PlaySfx(AudioDefinitions::NEXT_LEVEL, 0.5f);
+        ServiceLocator::GetSoundSystem().PlaySfx(static_cast<unsigned short>(AudioDefinitions::NEXT_LEVEL), 0.5f);
 
         // Dynamically spawn a pure UI component to overlay the active screen and fade it 4s to black
         auto fadeObj = std::make_unique<GameObject>();
@@ -620,15 +529,15 @@ namespace dae
         SceneManager::GetInstance().GetActiveScene()->Add(std::move(fadeObj));
     }
 
-    DiggerState* DiggerLevelCompleteState::Update(DiggerComponent* digger, float deltaTime)
+    std::unique_ptr<dae::DiggerState> DiggerLevelCompleteState::Update(DiggerComponent* digger, float deltaTime)
     {
-        m_TransitionTimer -= deltaTime;
+        m_transitionTimer -= deltaTime;
 
         // Transition - After the visual fade finishes, notify the level manager to rebuild the grid
-        if (m_TransitionTimer <= 0.0f)
+        if (m_transitionTimer <= 0.0f)
         {
             digger->GetSubject().Notify(make_sdbm_hash("LoadNextLevel"), 0);
-            return new DiggerNormalState();
+            return std::make_unique<DiggerNormalState>();
         }
         return nullptr;
     }

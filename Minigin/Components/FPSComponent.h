@@ -15,6 +15,7 @@ namespace dae
         FPSComponent(GameObject* pOwner);
         ~FPSComponent() = default;
 
+        void Render() const override {}
         void Update(float deltaTime) override;
 
     private:

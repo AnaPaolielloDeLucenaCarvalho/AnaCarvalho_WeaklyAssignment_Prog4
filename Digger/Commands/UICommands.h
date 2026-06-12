@@ -22,11 +22,11 @@ namespace dae
         void Execute(float /*deltaTime*/) override;
 
     private:
-        int m_Direction; // -1 for up, +1 for down
+        int m_direction; // -1 for up, +1 for down
         MenuManager* m_pMenuMgr;
         GameOverManager* m_pGameOverMgr;
         Scene* m_pTargetScene;
-        uint64_t m_LastPressTime{ 0 }; // Timestamp of the last button press for debouncing
+        uint64_t m_lastPressTime{ 0 }; // Timestamp of the last button press for debouncing
     };
 
 // Command to select the currently highlighted option in the menu or game over screen
@@ -40,7 +40,7 @@ namespace dae
         MenuManager* m_pMenuMgr;
         GameOverManager* m_pGameOverMgr;
         Scene* m_pTargetScene;
-        uint64_t m_LastPressTime{ 0 }; // Timestamp of the last button press for debouncing
+        uint64_t m_lastPressTime{ 0 }; // Timestamp of the last button press for debouncing
     };
 }
 

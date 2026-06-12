@@ -1,6 +1,7 @@
-﻿#include <stdexcept>
+#include <stdexcept>
 #include <sstream>
 #include <iostream>
+#include <chrono> // For deltaTime
 
 #if WIN32
 #define WIN32_LEAN_AND_MEAN 
@@ -10,21 +11,18 @@
 #include <SDL3/SDL.h>
 //#include <SDL3_image/SDL_image.h>
 #include <SDL3_ttf/SDL_ttf.h>
-#include "Minigin.h"
-#include "InputManager.h"
-#include "SceneManager.h"
-#include "Renderer.h"
-#include "ResourceManager.h"
-
-#include "ServiceLocator.h" // for memory leak about sound system
-
-#include <chrono> // For deltaTime
 
 #if USE_STEAMWORKS
 #include <steam_api.h>
 #endif
 
-SDL_Window* g_window{};
+#include "Minigin.h"
+#include "InputManager.h"
+#include "SceneManager.h"
+#include "Renderer.h"
+#include "ResourceManager.h"
+#include "ServiceLocator.h" // for memory leak about sound system
+
 
 void LogSDLVersion(const std::string& message, int major, int minor, int patch)
 {
@@ -72,18 +70,21 @@ dae::Minigin::Minigin(const std::filesystem::path& dataPath)
 		throw std::runtime_error(std::string("SDL_Init Error: ") + SDL_GetError());
 	}
 
-	g_window = SDL_CreateWindow(
-		"Programming 4 assignment",
-		1024,
-		612,
-		SDL_WINDOW_OPENGL
+	m_window = std::unique_ptr<SDL_Window, void(*)(SDL_Window*)>(
+		SDL_CreateWindow(
+			"Programming 4 assignment",
+			1024,
+			612,
+			SDL_WINDOW_OPENGL
+		),
+		SDL_DestroyWindow
 	);
-	if (g_window == nullptr) 
+	if (m_window == nullptr) 
 	{
 		throw std::runtime_error(std::string("SDL_CreateWindow Error: ") + SDL_GetError());
 	}
 
-	Renderer::GetInstance().Init(g_window);
+	Renderer::GetInstance().Init(m_window.get());
 	ResourceManager::GetInstance().Init(dataPath);
 }
 
@@ -92,8 +93,7 @@ dae::Minigin::~Minigin()
 	dae::ServiceLocator::RegisterSoundSystem(nullptr);
 
 	Renderer::GetInstance().Destroy();
-	SDL_DestroyWindow(g_window);
-	g_window = nullptr;
+	m_window.reset();
 	SDL_Quit();
 }
 

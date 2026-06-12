@@ -18,18 +18,18 @@ namespace dae
 
     void BonusUIComponent::SetActive(bool active)
     {
-        m_Active = active;
+        m_active = active;
     }
 
     void BonusUIComponent::SetAlpha(uint8_t alpha)
     {
-        m_Alpha = alpha;
+        m_alpha = alpha;
     }
 
     void BonusUIComponent::Render() const
     {
         // Early out to save rendering performance if the bonus UI isn't currently triggered
-        if (!m_Active) return;
+        if (!m_active) return;
 
         SDL_Renderer* renderer = Renderer::GetInstance().GetSDLRenderer();
 
@@ -42,7 +42,7 @@ namespace dae
 
         // Enable alpha blending to allow the game world to show through the white flash
         SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-        SDL_SetRenderDrawColor(renderer, 255, 255, 255, m_Alpha); // white at chosen alpha
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, m_alpha); // white at chosen alpha
         SDL_RenderFillRect(renderer, &rect);
 
         // Restore the engine's original drawing color so we don't break subsequent render calls

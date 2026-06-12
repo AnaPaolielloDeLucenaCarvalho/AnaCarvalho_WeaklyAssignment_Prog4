@@ -49,21 +49,21 @@ namespace dae
         else
         {
             // In Co-Op or Versus, bags only pause if BOTH players are paused/dead
-            if (p1Paused && p2Paused) return;
+            if (p1Paused || p2Paused) return;
         }
 
         // Delegate execution down to the active State (Idle, Wobble, Falling, Broken)
         if (m_pCurrentState)
         {
-            GoldBagState* newState = m_pCurrentState->Update(this, deltaTime);
+            std::unique_ptr<dae::GoldBagState> newState = m_pCurrentState->Update(this, deltaTime);
             if (newState != nullptr)
             {
-                ChangeState(newState);
+                ChangeState(std::move(newState));
             }
         }
     }
 
-    void GoldBagComponent::ChangeState(GoldBagState* newState)
+    void GoldBagComponent::ChangeState(std::unique_ptr<dae::GoldBagState> newState)
     {
         // Cleanly exit the current state before entering the next one to avoid logic leaks
         if (m_pCurrentState)
@@ -71,7 +71,7 @@ namespace dae
             m_pCurrentState->OnExit(this);
         }
 
-        m_pCurrentState.reset(newState);
+        m_pCurrentState = std::move(newState);
 
         if (m_pCurrentState)
         {
@@ -112,7 +112,7 @@ namespace dae
                             if (!diggerComp->IsDead() && diggerComp->GetLives() > 0)
                             {
                                 // Force the player directly into the Dead state, ignoring normal health rules!
-                                diggerComp->ChangeState(new DiggerDeadState());
+                                diggerComp->ChangeState(std::make_unique<DiggerDeadState>());
                             }
                         }
                     }
@@ -129,7 +129,7 @@ namespace dae
             {
                 if (auto p2Digger = m_pPlayer2->GetComponent<DiggerComponent>()) 
                 {
-                    p2Digger->ChangeState(new dae::DiggerDeadState());
+                    p2Digger->ChangeState(std::make_unique<dae::DiggerDeadState>());
                 }
             }
         }
@@ -139,7 +139,7 @@ namespace dae
         {
             if (auto digger = m_pPlayer1->GetComponent<DiggerComponent>())
             {
-                for (auto& enemy : digger->GetEnemies())
+                for (const auto& enemy : digger->GetEnemies())
                 {
                     if (!enemy || enemy->IsMarkedForDestroy()) continue;
                     auto ePos = enemy->GetTransform().GetPosition();
@@ -149,7 +149,7 @@ namespace dae
                     {
                         enemy->MarkForDestroy(); // crush the enemy
                         digger->AwardPoints(250);
-                        ServiceLocator::GetSoundSystem().Play(AudioDefinitions::KILL_ENEMY, 0.5f);
+                        ServiceLocator::GetSoundSystem().Play(static_cast<unsigned short>(AudioDefinitions::KILL_ENEMY), 0.5f);
                     }
                 }
             }

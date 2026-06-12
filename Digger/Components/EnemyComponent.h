@@ -14,24 +14,30 @@ namespace dae
     class DiggerComponent;
     class EnemyState;
 
-    class EnemyComponent : public Component
+    class EnemyComponent final : public Component
     {
     public:
         EnemyComponent(GameObject* owner, DiggerComponent* p1, DiggerComponent* p2);
         ~EnemyComponent() override;
 
+        EnemyComponent(const EnemyComponent&) = delete;
+        EnemyComponent& operator=(const EnemyComponent&) = delete;
+        EnemyComponent(EnemyComponent&&) = delete;
+        EnemyComponent& operator=(EnemyComponent&&) = delete;
+
+        void Render() const override {}
         void Update(float deltaTime) override;
-        void ChangeState(EnemyState* newState);
+        void ChangeState(std::unique_ptr<EnemyState> newState);
 
         void MoveAI(float deltaTime);
 
         void SetCanDig(bool canDig) 
         { 
-            m_CanDig = canDig; 
+            m_canDig = canDig; 
         }
         bool CanDig() const 
         { 
-            return m_CanDig; 
+            return m_canDig; 
         }
 
         DiggerComponent* GetTarget() const 
@@ -45,35 +51,41 @@ namespace dae
         DiggerComponent* m_p2{ nullptr };
         DiggerComponent* m_pTarget{ nullptr };
 
-        glm::vec2 m_CurrentDirection{ 1, 0 };
-        bool m_CanDig{ false };
-        float m_AnimTimer{ 0.0f };
-        int m_Frame{ 1 };
+        glm::vec2 m_currentDirection{ 1, 0 };
+        bool m_canDig{ false };
+        float m_animTimer{ 0.0f };
+        int m_frame{ 1 };
     };
 
     class EnemyState
     {
     public:
         virtual ~EnemyState() = default;
+
+        EnemyState() = default;
+        EnemyState(const EnemyState& other) = delete;
+        EnemyState(EnemyState&& other) = delete;
+        EnemyState& operator=(const EnemyState& other) = delete;
+        EnemyState& operator=(EnemyState&& other) = delete;
         virtual void OnEnter(EnemyComponent* /*enemy*/) {}
         virtual void OnExit(EnemyComponent* /*enemy*/) {}
-        virtual EnemyState* Update(EnemyComponent* enemy, float deltaTime) = 0;
+        virtual std::unique_ptr<EnemyState> Update(EnemyComponent* enemy, float deltaTime) = 0;
     };
 
-    class NobbinState : public EnemyState
+    class NobbinState final : public EnemyState
     {
     public:
         void OnEnter(EnemyComponent* enemy) override;
-        EnemyState* Update(EnemyComponent* enemy, float deltaTime) override;
+        std::unique_ptr<EnemyState> Update(EnemyComponent* enemy, float deltaTime) override;
     private:
-        float m_HobbinTimer{ 10.0f }; // turn into a hobbin after 10s
+        float m_hobbinTimer{ 10.0f }; // turn into a hobbin after 10s
     };
 
-    class HobbinState : public EnemyState
+    class HobbinState final : public EnemyState
     {
     public:
         void OnEnter(EnemyComponent* enemy) override;
-        EnemyState* Update(EnemyComponent* enemy, float deltaTime) override;
+        std::unique_ptr<EnemyState> Update(EnemyComponent* enemy, float deltaTime) override;
     };
 }
 #endif

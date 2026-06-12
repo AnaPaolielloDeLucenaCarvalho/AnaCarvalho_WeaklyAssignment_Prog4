@@ -25,6 +25,7 @@ namespace dae
         GameOverManager& operator=(const GameOverManager& other) = delete;
         GameOverManager& operator=(GameOverManager&& other) = delete;
 
+        void Render() const override {}
         void Update(float deltaTime) override;
 
         void NavigateUp();
@@ -38,10 +39,10 @@ namespace dae
 
         TextComponent* m_pTitleText;
         TextComponent* m_pScoreText;
-        std::vector<TextComponent*> m_Options;
+        std::vector<TextComponent*> m_options;
 
-        bool m_IsSetup{ false };
-        int m_SelectedIndex{ 0 };
+        bool m_isSetup{ false };
+        int m_selectedIndex{ 0 };
     };
 }
 #endif

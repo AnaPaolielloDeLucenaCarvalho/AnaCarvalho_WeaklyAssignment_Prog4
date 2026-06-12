@@ -196,8 +196,8 @@ if (WIN32)
 endif()
 
 # Add steam if available
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/steam")
-find_package(Steamworks QUIET)
+# list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/steam")
+# find_package(Steamworks QUIET)
 
 # ---------------------------------------------------
 # LINKING DEPENDENCIES

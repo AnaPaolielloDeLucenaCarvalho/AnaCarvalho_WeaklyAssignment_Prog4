@@ -29,7 +29,7 @@ namespace dae
         void ToggleMute() override;
 
     private:
-        std::unique_ptr<SoundSystem> _realSS;
+        std::unique_ptr<SoundSystem> m_pRealSS;
     };
 }
 #endif

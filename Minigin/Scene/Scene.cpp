@@ -31,7 +31,7 @@ void Scene::RequestLevelCleanup()
 
 void Scene::Update(float deltaTime)
 {
-	for (auto& object : m_objects)
+	for (const auto& object : m_objects)
 	{
 		if (object && !object->IsMarkedForDestroy())
 		{
@@ -56,11 +56,10 @@ void Scene::Update(float deltaTime)
 
 void Scene::CleanUpScene()
 {
-	m_objects.erase(std::remove_if(m_objects.begin(), m_objects.end(),
-		[](const std::unique_ptr<GameObject>& obj)
+	std::erase_if(m_objects, [](const std::unique_ptr<GameObject>& obj)
 		{
 			return obj->IsMarkedForDestroy();
-		}), m_objects.end());
+		});
 }
 
 void Scene::Render() const

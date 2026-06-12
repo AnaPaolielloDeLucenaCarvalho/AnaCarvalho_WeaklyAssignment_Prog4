@@ -32,7 +32,7 @@ namespace dae
     private:
         Scene* m_pInstructionsScene;
         Scene* m_pPreviousScene{ nullptr };
-        uint64_t m_LastPressTime{ 0 };
+        uint64_t m_lastPressTime{ 0 };
     };
 
     class MuteCommand final : public Command
@@ -41,7 +41,7 @@ namespace dae
         MuteCommand() = default;
         void Execute(float deltaTime) override;
     private:
-        uint64_t m_LastToggleTime{ 0 };
+        uint64_t m_lastToggleTime{ 0 };
     };
 
     class DiggerComponent;
@@ -53,7 +53,7 @@ namespace dae
         void Execute(float deltaTime) override;
     private:
         DiggerComponent* m_pDigger;
-        uint64_t m_LastPressTime{ 0 };
+        uint64_t m_lastPressTime{ 0 };
     };
 }
 #endif

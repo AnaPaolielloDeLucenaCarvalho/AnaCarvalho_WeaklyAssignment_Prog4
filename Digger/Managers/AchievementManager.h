@@ -16,7 +16,7 @@
 
 namespace dae
 {
-    class AchievementManager : public Observer
+    class AchievementManager final : public Observer
     {
     public:
         AchievementManager();
@@ -27,11 +27,11 @@ namespace dae
     private:
         // Conditional compilation macros (#if) ensure that Steam-specific logic is entirely stripped  from the executable when compiling for the web browser.
 #if USE_STEAMWORKS
-        STEAM_CALLBACK(AchievementManager, OnUserStatsReceived, UserStatsReceived_t, m_CallbackUserStatsReceived);
+        STEAM_CALLBACK(AchievementManager, OnUserStatsReceived, UserStatsReceived_t, m_callbackUserStatsReceived);
         bool m_bInitialized = false;
 #endif
 
-        bool m_WinnerUnlocked = false;
+        bool m_winnerUnlocked = false;
         void UnlockAchievement(const char* id);
     };
 }

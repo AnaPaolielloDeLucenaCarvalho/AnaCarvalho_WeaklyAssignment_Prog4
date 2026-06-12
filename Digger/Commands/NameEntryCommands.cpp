@@ -10,7 +10,7 @@ namespace dae
 // Command to advance the index of the name entry (moving between initials)
     AdvanceIndexCommand::AdvanceIndexCommand(NameEntryComponent* pEntry, int direction, Scene* targetScene)
         : m_pEntry(pEntry)
-        , m_Direction(direction)
+        , m_direction(direction)
         , m_pTargetScene(targetScene)
     {
     }
@@ -24,7 +24,7 @@ namespace dae
         // Null check to ensure the receiver still exists in memory before calling its method
         if (m_pEntry)
         {
-            m_pEntry->AdvanceIndex(m_Direction);
+            m_pEntry->AdvanceIndex(m_direction);
         }
     }
 
@@ -49,7 +49,7 @@ namespace dae
 // Command to cycle through the letters for the current initial
     CycleLetterCommand::CycleLetterCommand(NameEntryComponent* pEntry, int direction, Scene* targetScene)
         : m_pEntry(pEntry)
-        , m_Direction(direction)
+        , m_direction(direction)
         , m_pTargetScene(targetScene)
     {
     }
@@ -61,7 +61,7 @@ namespace dae
 
         if (m_pEntry)
         {
-            m_pEntry->CycleLetter(m_Direction);
+            m_pEntry->CycleLetter(m_direction);
         }
     }
 }

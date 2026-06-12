@@ -11,47 +11,47 @@ namespace dae
     class Gamepad::GamepadImpl
     {
     public:
-        GamepadImpl(unsigned int index) : m_ControllerIndex(index)
+        GamepadImpl(unsigned int index) : m_controllerIndex(index)
         {
-            ZeroMemory(&m_CurrentState, sizeof(XINPUT_STATE));
-            ZeroMemory(&m_PreviousState, sizeof(XINPUT_STATE));
+            ZeroMemory(&m_currentState, sizeof(XINPUT_STATE));
+            ZeroMemory(&m_previousState, sizeof(XINPUT_STATE));
         }
 
         void Update()
         {
-            m_PreviousState = m_CurrentState;
-            ZeroMemory(&m_CurrentState, sizeof(XINPUT_STATE));
-            XInputGetState(m_ControllerIndex, &m_CurrentState);
+            m_previousState = m_currentState;
+            ZeroMemory(&m_currentState, sizeof(XINPUT_STATE));
+            XInputGetState(m_controllerIndex, &m_currentState);
 
-            unsigned int currentButtons = m_CurrentState.Gamepad.wButtons;
-            if (m_CurrentState.Gamepad.bRightTrigger > 153)
+            unsigned int currentButtons = m_currentState.Gamepad.wButtons;
+            if (m_currentState.Gamepad.bRightTrigger > 153)
                 currentButtons |= static_cast<unsigned int>(ControllerButton::RightTrigger);
-            if (m_CurrentState.Gamepad.bLeftTrigger > 153)
+            if (m_currentState.Gamepad.bLeftTrigger > 153)
                 currentButtons |= static_cast<unsigned int>(ControllerButton::LeftTrigger);
 
-            unsigned int previousButtons = m_PreviousState.Gamepad.wButtons;
-            if (m_PreviousState.Gamepad.bRightTrigger > 153)
+            unsigned int previousButtons = m_previousState.Gamepad.wButtons;
+            if (m_previousState.Gamepad.bRightTrigger > 153)
                 previousButtons |= static_cast<unsigned int>(ControllerButton::RightTrigger);
-            if (m_PreviousState.Gamepad.bLeftTrigger > 153)
+            if (m_previousState.Gamepad.bLeftTrigger > 153)
                 previousButtons |= static_cast<unsigned int>(ControllerButton::LeftTrigger);
 
             auto buttonChanges = currentButtons ^ previousButtons;
-            m_ButtonsPressedThisFrame = buttonChanges & currentButtons;
-            m_ButtonsReleasedThisFrame = buttonChanges & (~currentButtons);
-            m_CurrentButtons = currentButtons;
+            m_buttonsPressedThisFrame = buttonChanges & currentButtons;
+            m_buttonsReleasedThisFrame = buttonChanges & (~currentButtons);
+            m_currentButtons = currentButtons;
         }
 
-        bool IsDown(ControllerButton button) const { return m_ButtonsPressedThisFrame & static_cast<unsigned int>(button); }
-        bool IsUp(ControllerButton button) const { return m_ButtonsReleasedThisFrame & static_cast<unsigned int>(button); }
-        bool IsPressed(ControllerButton button) const { return m_CurrentButtons & static_cast<unsigned int>(button); }
+        bool IsDown(ControllerButton button) const { return m_buttonsPressedThisFrame & static_cast<unsigned int>(button); }
+        bool IsUp(ControllerButton button) const { return m_buttonsReleasedThisFrame & static_cast<unsigned int>(button); }
+        bool IsPressed(ControllerButton button) const { return m_currentButtons & static_cast<unsigned int>(button); }
 
     private:
-        unsigned int m_ControllerIndex;
-        XINPUT_STATE m_PreviousState;
-        XINPUT_STATE m_CurrentState;
-        unsigned int m_CurrentButtons{ 0 };
-        unsigned int m_ButtonsPressedThisFrame{ 0 };
-        unsigned int m_ButtonsReleasedThisFrame{ 0 };
+        unsigned int m_controllerIndex;
+        XINPUT_STATE m_previousState;
+        XINPUT_STATE m_currentState;
+        unsigned int m_currentButtons{ 0 };
+        unsigned int m_buttonsPressedThisFrame{ 0 };
+        unsigned int m_buttonsReleasedThisFrame{ 0 };
     };
 }
 
@@ -64,12 +64,12 @@ namespace dae
     {
     public:
         GamepadImpl(unsigned int index)
-            : m_ControllerIndex(index)
+            : m_controllerIndex(index)
             , m_pGamepad(nullptr)
-            , m_CurrentButtons(0)
-            , m_PreviousButtons(0)
+            , m_currentButtons(0)
+            , m_previousButtons(0)
         {
-            m_pGamepad = SDL_OpenGamepad(m_ControllerIndex);
+            m_pGamepad = SDL_OpenGamepad(m_controllerIndex);
         }
 
         ~GamepadImpl() { if (m_pGamepad) SDL_CloseGamepad(m_pGamepad); }
@@ -94,12 +94,12 @@ namespace dae
 
             if (!m_pGamepad) return;
 
-            m_PreviousButtons = m_CurrentButtons;
-            m_CurrentButtons = 0;
+            m_previousButtons = m_currentButtons;
+            m_currentButtons = 0;
 
             auto Map = [&](ControllerButton daeB, SDL_GamepadButton sdlB) {
                 if (SDL_GetGamepadButton(m_pGamepad, sdlB))
-                    m_CurrentButtons |= static_cast<unsigned int>(daeB);
+                    m_currentButtons |= static_cast<unsigned int>(daeB);
                 };
 
             Map(ControllerButton::DPadUp, SDL_GAMEPAD_BUTTON_DPAD_UP);
@@ -114,26 +114,26 @@ namespace dae
             Map(ControllerButton::ButtonY, SDL_GAMEPAD_BUTTON_NORTH);
 
             if (SDL_GetGamepadAxis(m_pGamepad, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER) > 19660)
-                m_CurrentButtons |= static_cast<unsigned int>(ControllerButton::RightTrigger);
+                m_currentButtons |= static_cast<unsigned int>(ControllerButton::RightTrigger);
             if (SDL_GetGamepadAxis(m_pGamepad, SDL_GAMEPAD_AXIS_LEFT_TRIGGER) > 19660)
-                m_CurrentButtons |= static_cast<unsigned int>(ControllerButton::LeftTrigger);
+                m_currentButtons |= static_cast<unsigned int>(ControllerButton::LeftTrigger);
         }
 
         bool IsDown(ControllerButton b) const {
-            return (m_CurrentButtons & static_cast<unsigned int>(b)) && !(m_PreviousButtons & static_cast<unsigned int>(b));
+            return (m_currentButtons & static_cast<unsigned int>(b)) && !(m_previousButtons & static_cast<unsigned int>(b));
         }
         bool IsUp(ControllerButton b) const {
-            return !(m_CurrentButtons & static_cast<unsigned int>(b)) && (m_PreviousButtons & static_cast<unsigned int>(b));
+            return !(m_currentButtons & static_cast<unsigned int>(b)) && (m_previousButtons & static_cast<unsigned int>(b));
         }
         bool IsPressed(ControllerButton b) const {
-            return m_CurrentButtons & static_cast<unsigned int>(b);
+            return m_currentButtons & static_cast<unsigned int>(b);
         }
 
     private:
-        unsigned int m_ControllerIndex;
+        unsigned int m_controllerIndex;
         SDL_Gamepad* m_pGamepad;
-        unsigned int m_CurrentButtons;
-        unsigned int m_PreviousButtons;
+        unsigned int m_currentButtons;
+        unsigned int m_previousButtons;
     };
 }
 #endif

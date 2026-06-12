@@ -20,12 +20,12 @@ namespace dae
         Component& operator=(Component&& other) = delete;
 
         virtual void Update(float deltaTime) = 0;
-        virtual void Render() const {}
+        virtual void Render() const = 0;
 
-        GameObject* GetOwner() const { return m_pOwner; }
+        GameObject* GetOwner() const;
 
-        void MarkForDestroy() { m_isMarkedForDestroy = true; }
-        bool IsMarkedForDestroy() const { return m_isMarkedForDestroy; }
+        void MarkForDestroy();
+        bool IsMarkedForDestroy() const;
 
         Component(GameObject* pOwner);
 

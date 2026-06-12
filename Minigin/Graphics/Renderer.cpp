@@ -1,4 +1,4 @@
-﻿#include <stdexcept>
+#include <stdexcept>
 #include <cstring>
 #include <iostream>
 #include "Renderer.h"
@@ -112,3 +112,13 @@ void dae::Renderer::RenderTexture(const Texture2D & texture, float x, float y, f
 }
 
 SDL_Renderer* dae::Renderer::GetSDLRenderer() const { return m_renderer; }
+
+const SDL_Color& dae::Renderer::GetBackgroundColor() const 
+{ 
+	return m_clearColor; 
+}
+
+void dae::Renderer::SetBackgroundColor(const SDL_Color& color) 
+{ 
+	m_clearColor = color; 
+}

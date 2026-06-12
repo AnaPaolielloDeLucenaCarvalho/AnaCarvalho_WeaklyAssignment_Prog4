@@ -7,12 +7,12 @@
 namespace dae
 {
 // idle state
-    GoldBagState* GoldBagIdleState::Update(GoldBagComponent* bag, float /*deltaTime*/)
+    std::unique_ptr<dae::GoldBagState> GoldBagIdleState::Update(GoldBagComponent* bag, float /*deltaTime*/)
     {
         // Transition - If the dirt under the bag is removed, switch to the wobble phase.
         if (!bag->IsDirtDirectlyUnderneath())
         {
-            return new GoldBagWobbleState();
+            return std::make_unique<GoldBagWobbleState>();
         }
         return nullptr;
     }
@@ -20,7 +20,7 @@ namespace dae
 // wobble state
     void GoldBagWobbleState::OnEnter(GoldBagComponent* bag)
     {
-        m_WobbleTimer = 2.0f;
+        m_wobbleTimer = 2.0f;
 
         if (auto render = bag->GetOwner()->GetComponent<RenderComponent>()) 
         {
@@ -28,27 +28,27 @@ namespace dae
         }
     }
 
-    GoldBagState* GoldBagWobbleState::Update(GoldBagComponent* bag, float deltaTime)
+    std::unique_ptr<dae::GoldBagState> GoldBagWobbleState::Update(GoldBagComponent* bag, float deltaTime)
     {
-        m_WobbleTimer -= deltaTime;
-        m_ToggleTimer += deltaTime;
+        m_wobbleTimer -= deltaTime;
+        m_toggleTimer += deltaTime;
 
         // Toggle the texture left and right to visually so player knows to get out of the way
-        if (m_ToggleTimer > 0.15f)
+        if (m_toggleTimer > 0.15f)
         {
-            m_ToggleTimer -= 0.15f;
-            m_IsLeft = !m_IsLeft;
+            m_toggleTimer -= 0.15f;
+            m_isLeft = !m_isLeft;
 
             if (auto render = bag->GetOwner()->GetComponent<RenderComponent>()) 
             {
-                render->SetTexture(m_IsLeft ? "PNG/Money/CLBAG.png" : "PNG/Money/CRBAG.png");
+                render->SetTexture(m_isLeft ? "PNG/Money/CLBAG.png" : "PNG/Money/CRBAG.png");
             }
         }
 
         // Transition - after 2s of wobbling, gravity takes over
-        if (m_WobbleTimer <= 0.0f)
+        if (m_wobbleTimer <= 0.0f)
         {
-            return new GoldBagFallingState();
+            return std::make_unique<GoldBagFallingState>();
         }
         return nullptr;
     }
@@ -57,10 +57,10 @@ namespace dae
     void GoldBagFallingState::OnEnter(GoldBagComponent* bag)
     {
         // Record the starting height so we know if the bag fell far enough to break open
-        m_StartY = bag->GetOwner()->GetTransform().GetPosition().y;
+        m_startY = bag->GetOwner()->GetTransform().GetPosition().y;
     }
 
-    GoldBagState* GoldBagFallingState::Update(GoldBagComponent* bag, float deltaTime)
+    std::unique_ptr<dae::GoldBagState> GoldBagFallingState::Update(GoldBagComponent* bag, float deltaTime)
     {
         auto pos = bag->GetOwner()->GetTransform().GetPosition();
         float speed = 150.f * deltaTime;
@@ -81,14 +81,14 @@ namespace dae
                 bag->GetOwner()->SetLocalPosition(pos.x, snappedY);
 
                 // Transition - If it fell more than 1.5 tiles, it shatters into collectable gold!
-                if ((snappedY - m_StartY) > (gridSize * 1.5f))
+                if ((snappedY - m_startY) > (gridSize * 1.5f))
                 {
-                    return new GoldBagBrokenState();
+                    return std::make_unique<GoldBagBrokenState>();
                 }
                 else
                 {
                     // If it barely fell, it just settles safely back into an idle state.
-                    return new GoldBagIdleState();
+                    return std::make_unique<GoldBagIdleState>();
                 }
             }
         }
@@ -111,7 +111,7 @@ namespace dae
         }
     }
 
-    GoldBagState* GoldBagBrokenState::Update(GoldBagComponent* bag, float deltaTime)
+    std::unique_ptr<dae::GoldBagState> GoldBagBrokenState::Update(GoldBagComponent* bag, float deltaTime)
     {
         // If the dirt supporting the broken gold is removed, the gold is permanently destroyed.
         if (!bag->IsDirtDirectlyUnderneath() && !bag->HitBottom())
@@ -120,21 +120,21 @@ namespace dae
             return nullptr;
         }
 
-        m_DespawnTimer -= deltaTime;
-        m_AnimTimer += deltaTime;
+        m_despawnTimer -= deltaTime;
+        m_animTimer += deltaTime;
 
         // Cycle through the glittering gold animation frames (small -> big -> settled)
-        if (m_AnimTimer > 0.2f && m_GoldFrame == 1)
+        if (m_animTimer > 0.2f && m_goldFrame == 1)
         {
-            m_GoldFrame = 2;
+            m_goldFrame = 2;
             if (auto render = bag->GetOwner()->GetComponent<RenderComponent>()) 
             {
                 render->SetTexture("PNG/Money/VGOLD2.png");
             }
         }
-        else if (m_AnimTimer > 0.4f && m_GoldFrame == 2)
+        else if (m_animTimer > 0.4f && m_goldFrame == 2)
         {
-            m_GoldFrame = 3;
+            m_goldFrame = 3;
             if (auto render = bag->GetOwner()->GetComponent<RenderComponent>())
             {
                 render->SetTexture("PNG/Money/VGOLD3.png");
@@ -142,7 +142,7 @@ namespace dae
         }
 
         // Cleanup - Gold vanishes if not collected fast enough.
-        if (m_DespawnTimer <= 0.0f)
+        if (m_despawnTimer <= 0.0f)
         {
             bag->GetOwner()->MarkForDestroy();
         }

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SINGLETON_H
+#define SINGLETON_H
 
 // DESIGN PATTERN - Singleton Pattern
 // A simple template to turn any manager class into a Singleton. I use this for things like the InputManager and SceneManager so they can be accessed globally without passing pointers.
@@ -25,3 +26,4 @@ namespace dae
 		Singleton() = default;
 	};
 }
+#endif // SINGLETON_H

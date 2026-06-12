@@ -32,6 +32,11 @@ namespace dae
         explicit Gamepad(unsigned int controllerIndex);
         ~Gamepad();
 
+        Gamepad(const Gamepad&) = delete;
+        Gamepad(Gamepad&&) = delete;
+        Gamepad& operator=(const Gamepad&) = delete;
+        Gamepad& operator=(Gamepad&&) = delete;
+
         void Update();
 
         bool IsDown(ControllerButton button) const;

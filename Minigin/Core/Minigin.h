@@ -4,6 +4,9 @@
 #include <string>
 #include <functional>
 #include <filesystem>
+#include <memory>
+
+struct SDL_Window;
 
 
 // DESIGN PATTERN - Facade Pattern (Engine Entry)
@@ -14,6 +17,7 @@ namespace dae
 	class Minigin final
 	{
 		bool m_quit{};
+		std::unique_ptr<SDL_Window, void(*)(SDL_Window*)> m_window{nullptr, nullptr};
 	public:
 		explicit Minigin(const std::filesystem::path& dataPath);
 		~Minigin();

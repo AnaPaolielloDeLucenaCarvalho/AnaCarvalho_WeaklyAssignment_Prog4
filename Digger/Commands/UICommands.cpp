@@ -7,7 +7,7 @@
 namespace dae
 {
     MenuNavigateCommand::MenuNavigateCommand(int direction, MenuManager* menuMgr, GameOverManager* goMgr, Scene* targetScene)
-        : m_Direction(direction)
+        : m_direction(direction)
         , m_pMenuMgr(menuMgr)
         , m_pGameOverMgr(goMgr)
         , m_pTargetScene(targetScene)
@@ -18,8 +18,8 @@ namespace dae
     {
         // Cooldown Logic - We use SDL_GetTicks to prevent the user from accidentally jumping  past multiple menu options in a single keystroke.
         uint64_t currentTime = SDL_GetTicks();
-        if (currentTime - m_LastPressTime < 200) return;
-        m_LastPressTime = currentTime;
+        if (currentTime - m_lastPressTime < 200) return;
+        m_lastPressTime = currentTime;
 
         // Scene Guard - Prevents inputs from bleeding into menus that are currently hidden
         if (dae::SceneManager::GetInstance().GetActiveScene() != m_pTargetScene) return;
@@ -27,13 +27,13 @@ namespace dae
         // We check which manager pointer is valid and route the navigation to the correct screen
         if (m_pMenuMgr)
         {
-            if (m_Direction < 0) m_pMenuMgr->NavigateUp();
-            else if (m_Direction > 0) m_pMenuMgr->NavigateDown();
+            if (m_direction < 0) m_pMenuMgr->NavigateUp();
+            else if (m_direction > 0) m_pMenuMgr->NavigateDown();
         }
         else if (m_pGameOverMgr)
         {
-            if (m_Direction < 0) m_pGameOverMgr->NavigateUp();
-            else if (m_Direction > 0) m_pGameOverMgr->NavigateDown();
+            if (m_direction < 0) m_pGameOverMgr->NavigateUp();
+            else if (m_direction > 0) m_pGameOverMgr->NavigateDown();
         }
     }
 
@@ -48,8 +48,8 @@ namespace dae
     {
         // Cooldown Logic - Prevent double-triggering a menu action by enforcing a 200ms cooldown.
         uint64_t currentTime = SDL_GetTicks();
-        if (currentTime - m_LastPressTime < 200) return;
-        m_LastPressTime = currentTime;
+        if (currentTime - m_lastPressTime < 200) return;
+        m_lastPressTime = currentTime;
 
         // Scene Guard
         if (dae::SceneManager::GetInstance().GetActiveScene() != m_pTargetScene) return;

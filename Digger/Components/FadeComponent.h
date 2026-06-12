@@ -20,9 +20,9 @@ namespace dae
         void Render() const override;
 
     private:
-        float m_FadeDuration;
-        float m_Timer{ 0.0f };
-        uint8_t m_Alpha{ 0 };
+        float m_fadeDuration;
+        float m_timer{ 0.0f };
+        uint8_t m_alpha{ 0 };
     };
 }
 

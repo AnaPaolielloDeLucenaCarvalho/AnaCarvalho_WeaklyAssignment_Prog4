@@ -20,6 +20,7 @@ namespace dae
     public:
         EnemySpawnerComponent(GameObject* owner, DiggerComponent* p1, DiggerComponent* p2, int maxTotal, int maxConcurrent);
 
+        void Render() const override {}
         void Update(float deltaTime) override;
 
         void AddObserver(Observer* obs);
@@ -27,13 +28,13 @@ namespace dae
     private:
         DiggerComponent* m_p1;
         DiggerComponent* m_p2;
-        int m_MaxTotalEnemies;
-        int m_MaxConcurrent;
-        int m_TotalSpawned{ 0 };
-        float m_SpawnTimer{ 0.0f }; // spawn 1 enemy immediately
-        bool m_ThresholdNotified{ false }; // fire only once per level
-        std::vector<GameObject*> m_SpawnedEnemies;
-        Subject m_Subject;
+        int m_maxTotalEnemies;
+        int m_maxConcurrent;
+        int m_totalSpawned{ 0 };
+        float m_spawnTimer{ 0.0f }; // spawn 1 enemy immediately
+        bool m_thresholdNotified{ false }; // fire only once per level
+        std::vector<GameObject*> m_spawnedEnemies;
+        Subject m_subject;
     };
 }
 

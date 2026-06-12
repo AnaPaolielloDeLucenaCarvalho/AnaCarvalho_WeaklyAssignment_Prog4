@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RENDERER_H
+#define RENDERER_H
 #include <SDL3/SDL.h>
 #include "Singleton.h"
 
@@ -25,8 +26,9 @@ namespace dae
 
 		SDL_Renderer* GetSDLRenderer() const;
 
-		const SDL_Color& GetBackgroundColor() const { return m_clearColor; }
-		void SetBackgroundColor(const SDL_Color& color) { m_clearColor = color; }
+		const SDL_Color& GetBackgroundColor() const;
+		void SetBackgroundColor(const SDL_Color& color);
 	};
 }
 
+#endif // RENDERER_H

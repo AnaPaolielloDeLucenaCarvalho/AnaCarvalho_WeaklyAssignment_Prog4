@@ -38,8 +38,8 @@ namespace dae
     {
         // Debounce Logic - using SDL_GetTicks instead of deltaTime, because Commands only execute on the exact frame a key is pressed,  deltaTime would force the user to manually mash the button to tick the timer down.
         uint64_t currentTime = SDL_GetTicks();
-        if (currentTime - m_LastPressTime < 300) return;
-        m_LastPressTime = currentTime;
+        if (currentTime - m_lastPressTime < 300) return;
+        m_lastPressTime = currentTime;
 
         auto& sm = SceneManager::GetInstance();
         Scene* currentScene = sm.GetActiveScene();
@@ -65,10 +65,10 @@ namespace dae
     {
         // Absolute cooldown to prevent the mute toggle from flickering on and off
         const uint64_t currentTime = SDL_GetTicks();
-        if (currentTime - m_LastToggleTime > 300)
+        if (currentTime - m_lastToggleTime > 300)
         {
             ServiceLocator::GetSoundSystem().ToggleMute();
-            m_LastToggleTime = currentTime;
+            m_lastToggleTime = currentTime;
         }
     }
 
@@ -81,8 +81,8 @@ namespace dae
     {
         // 300ms absolute cooldown to prevent rapid-fire level skipping
         uint64_t currentTime = SDL_GetTicks();
-        if (currentTime - m_LastPressTime < 300) return;
-        m_LastPressTime = currentTime;
+        if (currentTime - m_lastPressTime < 300) return;
+        m_lastPressTime = currentTime;
 
         // DESIGN PATTERN - Observer Pattern
         // Instead of hard-linking the level skip to the LevelManager, we notify the Player's Subject. Observer pattern ensures the command shouts "LoadNextLevel", and the listening manager handles it without tight coupling

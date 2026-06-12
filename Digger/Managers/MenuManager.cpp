@@ -16,9 +16,9 @@ namespace dae
         , m_pMgr(pMgr)
         , m_pScoreScene(pScoreScene)
         , m_pGameScene(pGameScene)
-        , m_Options(options)
-        , m_ScoreTexts(scoreTexts)
-        , m_NameTexts(nameTexts)
+        , m_options(options)
+        , m_scoreTexts(scoreTexts)
+        , m_nameTexts(nameTexts)
     {
     }
 
@@ -26,32 +26,32 @@ namespace dae
     {
         // ARCHITECTURAL DECISION - Polling Timer
         // Reading from a text file on the hard drive is incredibly slow. Instead of forcing the game  to read the HighScores file 60 times a second in the Update loop, we only read it once  every 1.0 second. This keeps the framerate perfectly smooth while still keeping the board live.
-        m_RefreshTimer -= deltaTime;
-        if (m_RefreshTimer <= 0.0f && m_pMgr)
+        m_refreshTimer -= deltaTime;
+        if (m_refreshTimer <= 0.0f && m_pMgr)
         {
-            m_RefreshTimer = 1.0f; // Reset the timer
+            m_refreshTimer = 1.0f; // Reset the timer
             auto topScores = m_pMgr->GetTopScores(5);
-            for (size_t i = 0; i < topScores.size() && i < m_ScoreTexts.size(); ++i)
+            for (size_t i = 0; i < topScores.size() && i < m_scoreTexts.size(); ++i)
             {
                 // Format the scores with leading zeros to match the arcade aesthetic
                 std::ostringstream scoreOss;
                 scoreOss << std::setfill('0') << std::setw(5) << topScores[i].score;
-                if (m_ScoreTexts[i]) m_ScoreTexts[i]->SetText(scoreOss.str());
-                if (m_NameTexts[i]) m_NameTexts[i]->SetText(topScores[i].initials);
+                if (m_scoreTexts[i]) m_scoreTexts[i]->SetText(scoreOss.str());
+                if (m_nameTexts[i]) m_nameTexts[i]->SetText(topScores[i].initials);
             }
         }
 
         // DESIGN DECISION - Data-Driven UI
         // By storing the menu options in a std::vector, we can loop through them dynamically, cleaner than writing a giant hardcoded switch statement to color each option individually
-        for (int i = 0; i < static_cast<int>(m_Options.size()); ++i)
+        for (int i = 0; i < static_cast<int>(m_options.size()); ++i)
         {
-            if (i == m_SelectedIndex)
+            if (i == m_selectedIndex)
             {
-                m_Options[i]->SetColor(SDL_Color{ 255, 255, 0, 255 }); // Highlight selected in Yellow
+                m_options[i]->SetColor(SDL_Color{ 255, 255, 0, 255 }); // Highlight selected in Yellow
             }
             else
             {
-                m_Options[i]->SetColor(SDL_Color{ 255, 255, 255, 255 }); // Unselected remains White
+                m_options[i]->SetColor(SDL_Color{ 255, 255, 255, 255 }); // Unselected remains White
             }
         }
     }
@@ -59,15 +59,15 @@ namespace dae
     void MenuManager::NavigateUp()
     {
         // Decrement index and wrap around to the bottom of the list if we go past the top
-        m_SelectedIndex--;
-        if (m_SelectedIndex < 0) m_SelectedIndex = 2;
+        m_selectedIndex--;
+        if (m_selectedIndex < 0) m_selectedIndex = static_cast<int>(m_options.size()) - 1;
     }
 
     void MenuManager::NavigateDown()
     {
         // Increment index and wrap around to the top of the list if we go past the bottom
-        m_SelectedIndex++;
-        if (m_SelectedIndex > 2) m_SelectedIndex = 0;
+        m_selectedIndex++;
+        if (m_selectedIndex >= static_cast<int>(m_options.size())) m_selectedIndex = 0;
     }
 
     void MenuManager::Select()
@@ -76,14 +76,14 @@ namespace dae
         // We inform the global LevelManager that a completely fresh game session is starting, so it knows to completely wipe out any lingering states from previous playthroughs.
         LevelManager::GetInstance().SetNeedsGameReset(true);
 
-        if (m_SelectedIndex == 2) // "VERSUS" Mode
+        if (m_selectedIndex == 2) // "VERSUS" Mode
         {
             LevelManager::GetInstance().SetGameMode(GameMode::Versus);
             SceneManager::GetInstance().SetActiveScene(m_pGameScene);
         }
         else // "SINGLE PLAYER" (0) or "CO-OP" (1)
         {
-            LevelManager::GetInstance().SetGameMode(m_SelectedIndex == 0 ? GameMode::SinglePlayer : GameMode::CoOp);
+            LevelManager::GetInstance().SetGameMode(m_selectedIndex == 0 ? GameMode::SinglePlayer : GameMode::CoOp);
 
             // STATE ROUTING: If the player hasn't entered their initials yet this session, intercept them and route  them to the Name Entry scene. Otherwise, drop them directly into the Game scene.
             if (m_pMgr && !m_pMgr->HasSessionName())

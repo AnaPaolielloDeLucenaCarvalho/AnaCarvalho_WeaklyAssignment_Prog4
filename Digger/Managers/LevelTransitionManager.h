@@ -22,6 +22,7 @@ namespace dae
     public:
         LevelTransitionManager(GameObject* owner, Scene* scene, DiggerComponent* p1, DiggerComponent* p2, GameObject* p2Label = nullptr, GameObject* p2Lives = nullptr, GameObject* scoreUI1 = nullptr, LivesSpriteDisplayComponent* p2LivesUI = nullptr);
 
+        void Render() const override {}
         void Update(float deltaTime) override;
         void OnNotify(EventId eventId, int value) override;
 
@@ -36,26 +37,26 @@ namespace dae
         GameObject* m_p2Lives;
         GameObject* m_pScoreUI1;
         LivesSpriteDisplayComponent* m_p2LivesUI;
-        std::vector<GameObject*> m_VisualDirt;
-        int m_CurrentLevelIndex{ 0 };
-        uint64_t m_LastLoadTime{ 0 };
-        bool m_HasLoadedFirstLevel{ false };
+        std::vector<GameObject*> m_visualDirt;
+        int m_currentLevelIndex{ 0 };
+        uint64_t m_lastLoadTime{ 0 };
+        bool m_hasLoadedFirstLevel{ false };
 
-        std::vector<GameObject*> m_MiscEntities;
+        std::vector<GameObject*> m_miscEntities;
 
         // 'B' tile position — set during LoadLevel, used by SpawnCherry()
-        float m_CherrySpawnX{ 0.0f };
-        float m_CherrySpawnY{ 0.0f };
-        bool m_CherrySpawned{ false };
+        float m_cherrySpawnX{ 0.0f };
+        float m_cherrySpawnY{ 0.0f };
+        bool m_cherrySpawned{ false };
 
         void SpawnCherry();
 
         // bonus - map flicker
-        bool m_BonusMapActive{ false };
-        bool m_BonusFlickerPhase{ false }; // true during - first 5s so it flickers
-        float m_BonusFlickerTimer{ 0.0f };
-        float m_BonusFlickerInterval{ 0.0f };
-        bool m_BonusLightOn{ false }; // which phase of the flicker we are in
+        bool m_bonusMapActive{ false };
+        bool m_bonusFlickerPhase{ false }; // true during - first 5s so it flickers
+        float m_bonusFlickerTimer{ 0.0f };
+        float m_bonusFlickerInterval{ 0.0f };
+        bool m_bonusLightOn{ false }; // which phase of the flicker we are in
 
         void ApplyDirtBrightness(bool enable);
     };

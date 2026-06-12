@@ -34,9 +34,9 @@ namespace dae
     void LevelTransitionManager::Update(float deltaTime)
     {
         // Wait to load the first level until this scene actually becomes the active one!
-        if (!m_HasLoadedFirstLevel && SceneManager::GetInstance().GetActiveScene() == m_pScene)
+        if (!m_hasLoadedFirstLevel && SceneManager::GetInstance().GetActiveScene() == m_pScene)
         {
-            m_HasLoadedFirstLevel = true;
+            m_hasLoadedFirstLevel = true;
             LoadLevel(0);
         }
 
@@ -67,30 +67,30 @@ namespace dae
             // Update score in the HighScoreManager to 0
             if (m_p1 && m_p1->GetHighScoreManager()) m_p1->GetHighScoreManager()->SetCurrentScore(0);
 
-            m_CurrentLevelIndex = 0;
+            m_currentLevelIndex = 0;
             LoadLevel(0);
         }
 
         // Fast escape if no bonus mode visual effects are required right now
-        if (!m_BonusMapActive) return;
+        if (!m_bonusMapActive) return;
 
         // Visual Flicker Effect - Makes the dirt blocks rapidly switch brightness to simulate an arcade panic state
-        if (m_BonusFlickerPhase)
+        if (m_bonusFlickerPhase)
         {
-            m_BonusFlickerTimer += deltaTime;
-            m_BonusFlickerInterval += deltaTime;
+            m_bonusFlickerTimer += deltaTime;
+            m_bonusFlickerInterval += deltaTime;
 
-            if (m_BonusFlickerInterval >= 0.15f)
+            if (m_bonusFlickerInterval >= 0.15f)
             {
-                m_BonusFlickerInterval -= 0.15f;
-                m_BonusLightOn = !m_BonusLightOn;
-                ApplyDirtBrightness(m_BonusLightOn);
+                m_bonusFlickerInterval -= 0.15f;
+                m_bonusLightOn = !m_bonusLightOn;
+                ApplyDirtBrightness(m_bonusLightOn);
             }
 
-            if (m_BonusFlickerTimer >= 5.0f)
+            if (m_bonusFlickerTimer >= 5.0f)
             {
                 // Flicker over — lock to BRIGHT for the rest of bonus time.
-                m_BonusFlickerPhase = false;
+                m_bonusFlickerPhase = false;
                 ApplyDirtBrightness(true);
             }
         }
@@ -103,38 +103,38 @@ namespace dae
         {
             // Enforce a 1-second cooldown using an absolute timestamp so we don't accidentally load 2 levels instantly
             const uint64_t currentTime = SDL_GetTicks();
-            if (currentTime - m_LastLoadTime < 1000) return;
-            m_LastLoadTime = currentTime;
+            if (currentTime - m_lastLoadTime < 1000) return;
+            m_lastLoadTime = currentTime;
 
             // Increment and wrap around to the beginning if we run out of level files
-            m_CurrentLevelIndex++;
-            if (m_CurrentLevelIndex >= LevelManager::GetInstance().GetTotalLevels()) m_CurrentLevelIndex = 0;
+            m_currentLevelIndex++;
+            if (m_currentLevelIndex >= LevelManager::GetInstance().GetTotalLevels()) m_currentLevelIndex = 0;
 
-            LoadLevel(m_CurrentLevelIndex);
+            LoadLevel(m_currentLevelIndex);
         }
         else if (eventId == make_sdbm_hash("EnemyThresholdReached"))
         {
             // 75% of enemies spawned — show the cherry at the 'B' tile
-            if (!m_CherrySpawned && m_CherrySpawnX > 0.0f)
+            if (!m_cherrySpawned && m_cherrySpawnX > 0.0f)
             {
                 SpawnCherry();
-                m_CherrySpawned = true;
+                m_cherrySpawned = true;
             }
         }
         else if (eventId == make_sdbm_hash("BonusModeStart"))
         {
             // Start the flicker. Begin on NORMAL so the first toggle flashes BRIGHT.
-            m_BonusMapActive = true;
-            m_BonusFlickerPhase = true;
-            m_BonusFlickerTimer = 0.0f;
-            m_BonusFlickerInterval = 0.0f;
-            m_BonusLightOn = false;
+            m_bonusMapActive = true;
+            m_bonusFlickerPhase = true;
+            m_bonusFlickerTimer = 0.0f;
+            m_bonusFlickerInterval = 0.0f;
+            m_bonusLightOn = false;
             ApplyDirtBrightness(false);
         }
         else if (eventId == make_sdbm_hash("BonusModeEnd"))
         {
-            m_BonusMapActive = false;
-            m_BonusFlickerPhase = false;
+            m_bonusMapActive = false;
+            m_bonusFlickerPhase = false;
             ApplyDirtBrightness(false);
         }
     }
@@ -148,12 +148,12 @@ namespace dae
         // Enforce a strict state reset to destroy any active Bonus Mode and its timer
         if (m_p1) 
         {
-            if (m_p1->GetLives() > 0) m_p1->ChangeState(new DiggerNormalState());
+            if (m_p1->GetLives() > 0) m_p1->ChangeState(std::make_unique<DiggerNormalState>());
             else m_p1->GetOwner()->SetLocalPosition(-1000.f, -1000.f); // Keep them hidden
         }
         if (m_p2) 
         {
-            if (m_p2->GetLives() > 0) m_p2->ChangeState(new DiggerNormalState());
+            if (m_p2->GetLives() > 0) m_p2->ChangeState(std::make_unique<DiggerNormalState>());
             else m_p2->GetOwner()->SetLocalPosition(-1000.f, -1000.f); // Keep them hidden
         }
 
@@ -170,16 +170,16 @@ namespace dae
         { 
             if (enemy) enemy->MarkForDestroy(); 
         }
-        for (auto* dirt : m_VisualDirt) 
+        for (auto* dirt : m_visualDirt) 
         { 
             if (dirt) dirt->MarkForDestroy(); 
         }
-        for (auto* entity : m_MiscEntities) 
+        for (auto* entity : m_miscEntities) 
         { 
             if (entity) entity->MarkForDestroy(); 
         }
 
-        m_MiscEntities.clear();
+        m_miscEntities.clear();
         m_p1->SetGoldBags({});
         m_p1->SetDiamonds({});
         m_p1->SetEnemies({});
@@ -189,18 +189,18 @@ namespace dae
             m_p2->SetDiamonds({});
             m_p2->SetEnemies({});
         }
-        m_VisualDirt.clear();
+        m_visualDirt.clear();
 
         // Reset and re-initialise the grid data structures
-        m_CherrySpawnX = 0.0f;
-        m_CherrySpawnY = 0.0f;
-        m_CherrySpawned = false;
+        m_cherrySpawnX = 0.0f;
+        m_cherrySpawnY = 0.0f;
+        m_cherrySpawned = false;
 
         m_p1->SetTotalEnemiesForLevel(0);
         if (m_p2) m_p2->SetTotalEnemiesForLevel(0);
 
-        m_BonusMapActive = false;
-        m_BonusFlickerPhase = false;
+        m_bonusMapActive = false;
+        m_bonusFlickerPhase = false;
 
         LevelManager::GetInstance().ClearLevel();
         m_pScene->RequestLevelCleanup(); // Scene cleans up at end of frame
@@ -279,7 +279,7 @@ namespace dae
                         tile->AddComponent<RenderComponent>(normalTexture);
                         tile->SetLocalPosition(bx, by + (static_cast<float>(strip) * 8.0f));
                         tile->SetZIndex(1);
-                        m_VisualDirt.push_back(tile.get());
+                        m_visualDirt.push_back(tile.get());
                         m_pScene->Add(std::move(tile));
                     }
                 }
@@ -329,14 +329,14 @@ namespace dae
 
                     spawnerC->AddObserver(this); // notified when 75% spawned → SpawnCherry
                     spawner->SetLocalPosition(bx, by);
-                    m_MiscEntities.push_back(spawner.get());
+                    m_miscEntities.push_back(spawner.get());
                     m_pScene->Add(std::move(spawner));
                 }
                 else if (c == 'B')
                 {
                     // Cherry spawn point — record position, no GameObject yet
-                    m_CherrySpawnX = bx;
-                    m_CherrySpawnY = by;
+                    m_cherrySpawnX = bx;
+                    m_cherrySpawnY = by;
                 }
                 else if (c == 'D')
                 {
@@ -385,15 +385,15 @@ namespace dae
         auto* render = cherry->AddComponent<RenderComponent>("PNG/Other/CBONUS.png");
         render->SetScale(2.f);
         cherry->AddComponent<CherryComponent>(m_p1, m_p2);
-        cherry->SetLocalPosition(m_CherrySpawnX, m_CherrySpawnY);
+        cherry->SetLocalPosition(m_cherrySpawnX, m_cherrySpawnY);
         cherry->SetZIndex(6);
-        m_MiscEntities.push_back(cherry.get());
+        m_miscEntities.push_back(cherry.get());
         m_pScene->Add(std::move(cherry));
     }
 
     void LevelTransitionManager::ApplyDirtBrightness(bool enable)
     {
-        for (auto* tile : m_VisualDirt)
+        for (auto* tile : m_visualDirt)
         {
             if (!tile || tile->IsMarkedForDestroy()) continue;
 

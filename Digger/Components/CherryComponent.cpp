@@ -12,7 +12,7 @@ namespace dae
         : Component(owner)
         , m_p1(p1)
         , m_p2(p2)
-        , m_Lifetime(lifetime)
+        , m_lifetime(lifetime)
     {
     }
 
@@ -26,7 +26,7 @@ namespace dae
         if (glm::distance(glm::vec2(myX, myY), glm::vec2(pos.x, pos.y)) < 30.f)
         {
             pDigger->ActivateBonusMode();
-            ServiceLocator::GetSoundSystem().Play(AudioDefinitions::BONUS_PICKUP, 1.0f);
+            ServiceLocator::GetSoundSystem().Play(static_cast<unsigned short>(AudioDefinitions::BONUS_PICKUP), 1.0f);
             return true;
         }
         return false;
@@ -35,8 +35,8 @@ namespace dae
     void CherryComponent::Update(float deltaTime)
     {
         // Tick down the cherry's lifespan so it despawns if the player ignores it
-        m_Lifetime -= deltaTime;
-        if (m_Lifetime <= 0.0f)
+        m_lifetime -= deltaTime;
+        if (m_lifetime <= 0.0f)
         {
             GetOwner()->MarkForDestroy();
             return;

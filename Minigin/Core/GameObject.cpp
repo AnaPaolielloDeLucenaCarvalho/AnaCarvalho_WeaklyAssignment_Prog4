@@ -1,9 +1,10 @@
 #include <string>
+#include <algorithm>
 #include "GameObject.h"
 
 void dae::GameObject::Update(float deltaTime)
 {
-	for (auto& component : m_components)
+	for (const auto& component : m_components)
 	{
 		component->Update(deltaTime);
 	}
@@ -40,7 +41,7 @@ void dae::GameObject::SetPositionDirty()
 	m_positionIsDirty = true;
 
 	// If position changes, all children change
-	for (auto child : m_pChildren)
+	for (const auto& child : m_pChildren)
 	{
 		child->SetPositionDirty();
 	}
@@ -126,19 +127,50 @@ void dae::GameObject::RemoveChild(GameObject* child)
 	child->SetLocalPosition(child->GetTransform().GetPosition().x, child->GetTransform().GetPosition().y);
 	child->SetPositionDirty();
 
-	m_pChildren.erase(std::remove(m_pChildren.begin(), m_pChildren.end(), child), m_pChildren.end());
+	std::erase(m_pChildren, child);
 
 	child->m_pParent = nullptr;
 }
 
 bool dae::GameObject::IsChild(GameObject* child) const
 {
-	for (const auto& c : m_pChildren)
+	return std::any_of(m_pChildren.begin(), m_pChildren.end(), [child](GameObject* c)
 	{
-		if (c == child || c->IsChild(child))
-		{
-			return true;
-		}
-	}
-	return false;
+		return c == child || c->IsChild(child);
+	});
+}
+
+dae::GameObject* dae::GameObject::GetParent() const 
+{ 
+	return m_pParent; 
+}
+
+size_t dae::GameObject::GetChildCount() const 
+{ 
+	return m_pChildren.size(); 
+}
+
+dae::GameObject* dae::GameObject::GetChildAt(unsigned int index) const 
+{ 
+	return m_pChildren[index]; 
+}
+
+void dae::GameObject::MarkForDestroy() 
+{ 
+	m_isMarkedForDestroy = true; 
+}
+
+bool dae::GameObject::IsMarkedForDestroy() const 
+{ 
+	return m_isMarkedForDestroy; 
+}
+
+void dae::GameObject::SetZIndex(int z) 
+{ 
+	m_zIndex = z; 
+}
+
+int dae::GameObject::GetZIndex() const 
+{ 
+	return m_zIndex; 
 }

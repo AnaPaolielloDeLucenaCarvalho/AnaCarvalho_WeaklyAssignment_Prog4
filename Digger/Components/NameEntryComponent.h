@@ -18,6 +18,7 @@ namespace dae
     public:
         NameEntryComponent(GameObject* owner, TextComponent* pText, HighScoreManager* pManager, Scene* pGameScene);
 
+        void Render() const override {}
         void Update(float deltaTime) override;
 
         void CycleLetter(int direction);
@@ -31,9 +32,9 @@ namespace dae
         HighScoreManager* m_pManager;
         Scene* m_pGameScene;
 
-        char m_Initials[3];
-        int m_CurrentIndex;
-        float m_InputCooldown{ 0.0f };
+        char m_initials[3];
+        int m_currentIndex;
+        float m_inputCooldown{ 0.0f };
     };
 
 }

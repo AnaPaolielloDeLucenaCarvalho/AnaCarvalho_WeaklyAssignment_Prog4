@@ -1,5 +1,6 @@
 #ifndef DIGGERSTATE_H
 #define DIGGERSTATE_H
+#include <memory>
 
 // DESIGN PATTERN - State Pattern (Finite State Machine)
 // Used the State pattern to decouple the player's behaviors. Instead of the main Update loop checking things every single frame, Digger just delegates its logic to the active state class. It makes transitioning between gameplay phases incredibly safe and predictable.
@@ -14,7 +15,7 @@ namespace dae
         virtual ~DiggerState() = default;
         virtual void OnEnter(DiggerComponent* /*digger*/) {}
         virtual void OnExit(DiggerComponent* /*digger*/) {}
-        virtual DiggerState* Update(DiggerComponent* digger, float deltaTime) = 0;
+        virtual std::unique_ptr<dae::DiggerState> Update(DiggerComponent* digger, float deltaTime) = 0;
 
         DiggerState(const DiggerState& other) = delete;
         DiggerState(DiggerState&& other) = delete;
@@ -25,50 +26,50 @@ namespace dae
         DiggerState() = default;
     };
 
-    class DiggerNormalState : public DiggerState
+    class DiggerNormalState final : public DiggerState
     {
     public:
         void OnEnter(DiggerComponent* digger) override;
-        DiggerState* Update(DiggerComponent* digger, float deltaTime) override;
+        std::unique_ptr<dae::DiggerState> Update(DiggerComponent* digger, float deltaTime) override;
     };
 
-    class DiggerBonusState : public DiggerState
+    class DiggerBonusState final : public DiggerState
     {
     public:
         void OnEnter(DiggerComponent* digger) override;
         void OnExit(DiggerComponent* digger) override;
-        DiggerState* Update(DiggerComponent* digger, float deltaTime) override;
+        std::unique_ptr<dae::DiggerState> Update(DiggerComponent* digger, float deltaTime) override;
     private:
-        float m_BonusTimer{ 15.0f }; // 15s of bonus mode
+        float m_bonusTimer{ 15.0f }; // 15s of bonus mode
     };
 
-    class DiggerDeadState : public DiggerState
+    class DiggerDeadState final : public DiggerState
     {
     public:
         void OnEnter(DiggerComponent* digger) override;
-        DiggerState* Update(DiggerComponent* digger, float deltaTime) override;
+        std::unique_ptr<dae::DiggerState> Update(DiggerComponent* digger, float deltaTime) override;
     private:
-        float m_RespawnTimer{ 2.0f };
-        float m_AnimTimer{ 0.0f };
-        int m_CurrentFrame{ 1 };
+        float m_respawnTimer{ 2.0f };
+        float m_animTimer{ 0.0f };
+        int m_currentFrame{ 1 };
     };
 
-    class DiggerGameOverState : public DiggerState
+    class DiggerGameOverState final : public DiggerState
     {
     public:
         void OnEnter(DiggerComponent* digger) override;
-        DiggerState* Update(DiggerComponent* digger, float deltaTime) override;
+        std::unique_ptr<dae::DiggerState> Update(DiggerComponent* digger, float deltaTime) override;
     private:
-        float m_Timer{ 0.0f };
+        float m_timer{ 0.0f };
     };
 
-    class DiggerLevelCompleteState : public DiggerState
+    class DiggerLevelCompleteState final : public DiggerState
     {
     public:
         void OnEnter(DiggerComponent* digger) override;
-        DiggerState* Update(DiggerComponent* digger, float deltaTime) override;
+        std::unique_ptr<dae::DiggerState> Update(DiggerComponent* digger, float deltaTime) override;
     private:
-        float m_TransitionTimer{ 4.0f };
+        float m_transitionTimer{ 4.0f };
     };
 }
 #endif

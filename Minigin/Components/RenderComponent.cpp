@@ -38,10 +38,10 @@ namespace dae
 
         SDL_RenderTextureRotated(sdlRen, sdlTex, nullptr, &dst, m_angle, nullptr, flip);
 
-        if (m_AdditiveBoost)
+        if (m_additiveBoost)
         {
             SDL_SetTextureBlendMode(sdlTex, SDL_BLENDMODE_ADD);
-            SDL_SetTextureAlphaMod(sdlTex,  m_BoostAlpha);
+            SDL_SetTextureAlphaMod(sdlTex,  m_boostAlpha);
             SDL_SetTextureColorMod(sdlTex,  255, 255, 255);
 
             SDL_RenderTextureRotated(sdlRen, sdlTex, nullptr, &dst, m_angle, nullptr, flip);
@@ -57,6 +57,26 @@ namespace dae
         m_texture = ResourceManager::GetInstance().LoadTexture(filename);
     }
 
+    void RenderComponent::SetTexture(std::shared_ptr<Texture2D> texture)
+    {
+        m_texture = std::move(texture);
+    }
+
+    void RenderComponent::SetFlip(bool flip)
+    {
+        m_isFlipped = flip;
+    }
+
+    void RenderComponent::SetScale(float scale)
+    {
+        m_scale = scale;
+    }
+
+    void RenderComponent::SetRotation(double angle)
+    {
+        m_angle = angle;
+    }
+
     void RenderComponent::SetColorMod(uint8_t r, uint8_t g, uint8_t b)
     {
         if (m_texture)
@@ -65,7 +85,7 @@ namespace dae
 
     void RenderComponent::SetAdditiveBoost(bool enabled, uint8_t boostAlpha)
     {
-        m_AdditiveBoost = enabled;
-        m_BoostAlpha    = boostAlpha;
+        m_additiveBoost = enabled;
+        m_boostAlpha    = boostAlpha;
     }
 }

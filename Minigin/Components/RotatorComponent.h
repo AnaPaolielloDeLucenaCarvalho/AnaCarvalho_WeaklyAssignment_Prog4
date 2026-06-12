@@ -16,7 +16,8 @@ namespace dae
 	public:
 		RotatorComponent(GameObject* pOwner, float radius, float speed);
 
-		void Update(float deltaTime) override;
+		void Render() const override {}
+        void Update(float deltaTime) override;
 
 	private:
 		float m_radius{};

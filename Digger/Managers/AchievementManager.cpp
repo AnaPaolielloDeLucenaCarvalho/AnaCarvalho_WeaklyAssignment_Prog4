@@ -6,7 +6,7 @@ namespace dae
 {
     AchievementManager::AchievementManager()
 #if USE_STEAMWORKS
-        : m_CallbackUserStatsReceived(this, &AchievementManager::OnUserStatsReceived)
+        : m_callbackUserStatsReceived(this, &AchievementManager::OnUserStatsReceived)
 #endif
     {
 #if USE_STEAMWORKS
@@ -23,7 +23,7 @@ namespace dae
         if (eventId == make_sdbm_hash("ScoreChanged"))
         {
             // Gate condition: Once the player exceeds 500 points, unlock the achievement if not already awarded
-            if (value >= 500 && !m_WinnerUnlocked)
+            if (value >= 500 && !m_winnerUnlocked)
             {
 #if USE_STEAMWORKS
                 bool achieved = false;
@@ -34,11 +34,11 @@ namespace dae
                     {
                         UnlockAchievement("ACH_WIN_ONE_GAME");
                     }
-                    m_WinnerUnlocked = true;
+                    m_winnerUnlocked = true;
                 }
 #else
                 // Safe fallback logic for Web Builds so the console proves the event fired correctly
-                m_WinnerUnlocked = true;
+                m_winnerUnlocked = true;
                 std::cout << "Local Achievement Unlocked! (Steam disabled)\n";
 #endif
             }
@@ -53,7 +53,7 @@ namespace dae
             // Clear the achievement locally and push the updated state securely to the Steam backend
             SteamUserStats()->ClearAchievement("ACH_WIN_ONE_GAME");
             SteamUserStats()->StoreStats();
-            m_WinnerUnlocked = false;
+            m_winnerUnlocked = false;
             std::cout << "Steam Achievements Reset!\n";
         }
 #endif
@@ -84,7 +84,7 @@ namespace dae
             // Pre-load the achievement state to ensure we don't spam the unlock API unnecessarily
             if (SteamUserStats()->GetAchievement("ACH_WIN_ONE_GAME", &achieved))
             {
-                m_WinnerUnlocked = achieved;
+                m_winnerUnlocked = achieved;
             }
         }
     }

@@ -23,7 +23,7 @@ namespace dae
 
 	Scene& SceneManager::CreateScene()
 	{
-		m_scenes.emplace_back(new Scene());
+		m_scenes.emplace_back(std::make_unique<Scene>());
 
 		if (!m_pActiveScene) 
 		{

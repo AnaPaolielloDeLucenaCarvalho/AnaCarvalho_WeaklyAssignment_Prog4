@@ -5,6 +5,13 @@
 #include <vld.h>
 #endif
 
+// Std
+#include <iostream>
+#include <sstream>
+#include <iomanip>
+#include <filesystem>
+
+// Engine
 #include "Minigin.h"
 #include "SceneManager.h"
 #include "Scene.h"
@@ -16,30 +23,31 @@
 #include "RotatorComponent.h"
 #include "ObjectPoolComponent.h"
 #include "InputManager.h"
-#include "PlayerCommands.h"
-#include "DiggerComponent.h"
-#include "UIObservers.h"
-#include "Subject.h"
-#include "Observer.h"
-#include "AchievementManager.h"
 #include "ServiceLocator.h"
 #include "MiniaudioSoundSystem.h"
 #include "LoggingSoundSystem.h"
-#include "SystemCommands.h"
+#include "Subject.h"
+#include "Observer.h"
+
+// Game
+#include "PlayerCommands.h"
+#include "DiggerComponent.h"
+#include "UIObservers.h"
+#include "AchievementManager.h"
 #include "GoldBagComponent.h"
 #include "LevelManager.h"
 #include "DiggerState.h"
 #include "MenuManager.h"
 #include "SystemCommands.h"
-#include "PlayerCommands.h"
 #include "AudioDefinitions.h"
 #include "HighScoreManager.h"
 #include "NameEntryComponent.h"
 #include "NameEntryCommands.h"
-#include "NameEntryCommands.h"
-#include "NameEntryCommands.h"
-#include "SystemCommands.h"
 #include "UICommands.h"
+#include "EnemyComponent.h"
+#include "EnemySpawnerComponent.h"
+#include "LevelTransitionManager.h"
+#include "GameOverManager.h"
 
 #if USE_STEAMWORKS
 #pragma warning (push)
@@ -48,17 +56,9 @@
 #pragma warning (pop)
 #endif
 
-#include <filesystem>
-#include "EnemyComponent.h"
-#include "EnemySpawnerComponent.h"
-#include "LevelTransitionManager.h"
-#include "GameOverManager.h"
-#include <iostream>
-#include <sstream>
-#include <iomanip>
 namespace fs = std::filesystem;
 
-std::shared_ptr<dae::AchievementManager> g_AchievementMgr = nullptr;
+std::unique_ptr<dae::AchievementManager> g_AchievementMgr = nullptr;
 
 static std::unique_ptr<dae::HighScoreManager> g_HighScoreMgr = nullptr;
 
@@ -66,9 +66,7 @@ static std::unique_ptr<dae::HighScoreManager> g_HighScoreMgr = nullptr;
 static void load()
 {
 // ----------------- SOUND (SERVICE LOCATOR PATTERN) -----------------
-// We use the Service Locator pattern here to provide global access to the audio system
-// without passing a pointer through every single game object. 
-// The LoggingSoundSystem wraps the MiniaudioSystem (Decorator pattern) to print audio events to the console.
+// We use the Service Locator pattern here to provide global access to the audio system without passing a pointer through every single game object. The LoggingSoundSystem wraps the MiniaudioSystem (Decorator pattern) to print audio events to the console.
 
 	auto miniaudioSystem = std::make_unique<dae::MiniaudioSoundSystem>();
 	auto loggingSoundSystem = std::make_unique<dae::LoggingSoundSystem>(std::move(miniaudioSystem));
@@ -82,15 +80,15 @@ static void load()
 	const std::string soundFolder = "Data/Sounds/";
 #endif
 
-	soundSystem.LoadSound(AudioDefinitions::MUSIC, soundFolder + "main_music.wav");
-	soundSystem.LoadSound(AudioDefinitions::BONUS, soundFolder + "bonus.wav");
-	soundSystem.LoadSound(AudioDefinitions::NEXT_LEVEL, soundFolder + "next_level.wav");
-	soundSystem.LoadSound(AudioDefinitions::DEATH, soundFolder + "death.wav");
-	soundSystem.LoadSound(AudioDefinitions::PICK_UP, soundFolder + "pickUp.mp3");
-	soundSystem.LoadSound(AudioDefinitions::BONUS_PICKUP, soundFolder + "bonusPickUp.mp3");
-	soundSystem.LoadSound(AudioDefinitions::COMBO_8_EMES, soundFolder + "8ComboEmes.mp3");
-	soundSystem.LoadSound(AudioDefinitions::KILL_ENEMY, soundFolder + "killEnemy.mp3");
-	soundSystem.LoadSound(AudioDefinitions::SHOOT, soundFolder + "shoot.mp3");
+	soundSystem.LoadSound(static_cast<unsigned short>(AudioDefinitions::MUSIC), soundFolder + "main_music.wav");
+	soundSystem.LoadSound(static_cast<unsigned short>(AudioDefinitions::BONUS), soundFolder + "bonus.wav");
+	soundSystem.LoadSound(static_cast<unsigned short>(AudioDefinitions::NEXT_LEVEL), soundFolder + "next_level.wav");
+	soundSystem.LoadSound(static_cast<unsigned short>(AudioDefinitions::DEATH), soundFolder + "death.wav");
+	soundSystem.LoadSound(static_cast<unsigned short>(AudioDefinitions::PICK_UP), soundFolder + "pickUp.mp3");
+	soundSystem.LoadSound(static_cast<unsigned short>(AudioDefinitions::BONUS_PICKUP), soundFolder + "bonusPickUp.mp3");
+	soundSystem.LoadSound(static_cast<unsigned short>(AudioDefinitions::COMBO_8_EMES), soundFolder + "8ComboEmes.mp3");
+	soundSystem.LoadSound(static_cast<unsigned short>(AudioDefinitions::KILL_ENEMY), soundFolder + "killEnemy.mp3");
+	soundSystem.LoadSound(static_cast<unsigned short>(AudioDefinitions::SHOOT), soundFolder + "shoot.mp3");
 
 // ----------------- SCENE SETUP -----------------
 
@@ -114,7 +112,6 @@ static void load()
 
 // ----------------- MENU SETUP -----------------
 
-	// TODO - make this pretty and correct to digger (all the game modes here)
 	auto titleObj = std::make_unique<dae::GameObject>();
 	auto titleRender = titleObj->AddComponent<dae::RenderComponent>("PNG/Other/CTITLE.png");
 	titleRender->SetScale(2.75f);
@@ -191,9 +188,8 @@ static void load()
 	auto pMenuMgr = menuManagerObj->AddComponent<dae::MenuManager>(pMgr, &scoreScene, &gameScene, menuOptions, menuScoreTexts, menuNameTexts);
 	menuScene.Add(std::move(menuManagerObj));
 
-	// COMMAND PATTERN: Binding hardware inputs to actions
-	// By binding commands instead of polling for hardware states, we decouple the UI logic
-	// from the physical keyboard/gamepad. If we swap controllers, MenuNavigateCommand still fires correctly.
+	// COMMAND PATTERN - Binding hardware inputs to actions
+	// By binding commands instead of polling for hardware states, we decouple the UI logic from the physical keyboard/gamepad. If we swap controllers, MenuNavigateCommand still fires correctly.
 	input.BindCommand(SDL_SCANCODE_W, dae::KeyState::Pressed, std::make_unique<dae::MenuNavigateCommand>(-1, pMenuMgr, nullptr, &menuScene));
 	input.BindCommand(SDL_SCANCODE_UP, dae::KeyState::Pressed, std::make_unique<dae::MenuNavigateCommand>(-1, pMenuMgr, nullptr, &menuScene));
 	input.BindCommand(0, dae::Gamepad::ControllerButton::DPadUp, dae::KeyState::Pressed, std::make_unique<dae::MenuNavigateCommand>(-1, pMenuMgr, nullptr, &menuScene));
@@ -454,7 +450,7 @@ static void load()
 	input.BindCommand(0, dae::Gamepad::ControllerButton::ButtonX, dae::KeyState::Pressed, std::make_unique<dae::ToggleInstructionsCommand>(&instructionsScene));
 	input.BindCommand(1, dae::Gamepad::ControllerButton::ButtonX, dae::KeyState::Pressed, std::make_unique<dae::ToggleInstructionsCommand>(&instructionsScene));
 
-	g_AchievementMgr = std::make_shared<dae::AchievementManager>();
+	g_AchievementMgr = std::make_unique<dae::AchievementManager>();
 	scoreObs1->AddObserver(g_AchievementMgr.get());
 
 	auto instBg = std::make_unique<dae::GameObject>();
@@ -487,7 +483,7 @@ static void load()
 	inst4->SetLocalPosition(400, 500);
 	instructionsScene.Add(std::move(inst4));
 
-	soundSystem.PlayMusic(AudioDefinitions::MUSIC, 0.5f, true);
+	soundSystem.PlayMusic(static_cast<unsigned short>(AudioDefinitions::MUSIC), 0.5f, true);
 
 #ifdef __EMSCRIPTEN__
 	std::string levelPath = "Levels.txt";

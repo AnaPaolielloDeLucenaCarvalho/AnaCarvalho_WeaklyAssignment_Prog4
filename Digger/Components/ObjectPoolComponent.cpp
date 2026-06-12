@@ -84,7 +84,7 @@ namespace dae
     {
         for (int step = 1; step <= 1024; step *= 2)
         {
-            m_XData.push_back(static_cast<float>(step));
+            m_xData.push_back(static_cast<float>(step));
         }
     }
 
@@ -94,10 +94,10 @@ namespace dae
     {
         ImGui::Begin("Programming 4 Assignment");
 
-        ImGui::InputInt("# samples", &m_Samples);
-        if (m_Samples < 1)
+        ImGui::InputInt("# samples", &m_samples);
+        if (m_samples < 1)
         {
-            m_Samples = 1;
+            m_samples = 1;
         }
 
         // Exercise 1
@@ -105,11 +105,11 @@ namespace dae
         {
             RunExercise1();
         }
-        if (!m_TimingsInt.empty())
+        if (!m_timingsInt.empty())
         {
-            float maxVal = *std::max_element(m_TimingsInt.begin(), m_TimingsInt.end());
+            float maxVal = *std::max_element(m_timingsInt.begin(), m_timingsInt.end());
             ImGui::PushStyleColor(ImGuiCol_PlotLines, ImVec4(1.0f, 0.5f, 0.0f, 1.0f)); // Orange
-            ImGui::PlotLines("##IntPlot", m_TimingsInt.data(), static_cast<int>(m_TimingsInt.size()), 0, "Exercise 1", 0.0f, maxVal * 1.1f, ImVec2(400, 150));
+            ImGui::PlotLines("##IntPlot", m_timingsInt.data(), static_cast<int>(m_timingsInt.size()), 0, "Exercise 1", 0.0f, maxVal * 1.1f, ImVec2(400, 150));
             ImGui::PopStyleColor();
         }
         ImGui::Separator();
@@ -119,11 +119,11 @@ namespace dae
         {
             RunExercise2();
         }
-        if (!m_TimingsGO3D.empty())
+        if (!m_timingsGO3D.empty())
         {
-            float maxVal = *std::max_element(m_TimingsGO3D.begin(), m_TimingsGO3D.end());
+            float maxVal = *std::max_element(m_timingsGO3D.begin(), m_timingsGO3D.end());
             ImGui::PushStyleColor(ImGuiCol_PlotLines, ImVec4(0.0f, 0.5f, 1.0f, 1.0f)); // Blue
-            ImGui::PlotLines("##GO3DPlot", m_TimingsGO3D.data(), static_cast<int>(m_TimingsGO3D.size()), 0, "Exercise 2", 0.0f, maxVal * 1.1f, ImVec2(400, 150));
+            ImGui::PlotLines("##GO3DPlot", m_timingsGO3D.data(), static_cast<int>(m_timingsGO3D.size()), 0, "Exercise 2", 0.0f, maxVal * 1.1f, ImVec2(400, 150));
             ImGui::PopStyleColor();
         }
 
@@ -132,33 +132,33 @@ namespace dae
         {
             RunExercise2Alt();
         }
-        if (!m_TimingsGO3DAlt.empty())
+        if (!m_timingsGO3DAlt.empty())
         {
-            float maxVal = *std::max_element(m_TimingsGO3DAlt.begin(), m_TimingsGO3DAlt.end());
+            float maxVal = *std::max_element(m_timingsGO3DAlt.begin(), m_timingsGO3DAlt.end());
             ImGui::PushStyleColor(ImGuiCol_PlotLines, ImVec4(0.0f, 1.0f, 0.5f, 1.0f)); // Green
-            ImGui::PlotLines("##GO3DAltPlot", m_TimingsGO3DAlt.data(), static_cast<int>(m_TimingsGO3DAlt.size()), 0, "Exercise 2 Alt", 0.0f, maxVal * 1.1f, ImVec2(400, 150));
+            ImGui::PlotLines("##GO3DAltPlot", m_timingsGO3DAlt.data(), static_cast<int>(m_timingsGO3DAlt.size()), 0, "Exercise 2 Alt", 0.0f, maxVal * 1.1f, ImVec2(400, 150));
             ImGui::PopStyleColor();
         }
         ImGui::Separator();
 
 		// Combined Exercise 2 and Alternative
-        if (!m_TimingsGO3D.empty() && !m_TimingsGO3DAlt.empty())
+        if (!m_timingsGO3D.empty() && !m_timingsGO3DAlt.empty())
         {
             ImGui::Text("Combined:");
 
-            float maxGO3D = *std::max_element(m_TimingsGO3D.begin(), m_TimingsGO3D.end());
-            float maxGO3DAlt = *std::max_element(m_TimingsGO3DAlt.begin(), m_TimingsGO3DAlt.end());
+            float maxGO3D = *std::max_element(m_timingsGO3D.begin(), m_timingsGO3D.end());
+            float maxGO3DAlt = *std::max_element(m_timingsGO3DAlt.begin(), m_timingsGO3DAlt.end());
             float globalMax = std::max(maxGO3D, maxGO3DAlt);
 
             ImGui::PushStyleColor(ImGuiCol_PlotLines, ImVec4(0.0f, 0.5f, 1.0f, 1.0f));
-            ImGui::PlotLines("##CombinedPlot1", m_TimingsGO3D.data(), static_cast<int>(m_TimingsGO3D.size()), 0, "", 0.0f, globalMax * 1.1f, ImVec2(400, 150));
+            ImGui::PlotLines("##CombinedPlot1", m_timingsGO3D.data(), static_cast<int>(m_timingsGO3D.size()), 0, "", 0.0f, globalMax * 1.1f, ImVec2(400, 150));
             ImGui::PopStyleColor();
 
             ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 154);
 
             ImGui::PushStyleColor(ImGuiCol_PlotLines, ImVec4(0.0f, 1.0f, 0.5f, 1.0f));
             ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0, 0, 0, 0));
-            ImGui::PlotLines("##CombinedPlot2", m_TimingsGO3DAlt.data(), static_cast<int>(m_TimingsGO3DAlt.size()), 0, "", 0.0f, globalMax * 1.1f, ImVec2(400, 150));
+            ImGui::PlotLines("##CombinedPlot2", m_timingsGO3DAlt.data(), static_cast<int>(m_timingsGO3DAlt.size()), 0, "", 0.0f, globalMax * 1.1f, ImVec2(400, 150));
             ImGui::PopStyleColor(2);
         }
 
@@ -168,13 +168,13 @@ namespace dae
     void ObjectPoolComponent::RunExercise1() const
     {
         const size_t bufferSize = 1 << 26;
-        BenchmarkTrashCache<int>(bufferSize, m_Samples, m_TimingsInt);
+        BenchmarkTrashCache<int>(bufferSize, m_samples, m_timingsInt);
     }
 
     void ObjectPoolComponent::RunExercise2() const
     {
         const size_t bufferSize = 1 << 24;
-        BenchmarkTrashCache<GameObject3D>(bufferSize, m_Samples, m_TimingsGO3D);
+        BenchmarkTrashCache<GameObject3D>(bufferSize, m_samples, m_timingsGO3D);
     }
 
     void ObjectPoolComponent::RunExercise2Alt() const
@@ -190,13 +190,13 @@ namespace dae
             objects[i].ID = static_cast<int>(i);
         }
 
-        m_TimingsGO3DAlt.clear();
+        m_timingsGO3DAlt.clear();
         for (int step = 1; step <= 1024; step *= 2)
         {
             std::vector<float> currentTimings;
-            currentTimings.reserve(m_Samples);
+            currentTimings.reserve(m_samples);
 
-            for (int s = 0; s < m_Samples; ++s)
+            for (int s = 0; s < m_samples; ++s)
             {
                 auto start = std::chrono::high_resolution_clock::now();
                 for (size_t i = 0; i < bufferSize; i += step)
@@ -209,7 +209,7 @@ namespace dae
 
             auto [minIt, maxIt] = std::minmax_element(currentTimings.begin(), currentTimings.end());
             float total = std::accumulate(currentTimings.begin(), currentTimings.end(), 0.0f);
-            m_TimingsGO3DAlt.push_back(((total - *minIt - *maxIt) / (m_Samples - 2)) / 1000.f);
+            m_timingsGO3DAlt.push_back(((total - *minIt - *maxIt) / (m_samples - 2)) / 1000.f);
         }
     }
 }

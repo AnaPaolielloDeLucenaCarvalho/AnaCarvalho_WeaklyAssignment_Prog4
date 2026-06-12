@@ -16,16 +16,17 @@ namespace dae
     public:
         FireballComponent(GameObject* owner, const glm::vec2& dir, DiggerComponent* pDigger);
 
+        void Render() const override {}
         void Update(float deltaTime) override;
 
     private:
-        glm::vec2 m_Direction;
-        float m_AnimTimer{ 0.0f };
-        int m_Frame{ 1 };
+        glm::vec2 m_direction;
+        float m_animTimer{ 0.0f };
+        int m_frame{ 1 };
 
-        bool m_IsExploding{ false };
-        float m_ExplodeTimer{ 0.0f };
-        int m_ExplodeFrame{ 1 };
+        bool m_isExploding{ false };
+        float m_explodeTimer{ 0.0f };
+        int m_explodeFrame{ 1 };
 
         // DESIGN DECISION - Pointer referencing
         // The fireball stores a pointer to the specific player who shot it so it knows who to award points to!

@@ -20,6 +20,7 @@ namespace dae
     public:
         MenuManager(GameObject* owner, HighScoreManager* pMgr, Scene* pScoreScene, Scene* pGameScene, const std::vector<TextComponent*>& options, const std::vector<TextComponent*>& scoreTexts, const std::vector<TextComponent*>& nameTexts);
 
+        void Render() const override {}
         void Update(float deltaTime) override;
 
         // Exposed public methods so the external UICommands can control the menu without the MenuManager needing to poll hardware inputs directly.
@@ -31,11 +32,11 @@ namespace dae
         HighScoreManager* m_pMgr;
         Scene* m_pScoreScene;
         Scene* m_pGameScene;
-        std::vector<TextComponent*> m_Options;
-        std::vector<TextComponent*> m_ScoreTexts;
-        std::vector<TextComponent*> m_NameTexts;
-        int m_SelectedIndex{ 0 };
-        float m_RefreshTimer{ 0.0f };
+        std::vector<TextComponent*> m_options;
+        std::vector<TextComponent*> m_scoreTexts;
+        std::vector<TextComponent*> m_nameTexts;
+        int m_selectedIndex{ 0 };
+        float m_refreshTimer{ 0.0f };
     };
 }
 

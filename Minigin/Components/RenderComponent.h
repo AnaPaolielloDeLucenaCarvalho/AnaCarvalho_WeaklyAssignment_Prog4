@@ -25,11 +25,11 @@ namespace dae
         void Render() const override;
 
         void SetTexture(const std::string& filename);
-        void SetTexture(std::shared_ptr<Texture2D> texture) { m_texture = std::move(texture); };
+        void SetTexture(std::shared_ptr<Texture2D> texture);
 
-        void SetFlip(bool flip) { m_isFlipped = flip; }
-        void SetScale(float scale) { m_scale = scale; }
-        void SetRotation(double angle) { m_angle = angle; }
+        void SetFlip(bool flip);
+        void SetScale(float scale);
+        void SetRotation(double angle);
         void SetColorMod(uint8_t r, uint8_t g, uint8_t b);
 
         void SetAdditiveBoost(bool enabled, uint8_t boostAlpha = 120);
@@ -39,8 +39,8 @@ namespace dae
         bool m_isFlipped{ false };
         float m_scale{ 1.0f };
         double m_angle{ 0.0 };
-        bool m_AdditiveBoost{ false };
-        uint8_t m_BoostAlpha{ 120 };
+        bool m_additiveBoost{ false };
+        uint8_t m_boostAlpha{ 120 };
     };
 }
 #endif // RENDERCOMPONENT_H
