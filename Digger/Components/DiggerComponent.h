@@ -113,7 +113,7 @@ namespace dae
         bool m_isPlayerOne{ true };
 
         int m_totalScore{ 0 };
-        bool m_hasGottenExtraLife{ false };
+        int m_extraLifeMilestones{ 0 };
         int m_consecutiveEmeralds{ 0 };
 
         std::vector<GameObject*> m_pEnemies{};

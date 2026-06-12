@@ -162,13 +162,14 @@ namespace dae
             m_pHighScoreManager->UpdateCurrentScore(m_totalScore);
         }
 
-        // Arcade 1UP mechanic: Award a single extra life for surpassing 20,000 points
-        if (m_totalScore >= 20000 && !m_hasGottenExtraLife)
+        // Arcade 1UP mechanic: Award an extra life for EVERY 20,000 points
+        int currentMilestone = m_totalScore / 20000;
+        if (currentMilestone > m_extraLifeMilestones)
         {
-            m_lives++;
-            m_hasGottenExtraLife = true;
+            m_lives += (currentMilestone - m_extraLifeMilestones);
+            m_extraLifeMilestones = currentMilestone;
 
-            m_subject.Notify(dae::make_sdbm_hash("PlayerDied"), m_lives);
+            m_subject.Notify(dae::make_sdbm_hash("PlayerDied"), m_lives); // Hack to force UI to redraw lives
 
             // play bonus sound
             ServiceLocator::GetSoundSystem().Play(static_cast<unsigned short>(AudioDefinitions::BONUS), 1.0f);
