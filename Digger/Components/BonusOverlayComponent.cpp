@@ -12,6 +12,10 @@ namespace dae
     {
     }
 
+    void BonusOverlayComponent::Update(float /*deltaTime*/)
+    {
+    }
+
     void BonusOverlayComponent::SetActive(bool active)
     {
         m_Active = active;

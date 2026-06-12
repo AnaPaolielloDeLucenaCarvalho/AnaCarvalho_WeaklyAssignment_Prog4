@@ -11,6 +11,7 @@ namespace dae
     public:
         explicit BonusOverlayComponent(GameObject* owner);
 
+        void Update(float deltaTime) override;
         void Render() const override;
 
         void SetActive(bool active);
