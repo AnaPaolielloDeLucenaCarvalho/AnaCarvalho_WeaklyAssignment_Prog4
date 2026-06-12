@@ -475,8 +475,6 @@ namespace dae
             if (auto render = digger->GetOwner()->GetComponent<RenderComponent>())
             {
                 render->SetTexture("PNG/Grave/VGRAVE" + std::to_string(m_CurrentFrame) + ".png");
-                auto pos = digger->GetOwner()->GetTransform().GetPosition();
-                digger->GetOwner()->SetLocalPosition(pos.x, pos.y - 8.0f);
             }
         }
 
