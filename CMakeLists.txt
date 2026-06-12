@@ -46,72 +46,50 @@ endif()
 #  Minigin/TrashCacheComponent.cpp
 #)
 
+file(GLOB_RECURSE MINIGIN_SOURCES "Minigin/*.cpp")
+
 add_library(Minigin STATIC
-  Minigin/Font.cpp
-  Minigin/FPSComponent.cpp 
-  Minigin/GameObject.cpp
-  Minigin/Gamepad.cpp
-  Minigin/InputManager.cpp
-  Minigin/Minigin.cpp
-  Minigin/RenderComponent.cpp
-  Minigin/Renderer.cpp
-  Minigin/ResourceManager.cpp
-  Minigin/RotatorComponent.cpp
-  Minigin/Scene.cpp
-  Minigin/SceneManager.cpp
-  Minigin/TextComponent.cpp
-  Minigin/Texture2D.cpp
-  Minigin/Transform.cpp
-  Minigin/MiniaudioSoundSystem.cpp
-  Minigin/ServiceLocator.cpp 
-  Minigin/LoggingSoundSystem.cpp  
-  Minigin/Subject.cpp 
-  Minigin/Component.cpp
+  ${MINIGIN_SOURCES}
 )
 
 # Enable c++20 features for the engine
 target_compile_features(Minigin PUBLIC cxx_std_20)
 
 # Include Minigin folder so the game can find the engine
-target_include_directories(Minigin PUBLIC ${CMAKE_SOURCE_DIR}/Minigin)
+target_include_directories(Minigin PUBLIC 
+  ${CMAKE_SOURCE_DIR}/Minigin
+  ${CMAKE_SOURCE_DIR}/Minigin/Core
+  ${CMAKE_SOURCE_DIR}/Minigin/Components
+  ${CMAKE_SOURCE_DIR}/Minigin/Input
+  ${CMAKE_SOURCE_DIR}/Minigin/Audio
+  ${CMAKE_SOURCE_DIR}/Minigin/Graphics
+  ${CMAKE_SOURCE_DIR}/Minigin/Scene
+  ${CMAKE_SOURCE_DIR}/Minigin/Events
+)
 
 # ---------------------------------------------------
 # GAME EXECUTABLE (Digger)
 # ---------------------------------------------------
 
+file(GLOB_RECURSE DIGGER_SOURCES "Digger/*.cpp")
+
 add_executable(${TARGET_NAME} ${TARGET_PARAM}
-  Digger/Main.cpp
-  Digger/TrashCacheComponent.cpp
-  Digger/GoldBagComponent.cpp
-  Digger/GoldBagState.cpp
-  Digger/DiggerState.cpp
-  Digger/DiggerComponent.cpp
-  Digger/LevelManager.cpp
-  Digger/EnemyComponent.cpp
-  Digger/LevelTransitionManager.cpp
-  Digger/UIObservers.cpp
-  Digger/EnemySpawnerComponent.cpp
-  Digger/FadeComponent.cpp
-  Digger/FireballComponent.cpp
-  Digger/MenuManager.cpp
-  Digger/MoveCommand.cpp
-  Digger/MuteCommand.cpp
-  Digger/ShootCommand.cpp
-  Digger/SkipLevelCommand.cpp
-  Digger/AchievementManager.cpp
-  Digger/CherryComponent.cpp
-  Digger/HighScoreManager.cpp
-  Digger/NameEntryComponent.cpp
-  Digger/AdvanceIndexCommand.cpp
-  Digger/ConfirmNameCommand.cpp
-  Digger/CycleLetterCommand.cpp
-  Digger/GameOverManager.cpp
-  Digger/SystemCommands.cpp
-  Digger/UICommands.cpp
+  ${DIGGER_SOURCES}
 )
 
 # Enable c++20 features for the game
 target_compile_features(${TARGET_NAME} PUBLIC cxx_std_20)
+
+# Include Digger directories
+target_include_directories(${TARGET_NAME} PRIVATE
+  ${CMAKE_SOURCE_DIR}/Digger
+  ${CMAKE_SOURCE_DIR}/Digger/Components
+  ${CMAKE_SOURCE_DIR}/Digger/Commands
+  ${CMAKE_SOURCE_DIR}/Digger/Managers
+  ${CMAKE_SOURCE_DIR}/Digger/States
+  ${CMAKE_SOURCE_DIR}/Digger/Observers
+  ${CMAKE_SOURCE_DIR}/Digger/Audio
+)
 
 # ---------------------------------------------------
 
