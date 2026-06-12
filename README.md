@@ -3,6 +3,7 @@
 This project aims to recreate the 1983 arcade game **Digger** from scratch using a custom C++ game engine. The game features full support for both Keyboard and Gamepads across all game modes, menus, and UI screens. It was developed as my final exam project for the **Programming 4** course at DAE (Howest).
 
 ## Links
+* **Source Control Depot (GitHub):** [See Commit History Here](https://github.com/AnaPaolielloDeLucenaCarvalho/AnaCarvalho_WeaklyAssignment_Prog4/commits/main/)
 * **GitHub Pages Build (Web):** [Play Digger on the WEB Here](https://anapaoliellodelucenacarvalho.github.io/AnaCarvalho_WeaklyAssignment_Prog4/)
 
 ---
