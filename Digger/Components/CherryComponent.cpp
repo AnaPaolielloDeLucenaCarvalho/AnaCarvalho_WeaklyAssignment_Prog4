@@ -1,7 +1,7 @@
 #include "CherryComponent.h"
 #include "DiggerComponent.h"
 #include "ServiceLocator.h"
-#include "DiggerSounds.h"
+#include "AudioDefinitions.h"
 
 #include <glm/glm.hpp>
 #include <glm/geometric.hpp>
@@ -24,7 +24,7 @@ namespace dae
         if (glm::distance(glm::vec2(myX, myY), glm::vec2(pos.x, pos.y)) < 30.f)
         {
             pDigger->ActivateBonusMode();
-            ServiceLocator::GetSoundSystem().Play(DiggerSounds::BONUS_PICKUP, 1.0f);
+            ServiceLocator::GetSoundSystem().Play(AudioDefinitions::BONUS_PICKUP, 1.0f);
             return true;
         }
         return false;

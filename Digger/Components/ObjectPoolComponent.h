@@ -1,16 +1,16 @@
-#ifndef TRASHCACHECOMPONENT_H
-#define TRASHCACHECOMPONENT_H
+#ifndef ObjectPoolComponent_H
+#define ObjectPoolComponent_H
 
 #include "Component.h"
 #include <vector>
 
 namespace dae
 {
-    class TrashCacheComponent : public Component
+    class ObjectPoolComponent : public Component
     {
     public:
-        TrashCacheComponent(GameObject* pOwner);
-        ~TrashCacheComponent() override = default;
+        ObjectPoolComponent(GameObject* pOwner);
+        ~ObjectPoolComponent() override = default;
 
         void Update(float deltaTime) override;
         void Render() const override;

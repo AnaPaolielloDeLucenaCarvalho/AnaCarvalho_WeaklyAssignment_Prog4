@@ -31,5 +31,25 @@ namespace dae
         Scene* m_pPreviousScene{ nullptr };
         uint64_t m_LastPressTime{ 0 };
     };
+    class MuteCommand final : public Command
+    {
+    public:
+        MuteCommand() = default;
+        void Execute(float deltaTime) override;
+    private:
+        uint64_t m_LastToggleTime{ 0 };
+    };
+
+    class DiggerComponent;
+
+    class SkipLevelCommand final : public Command
+    {
+    public:
+        explicit SkipLevelCommand(DiggerComponent* pDigger);
+        void Execute(float deltaTime) override;
+    private:
+        DiggerComponent* m_pDigger;
+        uint64_t m_LastPressTime{ 0 };
+    };
 }
 #endif

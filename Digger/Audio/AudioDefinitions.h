@@ -1,8 +1,8 @@
-#ifndef DIGGER_SOUNDS_H
-#define DIGGER_SOUNDS_H
+#ifndef AUDIO_DEFINITIONS_H
+#define AUDIO_DEFINITIONS_H
 
 // Digger Sounds
-enum DiggerSounds
+enum AudioDefinitions
 {
 	MUSIC = 0,
 	BONUS = 1,

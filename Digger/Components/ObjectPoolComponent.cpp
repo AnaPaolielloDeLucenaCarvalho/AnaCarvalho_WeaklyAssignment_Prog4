@@ -1,4 +1,4 @@
-#include "TrashCacheComponent.h"
+#include "ObjectPoolComponent.h"
 #include <imgui.h>
 #include <chrono>
 #include <numeric>
@@ -71,7 +71,7 @@ namespace dae
         }
     }
 
-    TrashCacheComponent::TrashCacheComponent(GameObject* pOwner) : Component(pOwner)
+    ObjectPoolComponent::ObjectPoolComponent(GameObject* pOwner) : Component(pOwner)
     {
         for (int step = 1; step <= 1024; step *= 2)
         {
@@ -79,9 +79,9 @@ namespace dae
         }
     }
 
-    void TrashCacheComponent::Update(float /*deltaTime*/) {}
+    void ObjectPoolComponent::Update(float /*deltaTime*/) {}
 
-    void TrashCacheComponent::Render() const
+    void ObjectPoolComponent::Render() const
     {
         ImGui::Begin("Programming 4 Assignment");
 
@@ -156,19 +156,19 @@ namespace dae
         ImGui::End();
     }
 
-    void TrashCacheComponent::RunExercise1() const
+    void ObjectPoolComponent::RunExercise1() const
     {
         const size_t bufferSize = 1 << 26;
         BenchmarkTrashCache<int>(bufferSize, m_Samples, m_TimingsInt);
     }
 
-    void TrashCacheComponent::RunExercise2() const
+    void ObjectPoolComponent::RunExercise2() const
     {
         const size_t bufferSize = 1 << 24;
         BenchmarkTrashCache<GameObject3D>(bufferSize, m_Samples, m_TimingsGO3D);
     }
 
-    void TrashCacheComponent::RunExercise2Alt() const
+    void ObjectPoolComponent::RunExercise2Alt() const
     {
         const size_t bufferSize = 1 << 24;
 

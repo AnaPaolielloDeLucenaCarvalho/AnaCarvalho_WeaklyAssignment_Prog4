@@ -1,7 +1,7 @@
 #include "DiggerComponent.h"
 #include "DiggerState.h"
 #include "ServiceLocator.h"
-#include "DiggerSounds.h"
+#include "AudioDefinitions.h"
 
 #include "FireballComponent.h"
 #include "SceneManager.h"
@@ -103,7 +103,7 @@ namespace dae
 			m_FireballCooldown = 3.0f; // shooting mechanic has to wait 3s before used again
             m_ShootAnimTimer = 0.2f;
 
-            ServiceLocator::GetSoundSystem().Play(DiggerSounds::SHOOT, 0.5f);
+            ServiceLocator::GetSoundSystem().Play(AudioDefinitions::SHOOT, 0.5f);
 
             auto fireball = std::make_unique<GameObject>();
             fireball->AddComponent<RenderComponent>("PNG/Other/VFIRE1.png");
@@ -166,7 +166,7 @@ namespace dae
         {
             // award 250 points and reset combo
             AwardPoints(250);
-            ServiceLocator::GetSoundSystem().Play(DiggerSounds::COMBO_8_EMES, 1.0f);
+            ServiceLocator::GetSoundSystem().Play(AudioDefinitions::COMBO_8_EMES, 1.0f);
             m_ConsecutiveEmeralds = 0;
         }
     }

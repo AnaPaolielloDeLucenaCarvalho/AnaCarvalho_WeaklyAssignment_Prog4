@@ -10,7 +10,7 @@
 #include "CherryComponent.h"
 #include "ServiceLocator.h"
 #include "UIObservers.h"
-#include "DiggerSounds.h"
+#include "AudioDefinitions.h"
 #include "DiggerState.h"
 #include "HighScoreManager.h"
 

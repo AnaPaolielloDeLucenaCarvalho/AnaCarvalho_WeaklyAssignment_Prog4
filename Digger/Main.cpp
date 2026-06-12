@@ -14,9 +14,9 @@
 #include "ResourceManager.h"
 #include "RenderComponent.h"
 #include "RotatorComponent.h"
-#include "TrashCacheComponent.h"
+#include "ObjectPoolComponent.h"
 #include "InputManager.h"
-#include "MoveCommand.h"
+#include "PlayerCommands.h"
 #include "DiggerComponent.h"
 #include "UIObservers.h"
 #include "Subject.h"
@@ -25,19 +25,19 @@
 #include "ServiceLocator.h"
 #include "MiniaudioSoundSystem.h"
 #include "LoggingSoundSystem.h"
-#include "MuteCommand.h"
+#include "SystemCommands.h"
 #include "GoldBagComponent.h"
 #include "LevelManager.h"
 #include "DiggerState.h"
 #include "MenuManager.h"
-#include "SkipLevelCommand.h"
-#include "ShootCommand.h"
-#include "DiggerSounds.h"
+#include "SystemCommands.h"
+#include "PlayerCommands.h"
+#include "AudioDefinitions.h"
 #include "HighScoreManager.h"
 #include "NameEntryComponent.h"
-#include "CycleLetterCommand.h"
-#include "AdvanceIndexCommand.h"
-#include "ConfirmNameCommand.h"
+#include "NameEntryCommands.h"
+#include "NameEntryCommands.h"
+#include "NameEntryCommands.h"
 #include "SystemCommands.h"
 #include "UICommands.h"
 
@@ -79,15 +79,15 @@ static void load()
 	const std::string soundFolder = "Data/Sounds/";
 #endif
 
-	soundSystem.LoadSound(DiggerSounds::MUSIC, soundFolder + "main_music.wav");
-	soundSystem.LoadSound(DiggerSounds::BONUS, soundFolder + "bonus.wav");
-	soundSystem.LoadSound(DiggerSounds::NEXT_LEVEL, soundFolder + "next_level.wav");
-	soundSystem.LoadSound(DiggerSounds::DEATH, soundFolder + "death.wav");
-	soundSystem.LoadSound(DiggerSounds::PICK_UP, soundFolder + "pickUp.mp3");
-	soundSystem.LoadSound(DiggerSounds::BONUS_PICKUP, soundFolder + "bonusPickUp.mp3");
-	soundSystem.LoadSound(DiggerSounds::COMBO_8_EMES, soundFolder + "8ComboEmes.mp3");
-	soundSystem.LoadSound(DiggerSounds::KILL_ENEMY, soundFolder + "killEnemy.mp3");
-	soundSystem.LoadSound(DiggerSounds::SHOOT, soundFolder + "shoot.mp3");
+	soundSystem.LoadSound(AudioDefinitions::MUSIC, soundFolder + "main_music.wav");
+	soundSystem.LoadSound(AudioDefinitions::BONUS, soundFolder + "bonus.wav");
+	soundSystem.LoadSound(AudioDefinitions::NEXT_LEVEL, soundFolder + "next_level.wav");
+	soundSystem.LoadSound(AudioDefinitions::DEATH, soundFolder + "death.wav");
+	soundSystem.LoadSound(AudioDefinitions::PICK_UP, soundFolder + "pickUp.mp3");
+	soundSystem.LoadSound(AudioDefinitions::BONUS_PICKUP, soundFolder + "bonusPickUp.mp3");
+	soundSystem.LoadSound(AudioDefinitions::COMBO_8_EMES, soundFolder + "8ComboEmes.mp3");
+	soundSystem.LoadSound(AudioDefinitions::KILL_ENEMY, soundFolder + "killEnemy.mp3");
+	soundSystem.LoadSound(AudioDefinitions::SHOOT, soundFolder + "shoot.mp3");
 
 // ----------------- SCENE SETUP -----------------
 
@@ -475,7 +475,7 @@ static void load()
 	inst4->SetLocalPosition(400, 500);
 	instructionsScene.Add(std::move(inst4));
 
-	soundSystem.PlayMusic(DiggerSounds::MUSIC, 0.5f, true);
+	soundSystem.PlayMusic(AudioDefinitions::MUSIC, 0.5f, true);
 
 #ifdef __EMSCRIPTEN__
 	std::string levelPath = "Levels.txt";

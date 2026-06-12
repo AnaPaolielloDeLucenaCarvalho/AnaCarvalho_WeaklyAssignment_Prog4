@@ -46,7 +46,7 @@ endif()
 #  Minigin/TrashCacheComponent.cpp
 #)
 
-file(GLOB_RECURSE MINIGIN_SOURCES "Minigin/*.cpp")
+file(GLOB_RECURSE MINIGIN_SOURCES CONFIGURE_DEPENDS "Minigin/*.cpp")
 
 add_library(Minigin STATIC
   ${MINIGIN_SOURCES}
@@ -71,7 +71,7 @@ target_include_directories(Minigin PUBLIC
 # GAME EXECUTABLE (Digger)
 # ---------------------------------------------------
 
-file(GLOB_RECURSE DIGGER_SOURCES "Digger/*.cpp")
+file(GLOB_RECURSE DIGGER_SOURCES CONFIGURE_DEPENDS "Digger/*.cpp")
 
 add_executable(${TARGET_NAME} ${TARGET_PARAM}
   ${DIGGER_SOURCES}

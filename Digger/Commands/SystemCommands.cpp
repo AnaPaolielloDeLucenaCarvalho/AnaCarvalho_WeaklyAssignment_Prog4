@@ -4,6 +4,8 @@
 #include "ServiceLocator.h"
 #include <SDL3/SDL.h>
 #include "HighScoreManager.h"
+#include "DiggerComponent.h"
+#include "Observer.h"
 
 namespace dae
 {
@@ -50,6 +52,32 @@ namespace dae
             m_pPreviousScene = currentScene;
             sm.SetActiveScene(m_pInstructionsScene);
             ServiceLocator::GetSoundSystem().PauseMusic();
+        }
+    }
+    void MuteCommand::Execute(float /*deltaTime*/)
+    {
+        const uint64_t currentTime = SDL_GetTicks();
+        if (currentTime - m_LastToggleTime > 300)
+        {
+            ServiceLocator::GetSoundSystem().ToggleMute();
+            m_LastToggleTime = currentTime;
+        }
+    }
+
+    SkipLevelCommand::SkipLevelCommand(DiggerComponent* pDigger)
+        : m_pDigger(pDigger)
+    {
+    }
+
+    void SkipLevelCommand::Execute(float /*deltaTime*/)
+    {
+        uint64_t currentTime = SDL_GetTicks();
+        if (currentTime - m_LastPressTime < 300) return;
+        m_LastPressTime = currentTime;
+
+        if (m_pDigger)
+        {
+            m_pDigger->GetSubject().Notify(make_sdbm_hash("LoadNextLevel"), 0);
         }
     }
 }

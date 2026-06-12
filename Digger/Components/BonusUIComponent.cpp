@@ -1,4 +1,4 @@
-#include "BonusOverlayComponent.h"
+#include "BonusUIComponent.h"
 
 #include "Renderer.h"
 #include "GameObject.h"
@@ -7,26 +7,26 @@
 
 namespace dae
 {
-    BonusOverlayComponent::BonusOverlayComponent(GameObject* owner)
+    BonusUIComponent::BonusUIComponent(GameObject* owner)
         : Component(owner)
     {
     }
 
-    void BonusOverlayComponent::Update(float /*deltaTime*/)
+    void BonusUIComponent::Update(float /*deltaTime*/)
     {
     }
 
-    void BonusOverlayComponent::SetActive(bool active)
+    void BonusUIComponent::SetActive(bool active)
     {
         m_Active = active;
     }
 
-    void BonusOverlayComponent::SetAlpha(uint8_t alpha)
+    void BonusUIComponent::SetAlpha(uint8_t alpha)
     {
         m_Alpha = alpha;
     }
 
-    void BonusOverlayComponent::Render() const
+    void BonusUIComponent::Render() const
     {
         if (!m_Active) return;
 

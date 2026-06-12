@@ -1,5 +1,5 @@
 #include "DiggerState.h"
-#include "DiggerSounds.h"
+#include "AudioDefinitions.h"
 #include "DiggerComponent.h"
 #include "RenderComponent.h"
 #include "ServiceLocator.h"
@@ -145,7 +145,7 @@ namespace dae
                     diamond->MarkForDestroy();
                     digger->AwardPoints(25);
                     digger->AddEmeraldToCombo();
-                    ServiceLocator::GetSoundSystem().Play(DiggerSounds::PICK_UP, 0.5f);
+                    ServiceLocator::GetSoundSystem().Play(AudioDefinitions::PICK_UP, 0.5f);
                 }
             }
         }
@@ -166,7 +166,7 @@ namespace dae
                     bag->MarkForDestroy();
                     digger->AwardPoints(500);
                     digger->ResetEmeraldCombo();
-                    ServiceLocator::GetSoundSystem().Play(DiggerSounds::PICK_UP, 0.5f);
+                    ServiceLocator::GetSoundSystem().Play(AudioDefinitions::PICK_UP, 0.5f);
                 }
                 else
                 {
@@ -273,7 +273,7 @@ namespace dae
         ServiceLocator::GetSoundSystem().PauseMusic();
 
 		// sound 1 = bonus.wav (Rossini / William Tell)
-        ServiceLocator::GetSoundSystem().PlaySfx(DiggerSounds::BONUS, 1.0f);
+        ServiceLocator::GetSoundSystem().PlaySfx(AudioDefinitions::BONUS, 1.0f);
 
         if (auto render = digger->GetOwner()->GetComponent<RenderComponent>())
         {
@@ -318,7 +318,7 @@ namespace dae
                     diamond->MarkForDestroy();
                     digger->AwardPoints(25);
                     digger->AddEmeraldToCombo();
-                    ServiceLocator::GetSoundSystem().Play(DiggerSounds::PICK_UP, 0.5f);
+                    ServiceLocator::GetSoundSystem().Play(AudioDefinitions::PICK_UP, 0.5f);
                 }
             }
         }
@@ -339,7 +339,7 @@ namespace dae
                     bag->MarkForDestroy();
                     digger->AwardPoints(500);
                     digger->ResetEmeraldCombo();
-                    ServiceLocator::GetSoundSystem().Play(DiggerSounds::PICK_UP, 0.5f);
+                    ServiceLocator::GetSoundSystem().Play(AudioDefinitions::PICK_UP, 0.5f);
                 }
                 else
                 {
@@ -390,7 +390,7 @@ namespace dae
             {
                 enemy->MarkForDestroy();
                 digger->AwardPoints(250);
-                ServiceLocator::GetSoundSystem().Play(DiggerSounds::KILL_ENEMY, 0.5f);
+                ServiceLocator::GetSoundSystem().Play(AudioDefinitions::KILL_ENEMY, 0.5f);
             }
         }
 
@@ -407,7 +407,7 @@ namespace dae
                     {
                         p2Digger->ChangeState(new DiggerDeadState()); // Trigger death state!
                         digger->AwardPoints(250);
-                        ServiceLocator::GetSoundSystem().Play(DiggerSounds::KILL_ENEMY, 0.5f);
+                        ServiceLocator::GetSoundSystem().Play(AudioDefinitions::KILL_ENEMY, 0.5f);
                     }
                 }
             }
@@ -457,7 +457,7 @@ namespace dae
 
 		// pause music so death sound plays exclusively
         ServiceLocator::GetSoundSystem().PauseMusic();
-        ServiceLocator::GetSoundSystem().PlaySfx(DiggerSounds::DEATH, 1.0f);
+        ServiceLocator::GetSoundSystem().PlaySfx(AudioDefinitions::DEATH, 1.0f);
 
         if (auto render = digger->GetOwner()->GetComponent<RenderComponent>())
         {
@@ -578,7 +578,7 @@ namespace dae
         digger->SetCurrentDirection(glm::vec2{ 0,0 });
 
         ServiceLocator::GetSoundSystem().PauseMusic();
-        ServiceLocator::GetSoundSystem().PlaySfx(DiggerSounds::NEXT_LEVEL, 0.5f);
+        ServiceLocator::GetSoundSystem().PlaySfx(AudioDefinitions::NEXT_LEVEL, 0.5f);
 
 		// fade 4s to black
         auto fadeObj = std::make_unique<GameObject>();

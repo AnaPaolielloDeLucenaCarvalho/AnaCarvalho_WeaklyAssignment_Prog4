@@ -1,15 +1,15 @@
-#ifndef BONUS_OVERLAY_COMPONENT_H
-#define BONUS_OVERLAY_COMPONENT_H
+#ifndef BONUS_UI_COMPONENT_H
+#define BONUS_UI_COMPONENT_H
 
 #include "Component.h"
 #include <cstdint>
 
 namespace dae
 {
-    class BonusOverlayComponent final : public Component
+    class BonusUIComponent final : public Component
     {
     public:
-        explicit BonusOverlayComponent(GameObject* owner);
+        explicit BonusUIComponent(GameObject* owner);
 
         void Update(float deltaTime) override;
         void Render() const override;
@@ -23,4 +23,4 @@ namespace dae
     };
 }
 
-#endif // BONUS_OVERLAY_COMPONENT_H
+#endif // BONUS_UI_COMPONENT_H

@@ -4,7 +4,7 @@
 #include "DiggerComponent.h"
 #include "DiggerState.h"
 #include "ServiceLocator.h"
-#include "DiggerSounds.h"
+#include "AudioDefinitions.h"
 #include <cmath>
 
 namespace dae
@@ -134,7 +134,7 @@ namespace dae
                     {
 						enemy->MarkForDestroy(); // crush the enemy
 						digger->AwardPoints(250);
-                        ServiceLocator::GetSoundSystem().Play(DiggerSounds::KILL_ENEMY, 0.5f);
+                        ServiceLocator::GetSoundSystem().Play(AudioDefinitions::KILL_ENEMY, 0.5f);
                     }
                 }
             }
