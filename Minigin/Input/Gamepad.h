@@ -3,6 +3,10 @@
 
 #include <memory>
 
+
+// DESIGN PATTERN - Pimpl Idiom (Bridge)
+// I hid the messy XInput Windows-specific code inside a private implementation class. This keeps the header completely clean and ensures no Windows headers leak into the rest of the engine.
+
 namespace dae
 {
     class Gamepad final

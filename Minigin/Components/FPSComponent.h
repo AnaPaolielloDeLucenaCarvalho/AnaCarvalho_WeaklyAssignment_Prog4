@@ -3,6 +3,10 @@
 
 #include "Component.h"
 
+
+// DESIGN PATTERN - Component Pattern
+// A simple component I built to track and display the current frames per second. Attaches to any text object.
+
 namespace dae
 {
     class FPSComponent final : public Component

@@ -1,6 +1,10 @@
 #pragma once
 #include <glm/glm.hpp>
 
+
+// DESIGN PATTERN - Data Component
+// I separated position, rotation, and scale into their own little struct. Every GameObject gets one of these automatically.
+
 namespace dae
 {
 	class Transform final

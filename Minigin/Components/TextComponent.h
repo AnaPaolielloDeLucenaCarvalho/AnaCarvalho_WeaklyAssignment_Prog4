@@ -6,6 +6,10 @@
 #include "RenderComponent.h"
 #include <SDL3/SDL.h>
 
+
+// DESIGN PATTERN - Component Pattern
+// Handles drawing TTF text. Just pass it a string and it generates a texture for the RenderComponent to use.
+
 namespace dae
 {
     class Font;

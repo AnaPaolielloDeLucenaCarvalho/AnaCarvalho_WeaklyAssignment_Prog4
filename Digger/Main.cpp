@@ -65,7 +65,10 @@ static std::unique_ptr<dae::HighScoreManager> g_HighScoreMgr = nullptr;
 
 static void load()
 {
-// ----------------- SOUND -----------------
+// ----------------- SOUND (SERVICE LOCATOR PATTERN) -----------------
+// We use the Service Locator pattern here to provide global access to the audio system
+// without passing a pointer through every single game object. 
+// The LoggingSoundSystem wraps the MiniaudioSystem (Decorator pattern) to print audio events to the console.
 
 	auto miniaudioSystem = std::make_unique<dae::MiniaudioSoundSystem>();
 	auto loggingSoundSystem = std::make_unique<dae::LoggingSoundSystem>(std::move(miniaudioSystem));
@@ -91,13 +94,16 @@ static void load()
 
 // ----------------- SCENE SETUP -----------------
 
+	// We pre-allocate scenes rather than dynamically creating them during gameplay.
+	// This ensures memory is reserved upfront and SceneManager simply swaps pointers.
 	auto& menuScene  = dae::SceneManager::GetInstance().CreateScene();
 	auto& scoreScene = dae::SceneManager::GetInstance().CreateScene();
 	auto& gameScene  = dae::SceneManager::GetInstance().CreateScene();
 	auto& gameOverScene = dae::SceneManager::GetInstance().CreateScene();
 	auto& instructionsScene = dae::SceneManager::GetInstance().CreateScene();
 
-	// Create the HighScoreManager — no global, no static allocation before main().
+	// HighScoreManager is instantiated here and passed by reference to the components that need it.
+	// This avoids creating a rigid Singleton, making it easier to mock or test if needed.
 	g_HighScoreMgr = std::make_unique<dae::HighScoreManager>();
 	dae::HighScoreManager* pMgr = g_HighScoreMgr.get();
 
@@ -185,6 +191,9 @@ static void load()
 	auto pMenuMgr = menuManagerObj->AddComponent<dae::MenuManager>(pMgr, &scoreScene, &gameScene, menuOptions, menuScoreTexts, menuNameTexts);
 	menuScene.Add(std::move(menuManagerObj));
 
+	// COMMAND PATTERN: Binding hardware inputs to actions
+	// By binding commands instead of polling for hardware states, we decouple the UI logic
+	// from the physical keyboard/gamepad. If we swap controllers, MenuNavigateCommand still fires correctly.
 	input.BindCommand(SDL_SCANCODE_W, dae::KeyState::Pressed, std::make_unique<dae::MenuNavigateCommand>(-1, pMenuMgr, nullptr, &menuScene));
 	input.BindCommand(SDL_SCANCODE_UP, dae::KeyState::Pressed, std::make_unique<dae::MenuNavigateCommand>(-1, pMenuMgr, nullptr, &menuScene));
 	input.BindCommand(0, dae::Gamepad::ControllerButton::DPadUp, dae::KeyState::Pressed, std::make_unique<dae::MenuNavigateCommand>(-1, pMenuMgr, nullptr, &menuScene));
@@ -396,6 +405,9 @@ static void load()
 	auto livesUI2Ptr = livesUI2.get();
 	gameScene.Add(std::move(livesUI2));
 
+	// OBSERVER PATTERN: UI Data Binding
+	// Instead of having the ScoreUI check the DiggerComponent's score every single frame,
+	// we attach it as an Observer. The Digger will Notify() the UI *only* when the score changes.
 	diggerComp1->AddObserver(scoreObs1);
 	diggerComp1->AddObserver(livesObs1);
 	diggerComp2->AddObserver(livesObs2);
@@ -487,6 +499,8 @@ static void load()
 	}
 #endif
 
+	// Level data is loaded into memory exactly once here. 
+	// The LevelManager parses the text file and caches the stages, meaning we never have to do disk I/O during gameplay.
 	dae::LevelManager::GetInstance().LoadAllLevelsFromFile(levelPath);
 
 	auto transMgrObj = std::make_unique<dae::GameObject>();

@@ -4,6 +4,10 @@
 #include <string>
 #include "GameObject.h"
 
+
+// DESIGN PATTERN - Scene Graph / Container
+// Acts as a container for all the GameObjects in a specific level or menu. It handles updating and rendering them all in order, and cleaning up dead objects at the end of the frame.
+
 namespace dae
 {
 	class SceneManager;

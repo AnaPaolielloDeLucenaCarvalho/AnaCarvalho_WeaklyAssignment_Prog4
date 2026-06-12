@@ -6,6 +6,10 @@
 #include <cstdint>
 #include "Component.h"
 
+
+// DESIGN PATTERN - Component Pattern
+// Handles drawing 2D textures to the screen. Keeps the OpenGL/SDL rendering code out of the core GameObject class.
+
 namespace dae
 {
     class Texture2D;

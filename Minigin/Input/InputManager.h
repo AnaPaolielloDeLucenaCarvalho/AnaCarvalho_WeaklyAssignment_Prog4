@@ -9,6 +9,10 @@
 #include <memory>
 #include <SDL3/SDL.h>
 
+
+// DESIGN PATTERN - Command Pattern (Invoker)
+// The InputManager polls SDL events and gamepads, but it doesn't know what the buttons actually do. It just looks up the bound Command object and tells it to Execute(), keeping hardware completely separate from gameplay logic.
+
 namespace dae
 {
     enum class KeyState

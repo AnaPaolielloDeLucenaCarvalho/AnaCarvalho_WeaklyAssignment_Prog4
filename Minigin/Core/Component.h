@@ -1,6 +1,10 @@
 #ifndef COMPONENT_H
 #define COMPONENT_H
 
+
+// DESIGN PATTERN - Component Pattern (Base Class)
+// This is the abstract base class that all behaviors inherit from. By forcing everything to have an Update() and Render() method, the GameObject can just loop through its components blindly.
+
 namespace dae
 {
     class GameObject;

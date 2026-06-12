@@ -3,6 +3,8 @@
 
 namespace dae
 {
+	// SCENE UPDATES:
+	// I only update the scene that is currently active. All other scenes are paused in memory.
 	void SceneManager::Update(float deltaTime)
 	{
 		if (m_pActiveScene) 

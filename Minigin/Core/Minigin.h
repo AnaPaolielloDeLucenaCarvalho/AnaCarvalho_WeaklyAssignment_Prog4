@@ -5,6 +5,10 @@
 #include <functional>
 #include <filesystem>
 
+
+// DESIGN PATTERN - Facade Pattern (Engine Entry)
+// I wrapped all the complex initialization for SDL, OpenGL, and ImGui into a single clean interface here. It hides the messy setup so the main game loop is easy to read.
+
 namespace dae
 {
 	class Minigin final

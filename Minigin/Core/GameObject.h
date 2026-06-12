@@ -7,6 +7,10 @@
 #include "Transform.h"
 #include "Component.h"
 
+
+// DESIGN PATTERN - Component / Composite Pattern
+// Instead of massive inheritance trees, I made GameObject a dumb container. You build behaviors by attaching small, reusable Components to it. This prevents the classic "God Class" problem.
+
 namespace dae
 {
 	class GameObject final

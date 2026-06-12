@@ -86,7 +86,9 @@ namespace dae
         std::vector<std::string> currentLayout;
         std::string line;
 
-        // Parse level data.
+        // File Parsing Strategy:
+        // We iterate through the raw text file line-by-line, utilizing the "[LEVEL]" tags 
+        // as delimiters to segment the map layouts into memory buffers.
         while (std::getline(file, line))
         {
             // Sanitize carriage returns that can accidentally corrupt text parsing on different OS environments

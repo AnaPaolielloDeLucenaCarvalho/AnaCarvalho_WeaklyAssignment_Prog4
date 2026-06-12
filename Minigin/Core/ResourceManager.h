@@ -5,6 +5,10 @@
 #include <map>
 #include "Singleton.h"
 
+
+// DESIGN PATTERN - Singleton Pattern
+// Ensures we only ever load a specific texture or font once. If five enemies use the same sprite, they all share the exact same memory pointer, saving a ton of RAM.
+
 namespace dae
 {
 	class Texture2D;

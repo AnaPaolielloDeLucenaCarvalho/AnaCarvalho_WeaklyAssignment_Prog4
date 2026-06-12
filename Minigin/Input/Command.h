@@ -1,6 +1,10 @@
 #ifndef COMMAND_H
 #define COMMAND_H
 
+
+// DESIGN PATTERN - Command Pattern (Base)
+// The abstract base class for all actions. By turning an action into an object, we can easily rebind keys or trigger actions from completely different sources (like UI vs keyboard).
+
 namespace dae
 {
     class Command

@@ -4,6 +4,10 @@
 #include "SoundSystem.h"
 #include <memory>
 
+
+// DESIGN PATTERN - Service Locator Pattern
+// I used this to provide global access to the Sound System. This way, any component can play a sound without needing a direct pointer to the audio engine, and we can easily swap out the audio backend without breaking the rest of the game.
+
 namespace dae 
 {
     class NullSoundSystem final : public SoundSystem 

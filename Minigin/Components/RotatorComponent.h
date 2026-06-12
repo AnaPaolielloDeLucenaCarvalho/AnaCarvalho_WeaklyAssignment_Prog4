@@ -5,6 +5,10 @@
 #include "GameObject.h"
 #include <cmath> // cos and sin
 
+
+// DESIGN PATTERN - Component Pattern
+// A test component I made to spin objects in a circle. Proves that the component system and Transform hierarchy work correctly.
+
 namespace dae
 {
 	class RotatorComponent final : public Component

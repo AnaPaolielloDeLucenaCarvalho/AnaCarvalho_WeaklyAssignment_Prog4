@@ -16,7 +16,9 @@
 
 namespace dae
 {
-    // Share movement logic between Normal and Bonus states.
+    // Centralized Movement Calculation:
+    // We calculate grid-snapping and velocity here rather than inside the distinct states.
+    // This ensures both Normal and Bonus modes share the exact same movement physics.
     static glm::vec2 ApplyDiggerMovement(DiggerComponent* digger, float deltaTime)
     {
         // Stop hidden/dead players from clamping back onto the screen!

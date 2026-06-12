@@ -5,6 +5,10 @@
 #include "Scene.h"
 #include "Singleton.h"
 
+
+// DESIGN PATTERN - Singleton Pattern
+// Manages all the active scenes in the game. I made it a Singleton because there should only ever be one scene graph active at a time.
+
 namespace dae
 {
 	class Scene;
